@@ -6,6 +6,7 @@ import type {
   RegisterRequest,
   RegisterResponse,
   ApiError,
+  PasswordResetResponse,
 } from "../types/auth";
 
 function extractErrorMessage(error: unknown): string {
@@ -37,6 +38,36 @@ export async function loginUser(
     const { data } = await axiosInstance.post<LoginResponse>(
       "/api/auth/login",
       payload
+    );
+    return data;
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }
+}
+
+export async function forgotPassword(
+  email: string
+): Promise<PasswordResetResponse> {
+  try {
+    const { data } = await axiosInstance.post<PasswordResetResponse>(
+      "/api/auth/forgot-password",
+      { email }
+    );
+    return data;
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }
+}
+
+export async function resetPassword(
+  token: string,
+  newPassword: string,
+  confirmPassword: string
+): Promise<PasswordResetResponse> {
+  try {
+    const { data } = await axiosInstance.post<PasswordResetResponse>(
+      "/api/auth/reset-password",
+      { token, newPassword, confirmPassword }
     );
     return data;
   } catch (error) {
