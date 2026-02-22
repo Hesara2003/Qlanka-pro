@@ -55,6 +55,36 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey         = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
             ClockSkew                = TimeSpan.Zero
         };
+
+        // ── Custom 401 / 403 JSON responses ───────────────────
+        options.Events = new JwtBearerEvents
+        {
+            // Fires when a protected endpoint is accessed without a valid token
+            OnChallenge = async context =>
+            {
+                context.HandleResponse(); // suppress default WWW-Authenticate header response
+
+                context.Response.StatusCode  = StatusCodes.Status401Unauthorized;
+                context.Response.ContentType = "application/json";
+
+                var (code, message) = string.IsNullOrWhiteSpace(
+                    context.Request.Headers.Authorization.FirstOrDefault())
+                    ? ("TOKEN_MISSING",  "Authorization token is required.")
+                    : ("TOKEN_INVALID",  "Token is invalid or has expired.");
+
+                await context.Response.WriteAsync(
+                    $$"""{"code":"{{code}}","message":"{{message}}"}""");
+            },
+
+            // Fires when a valid token lacks the required role/policy
+            OnForbidden = async context =>
+            {
+                context.Response.StatusCode  = StatusCodes.Status403Forbidden;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsync(
+                    """{"code":"FORBIDDEN","message":"You do not have permission to access this resource."}""");
+            }
+        };
     });
 
 builder.Services.AddAuthorization();
@@ -76,6 +106,7 @@ var app = builder.Build();
 
 // ── Middleware pipeline ────────────────────────────────────────
 app.UseMiddleware<ExceptionMiddleware>();
+app.UseMiddleware<JwtMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
