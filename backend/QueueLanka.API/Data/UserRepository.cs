@@ -81,6 +81,21 @@ public class UserRepository : IUserRepository
         await cmd.ExecuteNonQueryAsync();
     }
 
+    public async Task UpdatePasswordAsync(int userId, string newPasswordHash)
+    {
+        const string sql = @"
+            UPDATE users
+            SET    password_hash = @Hash
+            WHERE  user_id = @UserId";
+
+        await using var conn = new MySqlConnection(_connectionString);
+        await conn.OpenAsync();
+        await using var cmd = new MySqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@Hash",   newPasswordHash);
+        cmd.Parameters.AddWithValue("@UserId", userId);
+        await cmd.ExecuteNonQueryAsync();
+    }
+
     private static User MapUser(MySqlDataReader reader) => new()
     {
         UserId          = reader.GetInt32("user_id"),
