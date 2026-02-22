@@ -9,10 +9,14 @@ namespace QueueLanka.API.Controllers;
 [Produces("application/json")]
 public class AuthController : ControllerBase
 {
-    private readonly IAuthService _authService;
+    private readonly IAuthService              _authService;
+    private readonly IEmailVerificationService _emailVerification;
 
-    public AuthController(IAuthService authService)
-        => _authService = authService;
+    public AuthController(IAuthService authService, IEmailVerificationService emailVerification)
+    {
+        _authService       = authService;
+        _emailVerification = emailVerification;
+    }
 
     /// <summary>Register a new user (citizen, officer, or admin).</summary>
     /// <response code="201">User created successfully.</response>
@@ -50,5 +54,24 @@ public class AuthController : ControllerBase
 
         var result = await _authService.LoginAsync(dto);
         return Ok(result);
+    }
+
+    /// <summary>Verify a user's email address using the token sent in the verification email.</summary>
+    /// <response code="200">Email verified successfully.</response>
+    /// <response code="400">Token is invalid, expired, or already used.</response>
+    [HttpGet("verify-email")]
+    [ProducesResponseType(typeof(VerifyEmailResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> VerifyEmail([FromQuery] string token)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+            return BadRequest(new { code = "TOKEN_MISSING", message = "Verification token is required." });
+
+        await _emailVerification.VerifyAsync(token);
+
+        return Ok(new VerifyEmailResponseDto
+        {
+            Message = "Your email has been verified. You can now log in."
+        });
     }
 }
