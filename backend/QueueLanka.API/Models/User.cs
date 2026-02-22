@@ -9,5 +9,6 @@ public class User
     public string Role { get; set; } = string.Empty;
     public int? CenterId { get; set; }
     public bool IsActive { get; set; } = true;
+    public bool IsEmailVerified { get; set; } = false;
     public DateTime CreatedAt { get; set; }
 }
