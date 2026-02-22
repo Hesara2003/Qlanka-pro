@@ -144,4 +144,82 @@ public class SmtpEmailService : IEmailService
 
         — The QueueLanka Team
         """;
+
+    // ── Password reset ─────────────────────────────────────────
+    public async Task SendPasswordResetEmailAsync(string toEmail, string toName, string resetUrl)
+    {
+        var subject  = "Reset your QueueLanka password";
+        var htmlBody = BuildPasswordResetEmailHtml(toName, resetUrl);
+        var textBody = BuildPasswordResetEmailText(toName, resetUrl);
+
+        await SendAsync(toEmail, toName, subject, htmlBody, textBody);
+    }
+
+    private static string BuildPasswordResetEmailHtml(string name, string url) => $"""
+        <!DOCTYPE html>
+        <html lang="en">
+        <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /></head>
+        <body style="margin:0;padding:0;background:#f4f6fb;font-family:'Segoe UI',Arial,sans-serif">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6fb;padding:40px 0">
+            <tr><td align="center">
+              <table width="520" cellpadding="0" cellspacing="0"
+                     style="background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.08);overflow:hidden">
+                <!-- Header -->
+                <tr><td style="background:#dc2626;padding:28px 40px">
+                  <h1 style="margin:0;color:#fff;font-size:1.4rem;font-weight:700">QueueLanka Pro</h1>
+                </td></tr>
+                <!-- Body -->
+                <tr><td style="padding:36px 40px 28px">
+                  <h2 style="margin:0 0 12px;color:#1a1a2e;font-size:1.2rem">Reset your password</h2>
+                  <p style="margin:0 0 20px;color:#374151;line-height:1.6">Hi {name},</p>
+                  <p style="margin:0 0 28px;color:#374151;line-height:1.6">
+                    We received a request to reset your QueueLanka password.
+                    Click the button below to choose a new password.
+                    This link expires in <strong>1 hour</strong>.
+                  </p>
+                  <table cellpadding="0" cellspacing="0">
+                    <tr><td style="border-radius:8px;background:#dc2626">
+                      <a href="{url}"
+                         style="display:inline-block;padding:14px 32px;color:#fff;font-weight:700;
+                                font-size:0.95rem;text-decoration:none;border-radius:8px">
+                        Reset my password
+                      </a>
+                    </td></tr>
+                  </table>
+                  <p style="margin:28px 0 0;color:#6b7280;font-size:0.8rem;line-height:1.5">
+                    If the button doesn't work, copy and paste this link into your browser:<br />
+                    <a href="{url}" style="color:#dc2626;word-break:break-all">{url}</a>
+                  </p>
+                  <p style="margin:16px 0 0;color:#9ca3af;font-size:0.78rem">
+                    If you didn't request a password reset, you can safely ignore this email.
+                    Your password will remain unchanged.
+                  </p>
+                </td></tr>
+                <!-- Footer -->
+                <tr><td style="background:#f9fafb;padding:16px 40px;border-top:1px solid #f3f4f6">
+                  <p style="margin:0;color:#9ca3af;font-size:0.75rem">
+                    &copy; 2026 QueueLanka Pro. All rights reserved.
+                  </p>
+                </td></tr>
+              </table>
+            </td></tr>
+          </table>
+        </body>
+        </html>
+        """;
+
+    private static string BuildPasswordResetEmailText(string name, string url) =>
+        $"""
+        Hi {name},
+
+        We received a request to reset your QueueLanka Pro password.
+
+        Click the link below to set a new password. This link expires in 1 hour.
+
+        {url}
+
+        If you didn't request this, please ignore this email — your password will not change.
+
+        — The QueueLanka Team
+        """;
 }
