@@ -140,3 +140,27 @@
   color: #9ca3af;
   margin-top: 0.2rem;
 }
+
+/* ── Forgot password link ─────────────────────────────────── */
+.forgot-password-link {
+  text-align: right;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.forgot-password-link a {
+  color: #4f46e5;
+  text-decoration: none;
+}
+
+.forgot-password-link a:hover {
+  text-decoration: underline;
+}
+
+/* ── Subtitle / description ───────────────────────────────── */
+.subtitle {
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin-bottom: 1.25rem;
+}
