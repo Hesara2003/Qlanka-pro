@@ -11,11 +11,16 @@ public class AuthController : ControllerBase
 {
     private readonly IAuthService              _authService;
     private readonly IEmailVerificationService _emailVerification;
+    private readonly IPasswordResetService     _passwordReset;
 
-    public AuthController(IAuthService authService, IEmailVerificationService emailVerification)
+    public AuthController(
+        IAuthService              authService,
+        IEmailVerificationService emailVerification,
+        IPasswordResetService     passwordReset)
     {
         _authService       = authService;
         _emailVerification = emailVerification;
+        _passwordReset     = passwordReset;
     }
 
     /// <summary>Register a new user (citizen, officer, or admin).</summary>
@@ -72,6 +77,45 @@ public class AuthController : ControllerBase
         return Ok(new VerifyEmailResponseDto
         {
             Message = "Your email has been verified. You can now log in."
+        });
+    }
+
+    /// <summary>Request a password reset email. Always returns 200 to prevent user enumeration.</summary>
+    /// <response code="200">Reset email sent if the address is registered.</response>
+    /// <response code="400">Validation error.</response>
+    [HttpPost("forgot-password")]
+    [ProducesResponseType(typeof(PasswordResetResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        await _passwordReset.InitiateResetAsync(dto.Email);
+
+        // Always return the same message regardless of whether the email exists
+        return Ok(new PasswordResetResponseDto
+        {
+            Message = "If that email address is registered, you will receive a password reset link shortly."
+        });
+    }
+
+    /// <summary>Reset a user's password using a valid reset token.</summary>
+    /// <response code="200">Password reset successfully.</response>
+    /// <response code="400">Token invalid/expired or validation error.</response>
+    [HttpPost("reset-password")]
+    [ProducesResponseType(typeof(PasswordResetResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        await _passwordReset.ResetPasswordAsync(dto.Token, dto.NewPassword);
+
+        return Ok(new PasswordResetResponseDto
+        {
+            Message = "Your password has been reset. You can now log in with your new password."
         });
     }
 }
