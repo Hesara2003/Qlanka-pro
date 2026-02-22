@@ -3,12 +3,15 @@ import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../../api/authApi";
 import { useAuth } from "../../context/AuthContext";
 import type { AuthUser } from "../../types/auth";
+import { validatePasswordLogin } from "../../utils/validation";
 import "./AuthForm.css";
 
 interface FormState {
   username: string;
   password: string;
 }
+
+type FormField = keyof FormState;
 
 interface FormErrors {
   username?: string;
@@ -18,7 +21,8 @@ interface FormErrors {
 function validate(values: FormState): FormErrors {
   const errors: FormErrors = {};
   if (!values.username.trim()) errors.username = "Username is required.";
-  if (!values.password) errors.password = "Password is required.";
+  const passwordErr = validatePasswordLogin(values.password);
+  if (passwordErr) errors.password = passwordErr;
   return errors;
 }
 
@@ -28,18 +32,34 @@ export default function LoginForm() {
 
   const [form, setForm] = useState<FormState>({ username: "", password: "" });
   const [errors, setErrors] = useState<FormErrors>({});
+  const [touched, setTouched] = useState<Partial<Record<FormField, boolean>>>({});
   const [apiError, setApiError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-    setErrors((prev) => ({ ...prev, [name]: undefined }));
+    const updated = { ...form, [name]: value };
+    setForm(updated);
+    // Re-validate immediately when the user edits a field they've already left
+    if (touched[name as FormField]) {
+      const all = validate(updated);
+      setErrors((prev) => ({ ...prev, [name]: all[name as keyof FormErrors] }));
+    }
     setApiError(null);
+  }
+
+  function handleBlur(e: React.FocusEvent<HTMLInputElement>) {
+    const { name } = e.target;
+    setTouched((prev) => ({ ...prev, [name]: true }));
+    const all = validate(form);
+    setErrors((prev) => ({ ...prev, [name]: all[name as keyof FormErrors] }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    // Mark all fields as touched so every error becomes visible
+    setTouched({ username: true, password: true });
 
     const validationErrors = validate(form);
     if (Object.keys(validationErrors).length > 0) {
@@ -91,11 +111,13 @@ export default function LoginForm() {
               placeholder="Your username"
               value={form.username}
               onChange={handleChange}
-              className={errors.username ? "input-error" : ""}
+              onBlur={handleBlur}
+              className={touched.username && errors.username ? "input-error" : ""}
               disabled={loading}
+              aria-describedby={touched.username && errors.username ? "username-error" : undefined}
             />
-            {errors.username && (
-              <span className="field-error">{errors.username}</span>
+            {touched.username && errors.username && (
+              <span id="username-error" className="field-error" role="alert">{errors.username}</span>
             )}
           </div>
 
@@ -110,11 +132,13 @@ export default function LoginForm() {
               placeholder="Your password"
               value={form.password}
               onChange={handleChange}
-              className={errors.password ? "input-error" : ""}
+              onBlur={handleBlur}
+              className={touched.password && errors.password ? "input-error" : ""}
               disabled={loading}
+              aria-describedby={touched.password && errors.password ? "password-error" : undefined}
             />
-            {errors.password && (
-              <span className="field-error">{errors.password}</span>
+            {touched.password && errors.password && (
+              <span id="password-error" className="field-error" role="alert">{errors.password}</span>
             )}
           </div>
 
