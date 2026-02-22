@@ -16,75 +16,97 @@ Qlanka-pro/
 
 ## Branching Strategy
 
-This project follows a **GitFlow-inspired** branching model to keep the codebase stable, organised, and sprint-ready.
+This project follows a **Jira-friendly GitFlow** branching model, linking every branch directly to a Jira ticket for full traceability across tickets, branches, PRs, commits, and releases.
 
-### Branch Overview
+---
+
+### 🌳 Main Branches
 
 | Branch | Purpose |
 |---|---|
-| `main` | Always stable and production/demo-ready. Only receives merges from `develop` at the end of each sprint. |
-| `develop` | Integration branch. All feature branches merge here first. Represents the latest completed work. |
-| `feature/<area>-<description>` | One branch per user story or subtask. Created from `develop`, merged back via Pull Request. |
-| `hotfix/<bug-name>` | Urgent fixes applied directly on top of `main`. After fixing, merged into **both** `main` and `develop`. |
+| `main` | Always production-ready. Only receives code via Pull Requests. Each merge represents a release or stable version. |
+| `develop` | Integration branch for the upcoming release. All features and fixes merge here first. This is where QA/testing happens. |
 
 ---
 
-### Branch Naming Conventions
+### 🌿 Working Branches (Linked to Jira Tickets)
 
-| Type | Pattern | Example |
-|---|---|---|
-| Feature | `feature/<area>-<short-description>` | `feature/auth-login`, `feature/centers-api`, `feature/booking-ui` |
-| Hotfix | `hotfix/<bug-name>` | `hotfix/login-nullref`, `hotfix/token-overflow` |
-| Sprint tag | `sprint-X-demo` | `sprint-1-demo`, `sprint-2-demo` |
-| Final release | `v1.0-final` | `v1.0-final` |
+Create one branch per Jira issue using the formats below.
+
+#### ✨ Feature Branches — new features
+
+```
+feature/JIRA-123-user-login
+```
+
+#### 🐛 Bugfix Branches — non-urgent bugs
+
+```
+bugfix/JIRA-456-fix-null-pointer
+```
+
+#### 🚑 Hotfix Branches — urgent production fixes (branch from `main`)
+
+```
+hotfix/JIRA-789-crash-on-startup
+```
 
 ---
 
-### Step-by-Step Developer Workflow
+### 🔗 How This Connects to Jira
 
-#### 1. Start a new feature
+Given a Jira ticket such as **SCRUM-37 – Design token booking API**, the corresponding branch is:
 
-Always branch off `develop`:
+```
+feature/SCRUM-37-token-booking-api
+```
+
+**Benefits:**
+
+- Jira automatically links commits and PRs to the ticket
+- Progress is visible per issue
+- Clean traceability: **Ticket → Branch → PR → Commit → Release**
+
+---
+
+### 🔁 Typical Workflow
+
+#### 1. Start from `develop` and create your branch
 
 ```bash
 git checkout develop
 git pull origin develop
-git checkout -b feature/auth-login
+git checkout -b feature/SCRUM-37-token-booking-api
 ```
 
-#### 2. Work and commit
+#### 2. Commit with the Jira issue key in the message
 
 ```bash
 git add .
-git commit -m "feat(auth): implement login endpoint"
-git push origin feature/auth-login
+git commit -m "SCRUM-37: Implement token booking API"
+git push origin feature/SCRUM-37-token-booking-api
 ```
 
-#### 3. Open a Pull Request
+#### 3. Open a Pull Request → `develop`
 
-- Go to GitHub → **Pull Requests** → **New Pull Request**
-- **Base:** `develop` | **Compare:** `feature/auth-login`
-- Add a description, link the related issue, and request a reviewer
-- CI checks must pass before merging
+- **Base:** `develop` | **Compare:** `feature/SCRUM-37-token-booking-api`
+- Include the Jira issue key in the PR title (e.g. `SCRUM-37: Add token booking endpoint`)
+- Request a reviewer — CI checks must pass before merging
 
-#### 4. Merge into develop
-
-Once approved and CI passes, merge via GitHub UI (or locally):
+#### 4. After review + tests → merge into `develop`
 
 ```bash
 git checkout develop
 git pull origin develop
-git merge --no-ff feature/auth-login
+git merge --no-ff feature/SCRUM-37-token-booking-api
 git push origin develop
 
-# Clean up the feature branch
-git branch -d feature/auth-login
-git push origin --delete feature/auth-login
+# Clean up
+git branch -d feature/SCRUM-37-token-booking-api
+git push origin --delete feature/SCRUM-37-token-booking-api
 ```
 
-#### 5. Sprint release — merge develop → main and tag
-
-At the end of each sprint:
+#### 5. When the release is ready — merge `develop` → `main`
 
 ```bash
 git checkout main
@@ -92,58 +114,58 @@ git pull origin main
 git merge --no-ff develop
 git push origin main
 
-# Tag the sprint release
+# Tag the release
 git tag -a sprint-1-demo -m "Sprint 1 demo release"
 git push origin sprint-1-demo
 ```
 
-Repeat for subsequent sprints: `sprint-2-demo`, `sprint-3-demo`, `sprint-4-demo`.
-
-#### 6. Final release
-
-```bash
-git checkout main
-git tag -a v1.0-final -m "Version 1.0 final release"
-git push origin v1.0-final
-```
-
 ---
 
-### Hotfix Workflow
-
-For urgent production bugs:
+### 🚨 Hotfix Flow (If Production Breaks)
 
 ```bash
 # Branch from main
 git checkout main
 git pull origin main
-git checkout -b hotfix/login-nullref
+git checkout -b hotfix/SCRUM-99-fix-payment-crash
 
 # Fix, commit, push
 git add .
-git commit -m "fix(auth): handle null user reference on login"
-git push origin hotfix/login-nullref
+git commit -m "SCRUM-99: Fix payment crash on checkout"
+git push origin hotfix/SCRUM-99-fix-payment-crash
 
-# Merge into main
+# PR → main, then merge into main
 git checkout main
-git merge --no-ff hotfix/login-nullref
+git merge --no-ff hotfix/SCRUM-99-fix-payment-crash
 git push origin main
 
-# Also merge into develop to keep it in sync
+# Also merge back into develop to keep it in sync
 git checkout develop
-git merge --no-ff hotfix/login-nullref
+git merge --no-ff hotfix/SCRUM-99-fix-payment-crash
 git push origin develop
 
 # Clean up
-git branch -d hotfix/login-nullref
-git push origin --delete hotfix/login-nullref
+git branch -d hotfix/SCRUM-99-fix-payment-crash
+git push origin --delete hotfix/SCRUM-99-fix-payment-crash
 ```
 
 ---
 
-### Protected Branches
+### 📛 Naming Rules (Important for Jira)
 
-Both `main` and `develop` are **protected branches**. Configure the following in **GitHub → Settings → Branches → Branch protection rules** for each:
+Always include the **Jira Issue Key** in:
+
+| Where | Required | Example |
+|---|---|---|
+| Branch name | ✅ | `feature/SCRUM-37-token-booking-api` |
+| Commit message | ✅ | `SCRUM-37: Implement token booking API` |
+| PR title | ✅ | `SCRUM-37: Add token booking endpoint` |
+
+---
+
+### 🔒 Protected Branches
+
+Both `main` and `develop` are **protected branches**. Configure the following in **GitHub → Settings → Branches → Branch protection rules**:
 
 - ✅ Require a pull request before merging
 - ✅ Require at least 1 approving review
