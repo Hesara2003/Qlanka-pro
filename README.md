@@ -20,4 +20,6 @@ Project documentation is located in the [`docs/`](docs/) folder.
 
 | Document | Description |
 |---|---|
+| [Product Overview](docs/product-overview.md) | Full product description, requirements, data model, API contracts, sprint roadmap |
 | [Branching Strategy](docs/branching-strategy.md) | Jira-friendly GitFlow branching model, naming conventions, and workflows |
+| [Sprint 1](docs/sprints/sprint-1/README.md) | Sprint plan, daily standups, review, and retrospective for Sprint 1 |
