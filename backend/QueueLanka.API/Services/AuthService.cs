@@ -14,13 +14,15 @@ public class AuthService : IAuthService
 {
     private static readonly HashSet<string> ValidRoles = ["citizen", "officer", "admin"];
 
-    private readonly IUserRepository _users;
-    private readonly IConfiguration _config;
+    private readonly IUserRepository              _users;
+    private readonly IEmailVerificationService    _emailVerification;
+    private readonly IConfiguration               _config;
 
-    public AuthService(IUserRepository users, IConfiguration config)
+    public AuthService(IUserRepository users, IEmailVerificationService emailVerification, IConfiguration config)
     {
-        _users = users;
-        _config = config;
+        _users             = users;
+        _emailVerification = emailVerification;
+        _config            = config;
     }
 
     // ── Register ───────────────────────────────────────────────
@@ -55,6 +57,9 @@ public class AuthService : IAuthService
 
         var userId = await _users.CreateAsync(user);
 
+        // Send email verification link (fire-and-forget style; SMTP errors are swallowed)
+        await _emailVerification.SendVerificationAsync(userId, user.Email, user.Username);
+
         return new RegisterResponseDto
         {
             UserId   = userId,
@@ -71,6 +76,9 @@ public class AuthService : IAuthService
         // Always use the same generic message — don't reveal which field failed
         if (user is null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             throw new InvalidCredentialsException();
+
+        if (!user.IsEmailVerified)
+            throw new EmailNotVerifiedException();
 
         if (!user.IsActive)
             throw new AccountDisabledException();
