@@ -145,6 +145,10 @@ export default function LoginForm() {
           <button type="submit" className="btn-primary" disabled={loading}>
             {loading ? "Signing in…" : "Sign in"}
           </button>
+
+          <p className="forgot-password-link">
+            <Link to="/forgot-password">Forgot your password?</Link>
+          </p>
         </form>
 
         <p className="auth-footer">
