@@ -2,6 +2,12 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { registerUser } from "../../api/authApi";
 import type { RegisterRequest } from "../../types/auth";
+import {
+  validateEmail,
+  validateUsername,
+  validatePasswordStrict,
+} from "../../utils/validation";
+import PasswordStrengthMeter from "./PasswordStrengthMeter";
 import "./AuthForm.css";
 
 type Role = "citizen" | "officer" | "admin";
@@ -15,6 +21,8 @@ interface FormState {
   centerId: string;
 }
 
+type FormField = keyof FormState;
+
 interface FormErrors {
   username?: string;
   email?: string;
@@ -23,30 +31,17 @@ interface FormErrors {
   centerId?: string;
 }
 
-const PASSWORD_REGEX =
-  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-
 function validate(values: FormState): FormErrors {
   const errors: FormErrors = {};
 
-  if (!values.username.trim()) {
-    errors.username = "Username is required.";
-  } else if (values.username.length < 3) {
-    errors.username = "Username must be at least 3 characters.";
-  }
+  const usernameErr = validateUsername(values.username);
+  if (usernameErr) errors.username = usernameErr;
 
-  if (!values.email.trim()) {
-    errors.email = "Email is required.";
-  } else if (!/\S+@\S+\.\S+/.test(values.email)) {
-    errors.email = "Enter a valid email address.";
-  }
+  const emailErr = validateEmail(values.email);
+  if (emailErr) errors.email = emailErr;
 
-  if (!values.password) {
-    errors.password = "Password is required.";
-  } else if (!PASSWORD_REGEX.test(values.password)) {
-    errors.password =
-      "Min 8 chars — must include uppercase, lowercase, digit and special character.";
-  }
+  const passwordErr = validatePasswordStrict(values.password);
+  if (passwordErr) errors.password = passwordErr;
 
   if (!values.confirmPassword) {
     errors.confirmPassword = "Please confirm your password.";
@@ -78,6 +73,7 @@ export default function RegisterForm() {
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
+  const [touched, setTouched] = useState<Partial<Record<FormField, boolean>>>({});
   const [apiError, setApiError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -86,14 +82,34 @@ export default function RegisterForm() {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-    // Clear field-level error on change
-    setErrors((prev) => ({ ...prev, [name]: undefined }));
+    const updated = { ...form, [name]: value };
+    setForm(updated);
+    // Re-validate the changed field immediately if already touched
+    if (touched[name as FormField]) {
+      const all = validate(updated);
+      setErrors((prev) => ({ ...prev, [name]: all[name as keyof FormErrors] }));
+    }
     setApiError(null);
+  }
+
+  function handleBlur(
+    e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>
+  ) {
+    const { name } = e.target;
+    setTouched((prev) => ({ ...prev, [name]: true }));
+    const all = validate(form);
+    setErrors((prev) => ({ ...prev, [name]: all[name as keyof FormErrors] }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    // Mark every field as touched so all errors become visible
+    const allTouched: Partial<Record<FormField, boolean>> = {
+      username: true, email: true, password: true,
+      confirmPassword: true, role: true, centerId: true,
+    };
+    setTouched(allTouched);
 
     const validationErrors = validate(form);
     if (Object.keys(validationErrors).length > 0) {
@@ -146,11 +162,13 @@ export default function RegisterForm() {
               placeholder="e.g. john_doe"
               value={form.username}
               onChange={handleChange}
-              className={errors.username ? "input-error" : ""}
+              onBlur={handleBlur}
+              className={touched.username && errors.username ? "input-error" : ""}
               disabled={loading}
+              aria-describedby={touched.username && errors.username ? "username-error" : undefined}
             />
-            {errors.username && (
-              <span className="field-error">{errors.username}</span>
+            {touched.username && errors.username && (
+              <span id="username-error" className="field-error" role="alert">{errors.username}</span>
             )}
           </div>
 
@@ -165,11 +183,13 @@ export default function RegisterForm() {
               placeholder="you@example.com"
               value={form.email}
               onChange={handleChange}
-              className={errors.email ? "input-error" : ""}
+              onBlur={handleBlur}
+              className={touched.email && errors.email ? "input-error" : ""}
               disabled={loading}
+              aria-describedby={touched.email && errors.email ? "email-error" : undefined}
             />
-            {errors.email && (
-              <span className="field-error">{errors.email}</span>
+            {touched.email && errors.email && (
+              <span id="email-error" className="field-error" role="alert">{errors.email}</span>
             )}
           </div>
 
@@ -184,12 +204,16 @@ export default function RegisterForm() {
               placeholder="Min 8 chars, upper, lower, digit, symbol"
               value={form.password}
               onChange={handleChange}
-              className={errors.password ? "input-error" : ""}
+              onBlur={handleBlur}
+              className={touched.password && errors.password ? "input-error" : ""}
               disabled={loading}
+              aria-describedby={touched.password && errors.password ? "password-error" : undefined}
             />
-            {errors.password && (
-              <span className="field-error">{errors.password}</span>
+            {touched.password && errors.password && (
+              <span id="password-error" className="field-error" role="alert">{errors.password}</span>
             )}
+            {/* Live strength meter — shown as soon as user starts typing */}
+            <PasswordStrengthMeter password={form.password} />
           </div>
 
           {/* Confirm Password */}
@@ -203,11 +227,13 @@ export default function RegisterForm() {
               placeholder="Repeat your password"
               value={form.confirmPassword}
               onChange={handleChange}
-              className={errors.confirmPassword ? "input-error" : ""}
+              onBlur={handleBlur}
+              className={touched.confirmPassword && errors.confirmPassword ? "input-error" : ""}
               disabled={loading}
+              aria-describedby={touched.confirmPassword && errors.confirmPassword ? "confirmPassword-error" : undefined}
             />
-            {errors.confirmPassword && (
-              <span className="field-error">{errors.confirmPassword}</span>
+            {touched.confirmPassword && errors.confirmPassword && (
+              <span id="confirmPassword-error" className="field-error" role="alert">{errors.confirmPassword}</span>
             )}
           </div>
 
@@ -219,6 +245,7 @@ export default function RegisterForm() {
               name="role"
               value={form.role}
               onChange={handleChange}
+              onBlur={handleBlur}
               disabled={loading}
             >
               <option value="citizen">Citizen</option>
@@ -241,11 +268,13 @@ export default function RegisterForm() {
                 placeholder="Your service centre ID"
                 value={form.centerId}
                 onChange={handleChange}
-                className={errors.centerId ? "input-error" : ""}
+                onBlur={handleBlur}
+                className={touched.centerId && errors.centerId ? "input-error" : ""}
                 disabled={loading}
+                aria-describedby={touched.centerId && errors.centerId ? "centerId-error" : undefined}
               />
-              {errors.centerId && (
-                <span className="field-error">{errors.centerId}</span>
+              {touched.centerId && errors.centerId && (
+                <span id="centerId-error" className="field-error" role="alert">{errors.centerId}</span>
               )}
             </div>
           )}
