@@ -5,7 +5,7 @@ USE queuelanka;
 
 -- ── Add email verification status to users ──────────────────────
 ALTER TABLE users
-    ADD COLUMN IF NOT EXISTS is_email_verified BOOLEAN NOT NULL DEFAULT FALSE
+    ADD COLUMN is_email_verified BOOLEAN NOT NULL DEFAULT FALSE
         AFTER is_active;
 
 -- ── Email verification tokens ────────────────────────────────────

@@ -7,6 +7,7 @@ import type {
   RegisterResponse,
   ApiError,
   PasswordResetResponse,
+  VerifyEmailResponse,
 } from "../types/auth";
 
 function extractErrorMessage(error: unknown): string {
@@ -68,6 +69,19 @@ export async function resetPassword(
     const { data } = await axiosInstance.post<PasswordResetResponse>(
       "/api/auth/reset-password",
       { token, newPassword, confirmPassword }
+    );
+    return data;
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }
+}
+
+export async function verifyEmail(
+  token: string
+): Promise<VerifyEmailResponse> {
+  try {
+    const { data } = await axiosInstance.get<VerifyEmailResponse>(
+      `/api/auth/verify-email?token=${encodeURIComponent(token)}`
     );
     return data;
   } catch (error) {

@@ -43,11 +43,11 @@ public class EmailVerificationService : IEmailVerificationService
 
         await _tokenRepo.CreateAsync(record);
 
-        // Build the verification URL pointing at the backend endpoint
-        var baseUrl = _config["App:BackendBaseUrl"]?.TrimEnd('/')
-                      ?? "http://localhost:5000";
+        // Build the verification URL pointing at the frontend page
+        var baseUrl = _config["App:FrontendBaseUrl"]?.TrimEnd('/')
+                      ?? "http://localhost:5173";
 
-        var verificationUrl = $"{baseUrl}/api/auth/verify-email?token={Uri.EscapeDataString(token)}";
+        var verificationUrl = $"{baseUrl}/verify-email?token={Uri.EscapeDataString(token)}";
 
         await _email.SendVerificationEmailAsync(email, username, verificationUrl);
     }
