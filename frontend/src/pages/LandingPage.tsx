@@ -1,6 +1,9 @@
 import Navbar from "../components/landing/Navbar";
 import HeroSection from "../components/landing/HeroSection";
 import FeatureShowcase from "../components/landing/FeatureShowcase";
+import BentoGrid from "../components/landing/BentoGrid";
+import IntegrationsSection from "../components/landing/IntegrationsSection";
+import TestimonialsSection from "../components/landing/TestimonialsSection";
 
 export default function LandingPage() {
     return (
@@ -11,6 +14,9 @@ export default function LandingPage() {
             <main className="pt-20">
                 <HeroSection />
                 <FeatureShowcase />
+                <BentoGrid />
+                <IntegrationsSection />
+                <TestimonialsSection />
             </main>
 
         </div>
