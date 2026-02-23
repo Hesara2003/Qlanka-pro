@@ -1,5 +1,6 @@
 import Navbar from "../components/landing/Navbar";
 import HeroSection from "../components/landing/HeroSection";
+import FeatureShowcase from "../components/landing/FeatureShowcase";
 
 export default function LandingPage() {
     return (
@@ -9,6 +10,7 @@ export default function LandingPage() {
             {/* Main Content Area */}
             <main className="pt-20">
                 <HeroSection />
+                <FeatureShowcase />
             </main>
 
         </div>
