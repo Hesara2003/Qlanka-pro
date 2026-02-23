@@ -1,5 +1,4 @@
 import { getPasswordStrength, PASSWORD_RULES } from "../../utils/validation";
-import "./PasswordStrengthMeter.css";
 
 interface Props {
   password: string;
@@ -18,22 +17,22 @@ export default function PasswordStrengthMeter({
   const { score, label, color } = getPasswordStrength(password);
 
   return (
-    <div className="psm-wrapper" aria-live="polite" aria-label={`Password strength: ${label}`}>
+    <div className="mt-2" aria-live="polite" aria-label={`Password strength: ${label}`}>
       {/* Segmented bar */}
-      <div className="psm-bars" role="presentation">
+      <div className="flex gap-1 h-[5px] mb-1.5" role="presentation">
         {Array.from({ length: TOTAL_BARS }, (_, i) => (
           <div
             key={i}
-            className="psm-bar"
-            style={{ background: i < score ? color : "#e5e7eb" }}
+            className="flex-1 rounded-full transition-colors duration-200 ease-in-out"
+            style={{ backgroundColor: i < score ? color : "#e5e7eb" }}
           />
         ))}
       </div>
 
       {/* Score label */}
       {label && (
-        <div className="psm-score-row">
-          <span className="psm-label" style={{ color }}>
+        <div className="flex justify-end mb-2">
+          <span className="text-xs font-semibold transition-colors duration-200 ease-in-out" style={{ color }}>
             {label}
           </span>
         </div>
@@ -41,12 +40,12 @@ export default function PasswordStrengthMeter({
 
       {/* Per-rule checklist */}
       {showRules && (
-        <ul className="psm-rules">
+        <ul className="list-none p-0 m-0 flex flex-col gap-1">
           {PASSWORD_RULES.map((rule) => {
             const passed = rule.test(password);
             return (
-              <li key={rule.id} className={passed ? "rule-ok" : "rule-fail"}>
-                <span className="rule-icon">{passed ? "✓" : "✗"}</span>
+              <li key={rule.id} className={`text-[12px] flex items-center gap-1.5 ${passed ? "text-green-600" : "text-gray-400"}`}>
+                <span className="text-[11px] w-3 text-center">{passed ? "✓" : "✗"}</span>
                 {rule.label}
               </li>
             );
