@@ -57,8 +57,8 @@ public class AuthService : IAuthService
 
         var userId = await _users.CreateAsync(user);
 
-        // Send email verification link (fire-and-forget style; SMTP errors are swallowed)
-        await _emailVerification.SendVerificationAsync(userId, user.Email, user.Username);
+        // Email verification disabled — users are auto-verified on registration
+        // await _emailVerification.SendVerificationAsync(userId, user.Email, user.Username);
 
         return new RegisterResponseDto
         {
@@ -77,8 +77,9 @@ public class AuthService : IAuthService
         if (user is null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             throw new InvalidCredentialsException();
 
-        if (!user.IsEmailVerified)
-            throw new EmailNotVerifiedException();
+        // Email verification disabled
+        // if (!user.IsEmailVerified)
+        //     throw new EmailNotVerifiedException();
 
         if (!user.IsActive)
             throw new AccountDisabledException();

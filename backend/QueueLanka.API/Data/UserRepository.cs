@@ -51,7 +51,7 @@ public class UserRepository : IUserRepository
     {
         const string sql = @"
             INSERT INTO users (username, email, password_hash, role, center_id, is_active, is_email_verified, created_at)
-            VALUES (@Username, @Email, @PasswordHash, @Role, @CenterId, TRUE, FALSE, UTC_TIMESTAMP());
+            VALUES (@Username, @Email, @PasswordHash, @Role, @CenterId, TRUE, TRUE, UTC_TIMESTAMP());
             SELECT LAST_INSERT_ID();";
 
         await using var conn = new MySqlConnection(_connectionString);

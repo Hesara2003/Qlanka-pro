@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../../api/authApi";
 import { useAuth } from "../../context/AuthContext";
@@ -28,6 +28,15 @@ function validate(values: FormState): FormErrors {
 export default function LoginForm() {
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % 3);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
 
   const [form, setForm] = useState<FormState>({ username: "", password: "" });
   const [errors, setErrors] = useState<FormErrors>({});
@@ -233,40 +242,76 @@ export default function LoginForm() {
 
           {/* Foreground Content */}
           <div className="relative z-10 w-full max-w-[400px]">
-            {/* Abstract Dashboard Graphic */}
-            <div className="relative w-full aspect-[4/3] bg-white rounded-xl shadow-2xl mb-12 flex flex-col items-start p-4 border border-white/30 overflow-hidden text-gray-300">
-              <div className="flex items-center gap-1.5 mb-4">
-                <div className="w-2.5 h-2.5 rounded-full bg-red-400"></div>
-                <div className="w-2.5 h-2.5 rounded-full bg-yellow-400"></div>
-                <div className="w-2.5 h-2.5 rounded-full bg-green-400"></div>
-              </div>
-              <div className="w-1/2 h-4 bg-gray-100 rounded-full mb-6"></div>
-              <div className="w-full flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 rounded-full bg-gray-200"></div>
-                <div className="flex-1 flex flex-col gap-2">
-                  <div className="w-full h-3 bg-gray-100 rounded-full"></div>
-                  <div className="w-2/3 h-3 bg-gray-100 rounded-full"></div>
-                </div>
-              </div>
-              <div className="w-full flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 rounded-full bg-gray-200"></div>
-                <div className="flex-1 flex flex-col gap-2">
-                  <div className="w-full h-3 bg-gray-100 rounded-full"></div>
-                  <div className="w-2/3 h-3 bg-gray-100 rounded-full"></div>
-                </div>
-              </div>
-            </div>
+            {/* Slider Logic Handled in Component State */}
 
-            <h2 className="text-[22px] font-bold mb-3 tracking-wide text-white">Connect with every application.</h2>
-            <p className="text-[13px] text-blue-100/90 leading-relaxed font-light mb-8">
-              Everything you need in an easily customizable dashboard.
-            </p>
+            {/* Slide Content */}
+            <div className="transition-opacity duration-500 ease-in-out">
+              {/* Abstract Dashboard Graphic (Changes based on slide) */}
+              <div className="relative w-full aspect-[4/3] bg-white rounded-xl shadow-2xl mb-12 flex flex-col items-start p-4 border border-white/30 overflow-hidden text-gray-300">
+                {currentSlide === 0 && (
+                  <>
+                    <div className="flex items-center gap-1.5 mb-4">
+                      <div className="w-2.5 h-2.5 rounded-full bg-red-400"></div>
+                      <div className="w-2.5 h-2.5 rounded-full bg-yellow-400"></div>
+                      <div className="w-2.5 h-2.5 rounded-full bg-green-400"></div>
+                    </div>
+                    <div className="w-1/2 h-4 bg-blue-100 rounded-full mb-6"></div>
+                    <div className="w-full flex items-center gap-3 mb-4">
+                      <div className="w-8 h-8 rounded-full bg-blue-50"></div>
+                      <div className="flex-1 flex flex-col gap-2">
+                        <div className="w-full h-3 bg-gray-100 rounded-full"></div>
+                        <div className="w-2/3 h-3 bg-gray-100 rounded-full"></div>
+                      </div>
+                    </div>
+                    <div className="w-full flex items-center gap-3 mb-4 opacity-50">
+                      <div className="w-8 h-8 rounded-full bg-gray-100"></div>
+                      <div className="flex-1 flex flex-col gap-2">
+                        <div className="w-full h-3 bg-gray-50 rounded-full"></div>
+                        <div className="w-2/3 h-3 bg-gray-50 rounded-full"></div>
+                      </div>
+                    </div>
+                  </>
+                )}
+                {currentSlide === 1 && (
+                  <div className="w-full h-full flex items-center justify-center">
+                    {/* Mock Graph */}
+                    <svg viewBox="0 0 100 50" className="w-full h-full stroke-blue-500 fill-none" preserveAspectRatio="none">
+                      <path d="M0,50 Q20,30 40,40 T80,10 T100,5" strokeWidth="2" />
+                      <path d="M0,50 L0,50 Q20,30 40,40 T80,10 T100,5 L100,50 Z" className="fill-blue-50 stroke-none" />
+                    </svg>
+                  </div>
+                )}
+                {currentSlide === 2 && (
+                  <div className="w-full h-full flex flex-col items-center justify-center gap-4">
+                    {/* Mock ID Card */}
+                    <div className="w-32 h-20 bg-gray-100 rounded-lg flex items-center px-4 gap-3 shadow-sm border border-gray-200">
+                      <div className="w-8 h-8 rounded-full bg-gray-300"></div>
+                      <div className="flex flex-col gap-1.5 flex-1">
+                        <div className="w-full h-2 bg-gray-300 rounded-full"></div>
+                        <div className="w-1/2 h-2 bg-gray-200 rounded-full"></div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <h2 className="text-[22px] font-bold mb-3 tracking-wide text-white min-h-[60px] flex items-center justify-center">
+                {currentSlide === 0 ? "Skip the queues forever." :
+                  currentSlide === 1 ? "Real-time service tracking." :
+                    "Seamless digital identity."}
+              </h2>
+              <p className="text-[13px] text-blue-100/90 leading-relaxed font-light mb-8 h-10">
+                {currentSlide === 0 ? "Book appointments online and never wait in a government office line again." :
+                  currentSlide === 1 ? "Monitor the status of your applications and requests from an easy-to-use interface." :
+                    "Access all your citizenship services and history securely from one unified account."}
+              </p>
+            </div>
 
             {/* Pagination Dots */}
             <div className="flex items-center justify-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-white"></div>
-              <div className="w-1.5 h-1.5 rounded-full bg-white/30"></div>
-              <div className="w-1.5 h-1.5 rounded-full bg-white/30"></div>
+              <button onClick={() => setCurrentSlide(0)} className={`w-1.5 h-1.5 rounded-full transition-all ${currentSlide === 0 ? 'bg-white w-4' : 'bg-white/30'}`}></button>
+              <button onClick={() => setCurrentSlide(1)} className={`w-1.5 h-1.5 rounded-full transition-all ${currentSlide === 1 ? 'bg-white w-4' : 'bg-white/30'}`}></button>
+              <button onClick={() => setCurrentSlide(2)} className={`w-1.5 h-1.5 rounded-full transition-all ${currentSlide === 2 ? 'bg-white w-4' : 'bg-white/30'}`}></button>
             </div>
           </div>
         </div>

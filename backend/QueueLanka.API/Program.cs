@@ -111,15 +111,17 @@ var app = builder.Build();
 
 // ── Middleware pipeline ────────────────────────────────────────
 app.UseMiddleware<ExceptionMiddleware>();
-app.UseMiddleware<JwtMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+else
+{
+    app.UseHttpsRedirection();
+}
 
-app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();

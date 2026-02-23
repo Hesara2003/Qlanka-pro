@@ -149,12 +149,12 @@ export default function RegisterForm() {
       style={{ backgroundImage: "url('https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?q=80&w=2000&auto=format&fit=crop')" }}
     >
       <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" />
-      <div className="relative z-10 flex w-full max-w-[1000px] bg-white rounded-2xl shadow-2xl overflow-hidden h-full max-h-[850px]">
-        {/* Left Side: Form */}
-        <div className="w-full lg:w-[50%] p-6 sm:p-10 lg:pl-12 lg:pr-10 flex flex-col justify-start overflow-y-auto custom-scrollbar">
+      <div className="relative z-10 flex w-full max-w-[750px] bg-white rounded-2xl shadow-2xl overflow-hidden h-fit max-h-[100vh]">
+        {/* Form Container */}
+        <div className="w-full px-8 py-6 sm:px-12 flex flex-col justify-start">
 
           {/* Logo */}
-          <div className="flex items-center gap-2 mb-8 mt-4">
+          <div className="flex items-center gap-2 mb-4 mt-2">
             <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-sm">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -165,14 +165,14 @@ export default function RegisterForm() {
             <span className="text-xl font-bold text-[#142646] tracking-tight">QueueLanka</span>
           </div>
 
-          <h1 className="text-[28px] font-bold text-[#142646] mb-2">Create an account</h1>
-          <p className="text-gray-500 text-[14px] mb-8">Join the platform! Select method to sign up:</p>
+          <h1 className="text-[24px] font-bold text-[#142646] mb-1">Create an account</h1>
+          <p className="text-gray-500 text-[13px] mb-4">Join the platform! Select method to sign up:</p>
 
-          {apiError && <div className="px-4 py-3 mb-6 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">{apiError}</div>}
-          {success && <div className="px-4 py-3 mb-6 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">{success}</div>}
+          {apiError && <div className="px-4 py-2 mb-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">{apiError}</div>}
+          {success && <div className="px-4 py-2 mb-4 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">{success}</div>}
 
           {/* Social Auth Buttons */}
-          <div className="flex gap-4 mb-8">
+          <div className="flex gap-4 mb-5">
             <button type="button" className="flex-1 py-2.5 px-4 bg-white border border-gray-200 rounded-lg text-[13px] font-semibold text-gray-700 flex items-center justify-center gap-2.5 hover:bg-gray-50 transition-colors shadow-sm">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.75h3.57c2.08-1.92 3.28-4.74 3.28-8.07z" fill="#4285F4" />
@@ -190,7 +190,7 @@ export default function RegisterForm() {
             </button>
           </div>
 
-          <div className="relative flex items-center justify-center mb-8">
+          <div className="relative flex items-center justify-center mb-4">
             <span className="absolute inset-x-0 h-px bg-gray-200"></span>
             <span className="relative bg-white px-3 text-[12px] text-gray-400 font-medium tracking-wide">or register with email</span>
           </div>
@@ -198,7 +198,7 @@ export default function RegisterForm() {
           <form onSubmit={handleSubmit} noValidate>
 
             {/* Username */}
-            <div className="mb-4">
+            <div className="mb-3">
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -214,7 +214,7 @@ export default function RegisterForm() {
                   value={form.username}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className={`w-full pl-10 pr-4 py-3.5 bg-[#F9FAFB] border ${touched.username && errors.username ? "border-red-400" : "border-gray-200"} rounded-lg text-sm outline-none transition-all duration-200 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600`}
+                  className={`w-full pl-10 pr-4 py-2 bg-[#F9FAFB] border ${touched.username && errors.username ? "border-red-400" : "border-gray-200"} rounded-lg text-sm outline-none transition-all duration-200 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600`}
                   disabled={loading}
                 />
               </div>
@@ -224,7 +224,7 @@ export default function RegisterForm() {
             </div>
 
             {/* Email */}
-            <div className="mb-4">
+            <div className="mb-3">
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -240,17 +240,17 @@ export default function RegisterForm() {
                   value={form.email}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className={`w-full pl-10 pr-4 py-3.5 bg-[#F9FAFB] border ${touched.email && errors.email ? "border-red-400" : "border-gray-200"} rounded-lg text-sm outline-none transition-all duration-200 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600`}
+                  className={`w-full pl-10 pr-4 py-2 bg-[#F9FAFB] border ${touched.email && errors.email ? "border-red-400" : "border-gray-200"} rounded-lg text-sm outline-none transition-all duration-200 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600`}
                   disabled={loading}
                 />
               </div>
               {touched.email && errors.email && (
-                <span className="block text-xs text-red-500 mt-1.5" role="alert">{errors.email}</span>
+                <span className="block text-xs text-red-500 mt-1" role="alert">{errors.email}</span>
               )}
             </div>
 
             {/* Password */}
-            <div className="mb-4">
+            <div className="mb-3">
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -266,7 +266,7 @@ export default function RegisterForm() {
                   value={form.password}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className={`w-full pl-10 pr-10 py-3.5 bg-[#F9FAFB] border ${touched.password && errors.password ? "border-red-400" : "border-gray-200"} rounded-lg text-sm outline-none transition-all duration-200 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600`}
+                  className={`w-full pl-10 pr-10 py-2 bg-[#F9FAFB] border ${touched.password && errors.password ? "border-red-400" : "border-gray-200"} rounded-lg text-sm outline-none transition-all duration-200 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600`}
                   disabled={loading}
                 />
                 <button
@@ -282,16 +282,16 @@ export default function RegisterForm() {
                 </button>
               </div>
               {touched.password && errors.password && (
-                <span className="block text-xs text-red-500 mt-1.5" role="alert">{errors.password}</span>
+                <span className="block text-xs text-red-500 mt-1" role="alert">{errors.password}</span>
               )}
               {/* Live strength meter */}
-              <div className="mt-2">
+              <div className="mt-1">
                 <PasswordStrengthMeter password={form.password} />
               </div>
             </div>
 
             {/* Confirm Password */}
-            <div className="mb-4">
+            <div className="mb-3">
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -307,7 +307,7 @@ export default function RegisterForm() {
                   value={form.confirmPassword}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className={`w-full pl-10 pr-10 py-3.5 bg-[#F9FAFB] border ${touched.confirmPassword && errors.confirmPassword ? "border-red-400" : "border-gray-200"} rounded-lg text-sm outline-none transition-all duration-200 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600`}
+                  className={`w-full pl-10 pr-10 py-2 bg-[#F9FAFB] border ${touched.confirmPassword && errors.confirmPassword ? "border-red-400" : "border-gray-200"} rounded-lg text-sm outline-none transition-all duration-200 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600`}
                   disabled={loading}
                 />
                 <button
@@ -323,12 +323,12 @@ export default function RegisterForm() {
                 </button>
               </div>
               {touched.confirmPassword && errors.confirmPassword && (
-                <span className="block text-xs text-red-500 mt-1.5" role="alert">{errors.confirmPassword}</span>
+                <span className="block text-xs text-red-500 mt-1" role="alert">{errors.confirmPassword}</span>
               )}
             </div>
 
             {/* Role */}
-            <div className="mb-4">
+            <div className="mb-3">
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -342,7 +342,7 @@ export default function RegisterForm() {
                   onChange={handleChange}
                   onBlur={handleBlur}
                   disabled={loading}
-                  className={`w-full pl-10 pr-4 py-3.5 bg-[#F9FAFB] border border-gray-200 rounded-lg text-sm outline-none transition-all duration-200 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 appearance-none`}
+                  className={`w-full pl-10 pr-4 py-2 bg-[#F9FAFB] border border-gray-200 rounded-lg text-sm outline-none transition-all duration-200 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 appearance-none`}
                 >
                   <option value="citizen">Citizen</option>
                   <option value="officer">Service Centre Officer</option>
@@ -356,7 +356,7 @@ export default function RegisterForm() {
 
             {/* Center ID */}
             {form.role === "officer" && (
-              <div className="mb-4">
+              <div className="mb-3">
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -371,73 +371,24 @@ export default function RegisterForm() {
                     value={form.centerId}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    className={`w-full pl-10 pr-4 py-3.5 bg-[#F9FAFB] border ${touched.centerId && errors.centerId ? "border-red-400" : "border-gray-200"} rounded-lg text-sm outline-none transition-all duration-200 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600`}
+                    className={`w-full pl-10 pr-4 py-2 bg-[#F9FAFB] border ${touched.centerId && errors.centerId ? "border-red-400" : "border-gray-200"} rounded-lg text-sm outline-none transition-all duration-200 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600`}
                     disabled={loading}
                   />
                 </div>
                 {touched.centerId && errors.centerId && (
-                  <span className="block text-xs text-red-500 mt-1.5" role="alert">{errors.centerId}</span>
+                  <span className="block text-xs text-red-500 mt-1" role="alert">{errors.centerId}</span>
                 )}
               </div>
             )}
 
-            <button type="submit" className="w-full py-3.5 bg-[#0C5AFA] text-white rounded-lg text-sm font-semibold mb-6 mt-6 transition-colors hover:bg-blue-700 active:bg-blue-800 disabled:opacity-70 disabled:cursor-not-allowed shadow-md" disabled={loading}>
+            <button type="submit" className="w-full py-2.5 bg-[#0C5AFA] text-white rounded-lg text-sm font-semibold mb-3 mt-3 transition-colors hover:bg-blue-700 active:bg-blue-800 disabled:opacity-70 disabled:cursor-not-allowed shadow-md" disabled={loading}>
               {loading ? "Creating account…" : "Register"}
             </button>
           </form>
 
-          <p className="text-center text-[13px] text-gray-500 m-0 pb-4">
+          <p className="text-center text-[13px] text-gray-500 m-0 pb-2">
             Already have an account? <Link to="/login" className="text-blue-600 font-semibold hover:underline">Log in</Link>
           </p>
-        </div>
-
-        {/* Right Side: Visual Section */}
-        <div className="hidden lg:flex w-[50%] bg-[#0f5cff] relative overflow-hidden flex-col items-center justify-center p-12 text-center text-white">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#0C5AFA] to-[#0A4BD6]" />
-
-          {/* Abstract Rings Background inside blue section */}
-          <div className="absolute w-[600px] h-[600px] border border-white/10 rounded-full" />
-          <div className="absolute w-[450px] h-[450px] border border-white/15 rounded-full" />
-          <div className="absolute w-[300px] h-[300px] border border-white/20 rounded-full bg-white/5" />
-
-          {/* Foreground Content */}
-          <div className="relative z-10 w-full max-w-[400px]">
-            {/* Abstract Dashboard Graphic */}
-            <div className="relative w-full aspect-[4/3] bg-white rounded-xl shadow-2xl mb-12 flex flex-col items-start p-4 border border-white/30 overflow-hidden text-gray-300">
-              <div className="flex items-center gap-1.5 mb-4">
-                <div className="w-2.5 h-2.5 rounded-full bg-red-400"></div>
-                <div className="w-2.5 h-2.5 rounded-full bg-yellow-400"></div>
-                <div className="w-2.5 h-2.5 rounded-full bg-green-400"></div>
-              </div>
-              <div className="w-1/2 h-4 bg-gray-100 rounded-full mb-6"></div>
-              <div className="w-full flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 rounded-full bg-gray-200"></div>
-                <div className="flex-1 flex flex-col gap-2">
-                  <div className="w-full h-3 bg-gray-100 rounded-full"></div>
-                  <div className="w-2/3 h-3 bg-gray-100 rounded-full"></div>
-                </div>
-              </div>
-              <div className="w-full flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 rounded-full bg-gray-200"></div>
-                <div className="flex-1 flex flex-col gap-2">
-                  <div className="w-full h-3 bg-gray-100 rounded-full"></div>
-                  <div className="w-2/3 h-3 bg-gray-100 rounded-full"></div>
-                </div>
-              </div>
-            </div>
-
-            <h2 className="text-[22px] font-bold mb-3 tracking-wide text-white">Connect with every application.</h2>
-            <p className="text-[13px] text-blue-100/90 leading-relaxed font-light mb-8">
-              Everything you need in an easily customizable dashboard.
-            </p>
-
-            {/* Pagination Dots */}
-            <div className="flex items-center justify-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-white"></div>
-              <div className="w-1.5 h-1.5 rounded-full bg-white/30"></div>
-              <div className="w-1.5 h-1.5 rounded-full bg-white/30"></div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
