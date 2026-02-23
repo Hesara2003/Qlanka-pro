@@ -7,12 +7,14 @@ import TestimonialsSection from "../components/landing/TestimonialsSection";
 
 export default function LandingPage() {
     return (
-        <div className="min-h-screen bg-[#fafafa] font-sans text-gray-900 overflow-x-hidden selection:bg-blue-100 selection:text-blue-900">
+        <div className="min-h-screen bg-white font-sans text-gray-900 overflow-x-hidden selection:bg-blue-100 selection:text-blue-900">
+
             <Navbar />
 
+            <HeroSection />
+
             {/* Main Content Area */}
-            <main className="pt-20">
-                <HeroSection />
+            <main>
                 <FeatureShowcase />
                 <BentoGrid />
                 <IntegrationsSection />

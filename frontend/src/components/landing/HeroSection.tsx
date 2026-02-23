@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 export default function HeroSection() {
     return (
-        <section className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32 overflow-hidden flex flex-col items-center justify-center text-center">
+        <section className="relative w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-24 overflow-hidden flex flex-col items-center justify-center text-center">
 
             {/* Background Dot Pattern */}
             <div className="absolute inset-0 bg-dot-pattern [mask-image:radial-gradient(ellipse_at_center,white,transparent_80%)] opacity-60 pointer-events-none" />
@@ -19,12 +19,12 @@ export default function HeroSection() {
                 </div>
 
                 <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-gray-900 leading-[1.1]">
-                    Think, plan, and track <br className="hidden md:block" />
-                    <span className="text-gray-400">all in one place</span>
+                    Issue, manage, and track <br className="hidden md:block" />
+                    <span className="text-gray-400">queues in one place</span>
                 </h1>
 
                 <p className="mt-6 text-lg md:text-xl text-gray-600 font-medium">
-                    Efficiently manage your tasks and boost productivity.
+                    Efficiently manage your service centers and boost customer satisfaction.
                 </p>
 
                 <div className="mt-10">
@@ -43,7 +43,7 @@ export default function HeroSection() {
                     <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-4 h-4 rounded-full bg-red-500 shadow-sm z-20" />
                     <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-1 h-3 bg-gray-400 z-10" />
                     <p className="font-writing text-gray-800 text-lg leading-snug font-medium handwritten-font">
-                        Take notes to keep track of crucial details, and accomplish more tasks with ease.
+                        Issue tokens quickly to keep track of waiting customers, and serve more people with ease.
                     </p>
                 </div>
 
@@ -59,15 +59,15 @@ export default function HeroSection() {
             <div className="absolute top-20 right-[5%] md:right-[8%] xl:right-[15%] hidden md:block w-64 h-56 rotate-[4deg] transition-transform hover:rotate-0 duration-500 z-10">
                 <div className="w-full h-full bg-white rounded-2xl shadow-[0_15px_50px_rgba(0,0,0,0.06)] border border-gray-100 p-5 flex flex-col">
                     <div className="flex justify-between items-center mb-4">
-                        <h3 className="font-bold text-gray-900">Reminders</h3>
-                        <span className="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded-md">Meetings</span>
+                        <h3 className="font-bold text-gray-900">Next in Line</h3>
+                        <span className="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded-md">Token</span>
                     </div>
                     <div className="flex-1 bg-gray-50 rounded-xl p-4 border border-gray-100">
-                        <h4 className="font-semibold text-gray-900 text-sm">Today's Meeting</h4>
-                        <p className="text-xs text-gray-500 mt-1">Call with marketing team</p>
+                        <h4 className="font-semibold text-gray-900 text-sm">Token #A102</h4>
+                        <p className="text-xs text-gray-500 mt-1">Counter 3 - General</p>
                         <div className="mt-4 inline-flex items-center gap-1 bg-blue-50 text-blue-600 text-xs font-semibold px-2.5 py-1 rounded-md">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                            13:00 - 13:45
+                            Est. Wait: 5 mins
                         </div>
                     </div>
                 </div>
@@ -79,14 +79,14 @@ export default function HeroSection() {
 
             {/* Bottom Left: Tasks List */}
             <div className="absolute bottom-[-20px] left-[5%] md:left-[10%] xl:left-[15%] hidden md:block w-72 bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.06)] border border-gray-100 p-5 rotate-[-2deg] transition-transform hover:rotate-0 duration-500 z-10">
-                <h3 className="font-bold text-gray-900 mb-4">Today's tasks</h3>
+                <h3 className="font-bold text-gray-900 mb-4">Active Queues</h3>
                 <div className="space-y-4">
 
                     <div className="flex flex-col gap-2">
                         <div className="flex justify-between items-center">
                             <div className="flex items-center gap-2">
-                                <div className="w-5 h-5 bg-orange-100 text-orange-600 rounded flex items-center justify-center text-[10px] font-bold">8</div>
-                                <span className="text-sm font-semibold text-gray-800">New Ideas for campaign</span>
+                                <div className="w-5 h-5 bg-orange-100 text-orange-600 rounded flex items-center justify-center text-[10px] font-bold">15</div>
+                                <span className="text-sm font-semibold text-gray-800">General Inquiries</span>
                             </div>
                             <div className="flex -space-x-2">
                                 <div className="w-5 h-5 rounded-full bg-gray-200 border border-white"></div>
@@ -94,11 +94,11 @@ export default function HeroSection() {
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
-                            <span className="text-xs text-gray-400 w-10">Sep 10</span>
+                            <span className="text-xs text-gray-400 w-12">Waiting</span>
                             <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                <div className="w-[60%] h-full bg-blue-500 rounded-full"></div>
+                                <div className="w-[80%] h-full bg-orange-500 rounded-full"></div>
                             </div>
-                            <span className="text-[10px] font-bold text-gray-500">60%</span>
+                            <span className="text-[10px] font-bold text-gray-500">80%</span>
                         </div>
                     </div>
 
@@ -106,7 +106,7 @@ export default function HeroSection() {
                         <div className="flex justify-between items-center">
                             <div className="flex items-center gap-2">
                                 <div className="w-5 h-5 bg-green-100 text-green-600 rounded flex items-center justify-center text-[10px] font-bold">3</div>
-                                <span className="text-sm font-semibold text-gray-800">Design PPT #4</span>
+                                <span className="text-sm font-semibold text-gray-800">Premium Service</span>
                             </div>
                             <div className="flex -space-x-2">
                                 <div className="w-5 h-5 rounded-full bg-gray-200 border border-white"></div>
@@ -114,11 +114,11 @@ export default function HeroSection() {
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
-                            <span className="text-xs text-gray-400 w-10">Sep 18</span>
+                            <span className="text-xs text-gray-400 w-12">Waiting</span>
                             <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                <div className="w-full h-full bg-blue-500 rounded-full"></div>
+                                <div className="w-[20%] h-full bg-green-500 rounded-full"></div>
                             </div>
-                            <span className="text-[10px] font-bold text-gray-500">112%</span>
+                            <span className="text-[10px] font-bold text-gray-500">20%</span>
                         </div>
                     </div>
 
