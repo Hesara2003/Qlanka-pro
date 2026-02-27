@@ -16,8 +16,8 @@ public class AppointmentRepository : IAppointmentRepository
     public async Task<Appointment> CreateAsync(Appointment appointment)
     {
         const string sql = @"
-            INSERT INTO appointments (center_id, user_id, token_number, appointment_date, appointment_time, status)
-            VALUES (@CenterId, @UserId, @TokenNumber, @AppointmentDate, @AppointmentTime, @Status);
+            INSERT INTO appointments (center_id, user_id, appointment_date, appointment_time, status)
+            VALUES (@CenterId, @UserId, @AppointmentDate, @AppointmentTime, @Status);
             SELECT LAST_INSERT_ID();";
 
         await using var conn = new MySqlConnection(_connectionString);
@@ -26,15 +26,13 @@ public class AppointmentRepository : IAppointmentRepository
 
         cmd.Parameters.AddWithValue("@CenterId", appointment.CenterId);
         cmd.Parameters.AddWithValue("@UserId", appointment.UserId);
-        cmd.Parameters.AddWithValue("@TokenNumber", appointment.TokenNumber);
-        cmd.Parameters.AddWithValue("@AppointmentDate", appointment.AppointmentDate.Date); // Ensure only Date part
+        cmd.Parameters.AddWithValue("@AppointmentDate", appointment.AppointmentDate.Date); 
         cmd.Parameters.AddWithValue("@AppointmentTime", appointment.AppointmentTime);
         cmd.Parameters.AddWithValue("@Status", appointment.Status);
 
         var id = await cmd.ExecuteScalarAsync();
         appointment.AppointmentId = Convert.ToInt32(id);
         
-        // Let's set the created at to UTC now for the returned object just to be safe
         appointment.CreatedAt = DateTime.UtcNow;
 
         return appointment;
@@ -43,7 +41,7 @@ public class AppointmentRepository : IAppointmentRepository
     public async Task<Appointment?> GetByIdAsync(int appointmentId)
     {
         const string sql = @"
-            SELECT appointment_id, center_id, user_id, token_number, appointment_date, 
+            SELECT appointment_id, center_id, user_id, appointment_date, 
                    appointment_time, status, created_at, updated_at
             FROM appointments
             WHERE appointment_id = @Id
@@ -61,7 +59,7 @@ public class AppointmentRepository : IAppointmentRepository
     public async Task<IEnumerable<Appointment>> GetByUserIdAsync(int userId)
     {
         const string sql = @"
-            SELECT appointment_id, center_id, user_id, token_number, appointment_date, 
+            SELECT appointment_id, center_id, user_id, appointment_date, 
                    appointment_time, status, created_at, updated_at
             FROM appointments
             WHERE user_id = @UserId
@@ -112,7 +110,6 @@ public class AppointmentRepository : IAppointmentRepository
             AppointmentId   = reader.GetInt32(reader.GetOrdinal("appointment_id")),
             CenterId        = reader.GetInt32(reader.GetOrdinal("center_id")),
             UserId          = reader.GetInt32(reader.GetOrdinal("user_id")),
-            TokenNumber     = reader.GetString(reader.GetOrdinal("token_number")),
             AppointmentDate = reader.GetDateTime(reader.GetOrdinal("appointment_date")),
             AppointmentTime = (TimeSpan)reader.GetValue(reader.GetOrdinal("appointment_time")),
             Status          = reader.GetString(reader.GetOrdinal("status")),

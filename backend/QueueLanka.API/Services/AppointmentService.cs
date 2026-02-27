@@ -8,13 +8,16 @@ public class AppointmentService : IAppointmentService
 {
     private readonly IAppointmentRepository _appointmentRepository;
     private readonly IServiceCenterRepository _serviceCenterRepository;
+    private readonly ITokenRepository _tokenRepository;
 
     public AppointmentService(
         IAppointmentRepository appointmentRepository,
-        IServiceCenterRepository serviceCenterRepository)
+        IServiceCenterRepository serviceCenterRepository,
+        ITokenRepository tokenRepository)
     {
         _appointmentRepository = appointmentRepository;
         _serviceCenterRepository = serviceCenterRepository;
+        _tokenRepository = tokenRepository;
     }
 
     public async Task<AppointmentResponseDto> BookTokenAsync(int userId, BookAppointmentRequestDto requestDto)
@@ -75,31 +78,43 @@ public class AppointmentService : IAppointmentService
             throw new InvalidOperationException("This time slot is already booked. Please select another time.");
         }
 
-        // 5. Generate Unique Token
+        // 5. Save the Appointment FIRST
+        var appointment = new Appointment
+        {
+            CenterId = center.CenterId,
+            UserId = userId,
+            AppointmentDate = requestedDate,
+            AppointmentTime = requestedTime,
+            Status = "Scheduled"
+        };
+        var createdAppointment = await _appointmentRepository.CreateAsync(appointment);
+
+        // 6. Generate Unique Token
         // Format: TKN-[CenterId]-[Short Date]-[Random Hex]
         string shortDate = requestedDate.ToString("yyMMdd");
         string randomHex = Guid.NewGuid().ToString("N").Substring(0, 4).ToUpper();
         string tokenNumber = $"TKN-{center.CenterId}-{shortDate}-{randomHex}";
 
-        // 6. Save the Appointment
-        var appointment = new Appointment
+        // 7. Save the Token linked to the Appointment
+        var token = new Token
         {
             CenterId = center.CenterId,
             UserId = userId,
+            AppointmentId = createdAppointment.AppointmentId,
             TokenNumber = tokenNumber,
-            AppointmentDate = requestedDate,
-            AppointmentTime = requestedTime,
-            Status = "Scheduled"
+            IssuedDate = requestedDate,
+            Status = "Waiting",
+            IssuedTime = DateTime.UtcNow // Exact time the token was issued
         };
-
-        var createdAppointment = await _appointmentRepository.CreateAsync(appointment);
+        var createdToken = await _tokenRepository.CreateAsync(token);
 
         return new AppointmentResponseDto
         {
             AppointmentId = createdAppointment.AppointmentId,
             CenterId = createdAppointment.CenterId,
             UserId = createdAppointment.UserId,
-            TokenNumber = createdAppointment.TokenNumber,
+            TokenId = createdToken.TokenId,
+            TokenNumber = createdToken.TokenNumber,
             AppointmentDate = createdAppointment.AppointmentDate,
             AppointmentTime = createdAppointment.AppointmentTime,
             Status = createdAppointment.Status,
@@ -109,18 +124,28 @@ public class AppointmentService : IAppointmentService
 
     public async Task<IEnumerable<AppointmentResponseDto>> GetUserAppointmentsAsync(int userId)
     {
-        var appointments = await _appointmentRepository.GetByUserIdAsync(userId);
+        var appointmentsTask = _appointmentRepository.GetByUserIdAsync(userId);
+        var tokensTask = _tokenRepository.GetByUserIdAsync(userId);
+
+        await Task.WhenAll(appointmentsTask, tokensTask);
+
+        var appointments = appointmentsTask.Result;
+        var tokens = tokensTask.Result.ToDictionary(t => t.AppointmentId ?? -1);
         
-        return appointments.Select(a => new AppointmentResponseDto
-        {
-            AppointmentId = a.AppointmentId,
-            CenterId = a.CenterId,
-            UserId = a.UserId,
-            TokenNumber = a.TokenNumber,
-            AppointmentDate = a.AppointmentDate,
-            AppointmentTime = a.AppointmentTime,
-            Status = a.Status,
-            CreatedAt = a.CreatedAt
+        return appointments.Select(a => {
+            tokens.TryGetValue(a.AppointmentId, out var linkedToken);
+            return new AppointmentResponseDto
+            {
+                AppointmentId = a.AppointmentId,
+                CenterId = a.CenterId,
+                UserId = a.UserId,
+                TokenId = linkedToken?.TokenId,
+                TokenNumber = linkedToken?.TokenNumber ?? string.Empty,
+                AppointmentDate = a.AppointmentDate,
+                AppointmentTime = a.AppointmentTime,
+                Status = a.Status,
+                CreatedAt = a.CreatedAt
+            };
         });
     }
 }
