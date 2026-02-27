@@ -2,14 +2,18 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using QueueLanka.API.Data;
+using QueueLanka.API.Filters;
 using QueueLanka.API.Middleware;
 using QueueLanka.API.Services;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ── Controllers ───────────────────────────────────────────────
-builder.Services.AddControllers();
+// ── Controllers with validation filter (SCRUM-29) ─────────────
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ValidationFilter>();
+});
 
 // ── Swagger ───────────────────────────────────────────────────
 builder.Services.AddEndpointsApiExplorer();
