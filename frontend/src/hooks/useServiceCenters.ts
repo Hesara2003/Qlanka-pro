@@ -36,7 +36,7 @@ export function useServiceCenters(
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<number | null>(null);
   const isMountedRef = useRef(true);
 
   const fetchCenters = useCallback(async () => {
@@ -141,7 +141,7 @@ export function useServiceCenter(
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<number | null>(null);
   const isMountedRef = useRef(true);
 
   const fetchCenter = useCallback(async () => {
