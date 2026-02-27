@@ -41,7 +41,7 @@ export default function ServiceCenterCard({ center }: ServiceCenterCardProps) {
                 : "bg-red-100 text-red-700"
             }`}
           >
-            {center.isAvailable && center.isActive ? "Available" : "Unavailable"}
+            {center.isAvailable && center.isActive ? t('serviceCenterCard.available') : t('serviceCenterCard.unavailable')}
           </div>
         </div>
 
