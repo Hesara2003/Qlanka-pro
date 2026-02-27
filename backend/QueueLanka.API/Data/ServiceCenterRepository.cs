@@ -57,19 +57,19 @@ public class ServiceCenterRepository : IServiceCenterRepository
     {
         return new ServiceCenter
         {
-            CenterId    = reader.GetInt32("center_id"),
-            Name        = reader.GetString("name"),
-            Address     = reader.GetString("address"),
-            Phone       = reader.IsDBNull(reader.GetOrdinal("phone")) ? null : reader.GetString("phone"),
-            Email       = reader.IsDBNull(reader.GetOrdinal("email")) ? null : reader.GetString("email"),
-            Description = reader.IsDBNull(reader.GetOrdinal("description")) ? null : reader.GetString("description"),
-            Timezone    = reader.GetString("timezone"),
-            Capacity    = reader.GetInt32("capacity"),
-            OpeningTime = reader.GetTimeSpan("opening_time"),
-            ClosingTime = reader.GetTimeSpan("closing_time"),
-            IsActive    = reader.GetBoolean("is_active"),
-            CreatedAt   = reader.GetDateTime("created_at"),
-            UpdatedAt   = reader.IsDBNull(reader.GetOrdinal("updated_at")) ? null : reader.GetDateTime("updated_at")
+            CenterId    = reader.GetInt32(reader.GetOrdinal("center_id")),
+            Name        = reader.GetString(reader.GetOrdinal("name")),
+            Address     = reader.GetString(reader.GetOrdinal("address")),
+            Phone       = reader.IsDBNull(reader.GetOrdinal("phone")) ? null : reader.GetString(reader.GetOrdinal("phone")),
+            Email       = reader.IsDBNull(reader.GetOrdinal("email")) ? null : reader.GetString(reader.GetOrdinal("email")),
+            Description = reader.IsDBNull(reader.GetOrdinal("description")) ? null : reader.GetString(reader.GetOrdinal("description")),
+            Timezone    = reader.GetString(reader.GetOrdinal("timezone")),
+            Capacity    = reader.GetInt32(reader.GetOrdinal("capacity")),
+            OpeningTime = reader.GetTimeSpan(reader.GetOrdinal("opening_time")),
+            ClosingTime = reader.GetTimeSpan(reader.GetOrdinal("closing_time")),
+            IsActive    = reader.GetBoolean(reader.GetOrdinal("is_active")),
+            CreatedAt   = reader.GetDateTime(reader.GetOrdinal("created_at")),
+            UpdatedAt   = reader.IsDBNull(reader.GetOrdinal("updated_at")) ? null : reader.GetDateTime(reader.GetOrdinal("updated_at"))
         };
     }
 
@@ -94,15 +94,15 @@ public class ServiceCenterRepository : IServiceCenterRepository
 
         return new CenterAvailability
         {
-            AvailabilityId = reader.GetInt32("availability_id"),
-            CenterId       = reader.GetInt32("center_id"),
-            Date           = reader.GetDateTime("date"),
-            IsAvailable    = reader.GetBoolean("is_available"),
-            OpeningTime    = reader.IsDBNull(reader.GetOrdinal("opening_time")) ? null : reader.GetTimeSpan("opening_time"),
-            ClosingTime    = reader.IsDBNull(reader.GetOrdinal("closing_time")) ? null : reader.GetTimeSpan("closing_time"),
-            Reason         = reader.IsDBNull(reader.GetOrdinal("reason")) ? null : reader.GetString("reason"),
-            CreatedAt      = reader.GetDateTime("created_at"),
-            UpdatedAt      = reader.IsDBNull(reader.GetOrdinal("updated_at")) ? null : reader.GetDateTime("updated_at")
+            AvailabilityId = reader.GetInt32(reader.GetOrdinal("availability_id")),
+            CenterId       = reader.GetInt32(reader.GetOrdinal("center_id")),
+            Date           = reader.GetDateTime(reader.GetOrdinal("date")),
+            IsAvailable    = reader.GetBoolean(reader.GetOrdinal("is_available")),
+            OpeningTime    = reader.IsDBNull(reader.GetOrdinal("opening_time")) ? null : reader.GetTimeSpan(reader.GetOrdinal("opening_time")),
+            ClosingTime    = reader.IsDBNull(reader.GetOrdinal("closing_time")) ? null : reader.GetTimeSpan(reader.GetOrdinal("closing_time")),
+            Reason         = reader.IsDBNull(reader.GetOrdinal("reason")) ? null : reader.GetString(reader.GetOrdinal("reason")),
+            CreatedAt      = reader.GetDateTime(reader.GetOrdinal("created_at")),
+            UpdatedAt      = reader.IsDBNull(reader.GetOrdinal("updated_at")) ? null : reader.GetDateTime(reader.GetOrdinal("updated_at"))
         };
     }
 
@@ -126,13 +126,13 @@ public class ServiceCenterRepository : IServiceCenterRepository
         {
             operatingDays.Add(new CenterOperatingDay
             {
-                OperatingDayId = reader.GetInt32("operating_day_id"),
-                CenterId       = reader.GetInt32("center_id"),
-                DayOfWeek      = reader.GetString("day_of_week"),
-                IsOpen         = reader.GetBoolean("is_open"),
-                OpeningTime    = reader.IsDBNull(reader.GetOrdinal("opening_time")) ? null : reader.GetTimeSpan("opening_time"),
-                ClosingTime    = reader.IsDBNull(reader.GetOrdinal("closing_time")) ? null : reader.GetTimeSpan("closing_time"),
-                CreatedAt      = reader.GetDateTime("created_at")
+                OperatingDayId = reader.GetInt32(reader.GetOrdinal("operating_day_id")),
+                CenterId       = reader.GetInt32(reader.GetOrdinal("center_id")),
+                DayOfWeek      = reader.GetString(reader.GetOrdinal("day_of_week")),
+                IsOpen         = reader.GetBoolean(reader.GetOrdinal("is_open")),
+                OpeningTime    = reader.IsDBNull(reader.GetOrdinal("opening_time")) ? null : reader.GetTimeSpan(reader.GetOrdinal("opening_time")),
+                ClosingTime    = reader.IsDBNull(reader.GetOrdinal("closing_time")) ? null : reader.GetTimeSpan(reader.GetOrdinal("closing_time")),
+                CreatedAt      = reader.GetDateTime(reader.GetOrdinal("created_at"))
             });
         }
 
