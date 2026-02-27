@@ -119,7 +119,7 @@ export default function ServiceCentersPage() {
                 : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
             }`}
           >
-            All Centers
+            {t('serviceCenters.filters.allCenters')}
             <span className="ml-2 text-xs opacity-75">({centers.length})</span>
           </button>
           <button
@@ -130,7 +130,7 @@ export default function ServiceCentersPage() {
                 : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
             }`}
           >
-            Available
+            {t('serviceCenters.filters.available')}
             <span className="ml-2 text-xs opacity-75">
               ({centers.filter((c) => c.isAvailable && c.isActive).length})
             </span>
@@ -143,7 +143,7 @@ export default function ServiceCentersPage() {
                 : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
             }`}
           >
-            Unavailable
+            {t('serviceCenters.filters.unavailable')}
             <span className="ml-2 text-xs opacity-75">
               ({centers.filter((c) => !c.isAvailable || !c.isActive).length})
             </span>
