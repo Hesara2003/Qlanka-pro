@@ -87,7 +87,14 @@ public class AppointmentService : IAppointmentService
             throw new InvalidOperationException("This time slot is already booked. Please select another time.");
         }
 
-        // 5. Save the Appointment FIRST
+        // 5. Capacity Check: Is the center full for this day?
+        int currentTokenCount = await _tokenRepository.CountByCenterAndDateAsync(center.CenterId, requestedDate);
+        if (center.Capacity > 0 && currentTokenCount >= center.Capacity)
+        {
+            throw new InvalidOperationException("This center is fully booked for the selected date. Please choose another date.");
+        }
+
+        // 6. Save the Appointment FIRST
         var appointment = new Appointment
         {
             CenterId = center.CenterId,

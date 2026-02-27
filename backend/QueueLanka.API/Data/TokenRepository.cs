@@ -129,6 +129,19 @@ public class TokenRepository : ITokenRepository
         return list;
     }
 
+    public async Task<int> CountByCenterAndDateAsync(int centerId, DateTime date)
+    {
+        const string sql = @"SELECT COUNT(*) FROM tokens WHERE center_id = @CenterId AND issued_date = @Date AND status NOT IN ('Cancelled')";
+        await using var conn = new MySqlConnection(_connectionString);
+        await conn.OpenAsync();
+        await using var cmd = new MySqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@CenterId", centerId);
+        cmd.Parameters.AddWithValue("@Date", date.Date);
+
+        var result = await cmd.ExecuteScalarAsync();
+        return Convert.ToInt32(result);
+    }
+
     public async Task<bool> UpdateStatusAsync(int tokenId, string status)
     {
         const string sql = @"UPDATE tokens SET status = @Status WHERE token_id = @Id";
