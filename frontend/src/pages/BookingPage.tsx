@@ -11,7 +11,6 @@ import { isAxiosError } from "axios";
 export default function BookingPage() {
     const { centerId } = useParams();
     const navigate = useNavigate();
-    const { t } = useTranslation();
     const { user } = useAuth();
 
     const [center, setCenter] = useState<ServiceCenter | null>(null);
