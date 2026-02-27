@@ -146,7 +146,7 @@ export default function ServiceCenterCard({ center }: ServiceCenterCardProps) {
 
         {/* Action Button */}
         <button className="w-full mt-4 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
-          <span>View Details</span>
+          <span>{t('serviceCenterCard.viewDetails')}</span>
           <svg
             width="16"
             height="16"
