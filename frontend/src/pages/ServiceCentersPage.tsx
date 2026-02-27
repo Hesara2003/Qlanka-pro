@@ -76,12 +76,13 @@ export default function ServiceCentersPage() {
                   />
                 </svg>
               </div>
-              <span className="text-xl font-bold text-gray-900">QueueLanka</span>
+              <span className="text-xl font-bold text-gray-900">{t('common.appName')}</span>
             </div>
 
             {/* User Info & Logout */}
             {user && (
               <div className="flex items-center gap-4">
+                <LanguageSelector />
                 <div className="text-right hidden sm:block">
                   <p className="text-sm font-semibold text-gray-900">{user.username}</p>
                   <p className="text-xs text-gray-500 capitalize">{user.role}</p>
@@ -90,7 +91,7 @@ export default function ServiceCentersPage() {
                   onClick={logout}
                   className="px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
                 >
-                  Sign Out
+                  {t('common.signOut')}
                 </button>
               </div>
             )}
