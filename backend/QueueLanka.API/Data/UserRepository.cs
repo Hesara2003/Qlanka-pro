@@ -13,6 +13,23 @@ public class UserRepository : IUserRepository
             ?? throw new InvalidOperationException("Connection string 'Default' is not configured.");
     }
 
+    public async Task<User?> GetByIdAsync(int userId)
+    {
+        const string sql = @"
+            SELECT user_id, username, email, password_hash, role, center_id, is_active, is_email_verified, created_at
+            FROM users
+            WHERE user_id = @UserId
+            LIMIT 1";
+
+        await using var conn = new MySqlConnection(_connectionString);
+        await conn.OpenAsync();
+        await using var cmd = new MySqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@UserId", userId);
+
+        await using var reader = await cmd.ExecuteReaderAsync();
+        return await reader.ReadAsync() ? MapUser((MySqlDataReader)reader) : null;
+    }
+
     public async Task<User?> GetByUsernameAsync(string username)
     {
         const string sql = @"

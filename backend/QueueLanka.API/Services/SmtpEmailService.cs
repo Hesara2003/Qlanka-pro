@@ -28,6 +28,15 @@ public class SmtpEmailService : IEmailService
         await SendAsync(toEmail, toName, subject, htmlBody, textBody);
     }
 
+    public async Task SendBookingEmailAsync(string toEmail, string toName, string centerName, string date, string time, string tokenNumber)
+    {
+        var subject  = $"Token Booking Confirmed: {tokenNumber}";
+        var htmlBody = BuildBookingEmailHtml(toName, centerName, date, time, tokenNumber);
+        var textBody = BuildBookingEmailText(toName, centerName, date, time, tokenNumber);
+
+        await SendAsync(toEmail, toName, subject, htmlBody, textBody);
+    }
+
     // ── Core send logic ────────────────────────────────────────
     private async Task SendAsync(
         string toEmail, string toName,
@@ -141,6 +150,71 @@ public class SmtpEmailService : IEmailService
         {url}
 
         If you didn't create an account, please ignore this email.
+
+        — The QueueLanka Team
+        """;
+
+    private static string BuildBookingEmailHtml(string name, string centerName, string date, string time, string tokenNumber) => $"""
+        <!DOCTYPE html>
+        <html lang="en">
+        <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /></head>
+        <body style="margin:0;padding:0;background:#f4f6fb;font-family:'Segoe UI',Arial,sans-serif">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6fb;padding:40px 0">
+            <tr><td align="center">
+              <table width="520" cellpadding="0" cellspacing="0"
+                     style="background:#fff;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.08);overflow:hidden">
+                <!-- Header -->
+                <tr><td style="background:#4f46e5;padding:28px 40px">
+                  <h1 style="margin:0;color:#fff;font-size:1.4rem;font-weight:700">QueueLanka Pro</h1>
+                </td></tr>
+                <!-- Body -->
+                <tr><td style="padding:36px 40px 28px">
+                  <h2 style="margin:0 0 12px;color:#1a1a2e;font-size:1.2rem">Booking Confirmed!</h2>
+                  <p style="margin:0 0 20px;color:#374151;line-height:1.6">Hi {name},</p>
+                  <p style="margin:0 0 28px;color:#374151;line-height:1.6">
+                    Your token for <strong>{centerName}</strong> has been successfully booked. Please present the token number below when you arrive.
+                  </p>
+                  <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:20px;margin-bottom:28px;text-align:center;">
+                    <p style="margin:0 0 8px;font-size:0.85rem;color:#6b7280;text-transform:uppercase;font-weight:600;letter-spacing:0.05em">Token Number</p>
+                    <p style="margin:0;font-size:2rem;font-weight:800;color:#4f46e5;font-family:monospace">{tokenNumber}</p>
+                    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;border-top:1px solid #e5e7eb;padding-top:16px;">
+                        <tr>
+                            <td width="50%" align="left">
+                                <p style="margin:0;font-size:0.8rem;color:#6b7280;font-weight:600">Date</p>
+                                <p style="margin:4px 0 0;font-size:1rem;color:#111827;font-weight:500">{date}</p>
+                            </td>
+                            <td width="50%" align="right">
+                                <p style="margin:0;font-size:0.8rem;color:#6b7280;font-weight:600">Estimated Time</p>
+                                <p style="margin:4px 0 0;font-size:1rem;color:#111827;font-weight:500">{time}</p>
+                            </td>
+                        </tr>
+                    </table>
+                  </div>
+                </td></tr>
+                <!-- Footer -->
+                <tr><td style="background:#f9fafb;padding:16px 40px;border-top:1px solid #f3f4f6">
+                  <p style="margin:0;color:#9ca3af;font-size:0.75rem">
+                    &copy; 2026 QueueLanka Pro. All rights reserved.
+                  </p>
+                </td></tr>
+              </table>
+            </td></tr>
+          </table>
+        </body>
+        </html>
+        """;
+
+    private static string BuildBookingEmailText(string name, string centerName, string date, string time, string tokenNumber) =>
+        $"""
+        Hi {name},
+
+        Your token for {centerName} has been successfully booked!
+
+        TOKEN NUMBER: {tokenNumber}
+        DATE: {date}
+        TIME: {time}
+
+        Please present this token number when you arrive at the center.
 
         — The QueueLanka Team
         """;

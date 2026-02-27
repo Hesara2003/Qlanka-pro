@@ -9,15 +9,24 @@ public class AppointmentService : IAppointmentService
     private readonly IAppointmentRepository _appointmentRepository;
     private readonly IServiceCenterRepository _serviceCenterRepository;
     private readonly ITokenRepository _tokenRepository;
+    private readonly IUserRepository _userRepository;
+    private readonly INotificationService _notificationService;
+    private readonly ILogger<AppointmentService> _logger;
 
     public AppointmentService(
         IAppointmentRepository appointmentRepository,
         IServiceCenterRepository serviceCenterRepository,
-        ITokenRepository tokenRepository)
+        ITokenRepository tokenRepository,
+        IUserRepository userRepository,
+        INotificationService notificationService,
+        ILogger<AppointmentService> logger)
     {
         _appointmentRepository = appointmentRepository;
         _serviceCenterRepository = serviceCenterRepository;
         _tokenRepository = tokenRepository;
+        _userRepository = userRepository;
+        _notificationService = notificationService;
+        _logger = logger;
     }
 
     public async Task<AppointmentResponseDto> BookTokenAsync(int userId, BookAppointmentRequestDto requestDto)
@@ -107,6 +116,23 @@ public class AppointmentService : IAppointmentService
             IssuedTime = DateTime.UtcNow // Exact time the token was issued
         };
         var createdToken = await _tokenRepository.CreateAsync(token);
+
+        // 8. Dispatch Async Notifications (Fire-And-Forget so we don't block the HTTP Response)
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                var user = await _userRepository.GetByIdAsync(userId);
+                if (user != null)
+                {
+                    await _notificationService.SendBookingConfirmationAsync(user, center, createdAppointment, createdToken);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Background notification dispatch failed for Token {TokenId}", createdToken.TokenId);
+            }
+        });
 
         return new AppointmentResponseDto
         {
