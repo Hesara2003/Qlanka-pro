@@ -7,6 +7,7 @@ import ServiceCenterCard from "../components/serviceCenter/ServiceCenterCard";
 import LanguageSelector from "../components/common/LanguageSelector";
 
 export default function ServiceCentersPage() {
+  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const [centers, setCenters] = useState<ServiceCenter[]>([]);
   const [loading, setLoading] = useState(true);
