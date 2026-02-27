@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import type { ServiceCenter } from "../../types/serviceCenter";
 
 interface ServiceCenterCardProps {
@@ -7,7 +8,8 @@ interface ServiceCenterCardProps {
 
 export default function ServiceCenterCard({ center }: ServiceCenterCardProps) {
   const { t } = useTranslation();
-  
+  const navigate = useNavigate();
+
   return (
     <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
       <div className="p-6">
@@ -35,11 +37,10 @@ export default function ServiceCenterCard({ center }: ServiceCenterCardProps) {
             </p>
           </div>
           <div
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
-              center.isAvailable && center.isActive
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold ${center.isAvailable && center.isActive
                 ? "bg-green-100 text-green-700"
                 : "bg-red-100 text-red-700"
-            }`}
+              }`}
           >
             {center.isAvailable && center.isActive ? t('serviceCenterCard.available') : t('serviceCenterCard.unavailable')}
           </div>
@@ -145,13 +146,13 @@ export default function ServiceCenterCard({ center }: ServiceCenterCardProps) {
         )}
 
         {/* Action Button */}
-        <button 
+        <button
+          onClick={() => navigate(`/book/${center.centerId}`)}
           disabled={!center.isAvailable || !center.isActive}
-          className={`w-full mt-4 px-4 py-2.5 font-semibold rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 ${
-            center.isAvailable && center.isActive
+          className={`w-full mt-4 px-4 py-2.5 font-semibold rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 ${center.isAvailable && center.isActive
               ? 'bg-blue-600 hover:bg-blue-700 text-white cursor-pointer'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
-          }`}
+            }`}
         >
           <span>{t('serviceCenterCard.viewDetails')}</span>
           <svg
