@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { getAllServiceCenters } from "../api/serviceCenterApi";
 import type { ServiceCenter } from "../types/serviceCenter";
 import ServiceCenterCard from "../components/serviceCenter/ServiceCenterCard";
+import LanguageSelector from "../components/common/LanguageSelector";
 
 export default function ServiceCentersPage() {
   const { user, logout } = useAuth();
