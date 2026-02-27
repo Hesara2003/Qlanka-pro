@@ -140,9 +140,6 @@ export default function RegisterForm() {
     }
   }
 
-  const inputBaseClass = "w-full px-4 py-3.5 bg-gray-100 border border-transparent rounded-lg text-sm outline-none transition-all duration-200 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10";
-  const inputErrorClass = "border-red-500 bg-red-50";
-
   return (
     <div
       className="h-screen flex items-center justify-center p-4 sm:p-6 font-sans text-gray-900 overflow-hidden bg-cover bg-center relative"
