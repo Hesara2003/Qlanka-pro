@@ -1,6 +1,7 @@
 // Example Usage of Service Center API Integration - SCRUM-25
 // This file demonstrates how to use the service center API integration
 
+import React from "react";
 import { useServiceCenters, useServiceCenter } from "../hooks/useServiceCenters";
 import type { ServiceCenter } from "../types/serviceCenter";
 
