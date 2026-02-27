@@ -7,8 +7,8 @@ USE queuelanka;
 -- Before doing this, we would ideally migrate existing string tokens. 
 -- Since we are early in development, dropping the column is fine.
 ALTER TABLE appointments 
-DROP INDEX IF EXISTS token_number,
-DROP COLUMN IF EXISTS token_number;
+DROP INDEX token_number,
+DROP COLUMN token_number;
 
 -- ── 2. Tokens ──────────────────────────────────────────────────
 -- Store the real-time queue tokens generated for a center on a given day.
