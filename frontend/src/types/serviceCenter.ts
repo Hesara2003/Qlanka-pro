@@ -26,3 +26,7 @@ export interface ServiceCenterApiError {
   code: string;
   message: string;
 }
+
+export interface ServiceCenterListResponse {
+  serviceCenters: ServiceCenter[];
+}

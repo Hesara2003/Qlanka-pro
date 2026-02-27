@@ -9,12 +9,15 @@ function extractErrorMessage(error: unknown): string {
     const data = error.response.data as ServiceCenterApiError;
     return data.message ?? "An unexpected error occurred.";
   }
+
   if (error instanceof AxiosError && error.code === "ECONNABORTED") {
     return "Request timeout. Please try again.";
   }
+
   if (error instanceof AxiosError && !error.response) {
     return "Network error. Please check your connection and try again.";
   }
+
   return "Failed to connect to service. Please try again.";
 }
 
@@ -24,85 +27,89 @@ async function retryWithBackoff<T>(
   maxRetries: number = 3,
   baseDelay: number = 1000
 ): Promise<T> {
-  let lastError: Error | unknown;
-  
+  let lastError: unknown;
+
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       return await fn();
     } catch (error) {
       lastError = error;
-      
-      // Don't retry on 4xx errors (client errors)
-      if (error instanceof AxiosError && error.response?.status && 
-          error.response.status >= 400 && error.response.status < 500) {
+
+      // Do not retry client errors (4xx)
+      if (
+        error instanceof AxiosError &&
+        error.response?.status &&
+        error.response.status >= 400 &&
+        error.response.status < 500
+      ) {
         throw error;
       }
-      
-      // If not the last attempt, wait before retrying
+
+      // Wait before retrying
       if (attempt < maxRetries - 1) {
         const delay = baseDelay * Math.pow(2, attempt);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
   }
-  
+
   throw lastError;
 }
 
 /**
- * Fetch all service centers from the API with retry logic
- * @returns Promise<ServiceCenter[]>
+ * Fetch all service centers
  */
 export async function getAllServiceCenters(): Promise<ServiceCenter[]> {
   try {
-    const result = await retryWithBackoff(async () => {
-      const { data } = await axiosInstance.get<ServiceCenter[]>("/api/service-centers");
+    return await retryWithBackoff(async () => {
+      const { data } = await axiosInstance.get<ServiceCenter[]>(
+        "/api/service-centers"
+      );
       return data;
     });
-    return result;
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }
 }
 
 /**
- * Fetch a specific service center by ID
- * @param centerId - The ID of the service center
- * @returns Promise<ServiceCenter>
+ * Fetch service center by ID
  */
-export async function getServiceCenterById(centerId: number): Promise<ServiceCenter> {
+export async function getServiceCenterById(
+  centerId: number
+): Promise<ServiceCenter> {
   try {
-    const result = await retryWithBackoff(async () => {
+    return await retryWithBackoff(async () => {
       const { data } = await axiosInstance.get<ServiceCenter>(
         `/api/service-centers/${centerId}`
       );
       return data;
     });
-    return result;
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }
 }
 
 /**
- * Fetch only available service centers
- * @returns Promise<ServiceCenter[]>
+ * Get only available service centers
  */
 export async function getAvailableServiceCenters(): Promise<ServiceCenter[]> {
   try {
     const centers = await getAllServiceCenters();
-    return centers.filter(center => center.isAvailable && center.isActive);
+    return centers.filter(
+      (center) => center.isAvailable && center.isActive
+    );
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }
 }
 
 /**
- * Check if a service center is currently available
- * @param centerId - The ID of the service center
- * @returns Promise<boolean>
+ * Check service center availability
  */
-export async function checkServiceCenterAvailability(centerId: number): Promise<boolean> {
+export async function checkServiceCenterAvailability(
+  centerId: number
+): Promise<boolean> {
   try {
     const center = await getServiceCenterById(centerId);
     return center.isAvailable && center.isActive;
