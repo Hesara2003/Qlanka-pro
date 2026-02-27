@@ -1,4 +1,4 @@
-import { ServiceCenter } from "../../types/serviceCenter";
+import type { ServiceCenter } from "../../types/serviceCenter";
 
 interface ServiceCenterCardProps {
   center: ServiceCenter;

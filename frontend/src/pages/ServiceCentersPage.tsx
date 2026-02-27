@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { getAllServiceCenters } from "../api/serviceCenterApi";
-import { ServiceCenter } from "../types/serviceCenter";
+import type { ServiceCenter } from "../types/serviceCenter";
 import ServiceCenterCard from "../components/serviceCenter/ServiceCenterCard";
 
 export default function ServiceCentersPage() {
