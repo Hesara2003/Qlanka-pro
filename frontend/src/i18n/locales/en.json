@@ -1,0 +1,30 @@
+{
+  "common": {
+    "appName": "QueueLanka",
+    "signOut": "Sign Out",
+    "retry": "Retry",
+    "loading": "Loading...",
+    "error": "Error"
+  },
+  "serviceCenters": {
+    "title": "Service Centers",
+    "subtitle": "Find and view information about available service centers near you.",
+    "filters": {
+      "allCenters": "All Centers",
+      "available": "Available",
+      "unavailable": "Unavailable"
+    },
+    "loading": "Loading service centers...",
+    "errorLoading": "Error Loading Centers",
+    "noResults": "No Service Centers Found",
+    "noResultsFilter": "No {{filter}} service centers available.",
+    "noResultsGeneric": "There are no service centers to display."
+  },
+  "serviceCenterCard": {
+    "available": "Available",
+    "unavailable": "Unavailable",
+    "hours": "Hours",
+    "capacity": "Capacity",
+    "viewDetails": "View Details"
+  }
+}
