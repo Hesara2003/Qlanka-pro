@@ -71,7 +71,7 @@ export default function ServiceCenterCard({ center }: ServiceCenterCardProps) {
               <polyline points="12 6 12 12 16 14"></polyline>
             </svg>
             <div>
-              <p className="text-gray-500 text-xs">Hours</p>
+              <p className="text-gray-500 text-xs">{t('serviceCenterCard.hours')}</p>
               <p className="font-semibold text-gray-900">
                 {center.openingTime} - {center.closingTime}
               </p>
@@ -97,7 +97,7 @@ export default function ServiceCenterCard({ center }: ServiceCenterCardProps) {
               <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
             </svg>
             <div>
-              <p className="text-gray-500 text-xs">Capacity</p>
+              <p className="text-gray-500 text-xs">{t('serviceCenterCard.capacity')}</p>
               <p className="font-semibold text-gray-900">{center.capacity}</p>
             </div>
           </div>
