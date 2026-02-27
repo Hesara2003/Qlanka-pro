@@ -1,0 +1,30 @@
+{
+  "common": {
+    "appName": "QueueLanka",
+    "signOut": "ඉවත් වන්න",
+    "retry": "නැවත උත්සාහ කරන්න",
+    "loading": "පූරණය වෙමින්...",
+    "error": "දෝෂයකි"
+  },
+  "serviceCenters": {
+    "title": "සේවා මධ්‍යස්ථාන",
+    "subtitle": "ඔබ අසල ඇති සේවා මධ්‍යස්ථාන පිළිබඳ තොරතුරු සොයා බලන්න.",
+    "filters": {
+      "allCenters": "සියලු මධ්‍යස්ථාන",
+      "available": "ලබා ගත හැකි",
+      "unavailable": "ලබා ගත නොහැකි"
+    },
+    "loading": "සේවා මධ්‍යස්ථාන පූරණය වෙමින්...",
+    "errorLoading": "මධ්‍යස්ථාන පූරණය කිරීමේ දෝෂයකි",
+    "noResults": "සේවා මධ්‍යස්ථාන හමු නොවිය",
+    "noResultsFilter": "{{filter}} සේවා මධ්‍යස්ථාන නොමැත.",
+    "noResultsGeneric": "සේවා මධ්‍යස්ථාන නොමැත."
+  },
+  "serviceCenterCard": {
+    "available": "ලබා ගත හැකි",
+    "unavailable": "ලබා ගත නොහැකි",
+    "hours": "වේලාවන්",
+    "capacity": "ධාරිතාව",
+    "viewDetails": "විස්තර බලන්න"
+  }
+}

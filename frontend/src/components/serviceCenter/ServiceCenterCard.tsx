@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { ServiceCenter } from "../../types/serviceCenter";
 
 interface ServiceCenterCardProps {
@@ -5,6 +6,8 @@ interface ServiceCenterCardProps {
 }
 
 export default function ServiceCenterCard({ center }: ServiceCenterCardProps) {
+  const { t } = useTranslation();
+  
   return (
     <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
       <div className="p-6">
@@ -38,7 +41,7 @@ export default function ServiceCenterCard({ center }: ServiceCenterCardProps) {
                 : "bg-red-100 text-red-700"
             }`}
           >
-            {center.isAvailable && center.isActive ? "Available" : "Unavailable"}
+            {center.isAvailable && center.isActive ? t('serviceCenterCard.available') : t('serviceCenterCard.unavailable')}
           </div>
         </div>
 
@@ -68,7 +71,7 @@ export default function ServiceCenterCard({ center }: ServiceCenterCardProps) {
               <polyline points="12 6 12 12 16 14"></polyline>
             </svg>
             <div>
-              <p className="text-gray-500 text-xs">Hours</p>
+              <p className="text-gray-500 text-xs">{t('serviceCenterCard.hours')}</p>
               <p className="font-semibold text-gray-900">
                 {center.openingTime} - {center.closingTime}
               </p>
@@ -94,7 +97,7 @@ export default function ServiceCenterCard({ center }: ServiceCenterCardProps) {
               <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
             </svg>
             <div>
-              <p className="text-gray-500 text-xs">Capacity</p>
+              <p className="text-gray-500 text-xs">{t('serviceCenterCard.capacity')}</p>
               <p className="font-semibold text-gray-900">{center.capacity}</p>
             </div>
           </div>
@@ -143,7 +146,7 @@ export default function ServiceCenterCard({ center }: ServiceCenterCardProps) {
 
         {/* Action Button */}
         <button className="w-full mt-4 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
-          <span>View Details</span>
+          <span>{t('serviceCenterCard.viewDetails')}</span>
           <svg
             width="16"
             height="16"

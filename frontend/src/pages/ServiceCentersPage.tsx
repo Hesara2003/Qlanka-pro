@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { getAllServiceCenters } from "../api/serviceCenterApi";
 import type { ServiceCenter } from "../types/serviceCenter";
 import ServiceCenterCard from "../components/serviceCenter/ServiceCenterCard";
+import LanguageSelector from "../components/common/LanguageSelector";
 
 export default function ServiceCentersPage() {
+  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const [centers, setCenters] = useState<ServiceCenter[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,12 +76,13 @@ export default function ServiceCentersPage() {
                   />
                 </svg>
               </div>
-              <span className="text-xl font-bold text-gray-900">QueueLanka</span>
+              <span className="text-xl font-bold text-gray-900">{t('common.appName')}</span>
             </div>
 
             {/* User Info & Logout */}
             {user && (
               <div className="flex items-center gap-4">
+                <LanguageSelector />
                 <div className="text-right hidden sm:block">
                   <p className="text-sm font-semibold text-gray-900">{user.username}</p>
                   <p className="text-xs text-gray-500 capitalize">{user.role}</p>
@@ -87,7 +91,7 @@ export default function ServiceCentersPage() {
                   onClick={logout}
                   className="px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
                 >
-                  Sign Out
+                  {t('common.signOut')}
                 </button>
               </div>
             )}
@@ -99,9 +103,9 @@ export default function ServiceCentersPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Service Centers</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('serviceCenters.title')}</h1>
           <p className="text-gray-600">
-            Find and view information about available service centers near you.
+            {t('serviceCenters.subtitle')}
           </p>
         </div>
 
@@ -115,7 +119,7 @@ export default function ServiceCentersPage() {
                 : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
             }`}
           >
-            All Centers
+            {t('serviceCenters.filters.allCenters')}
             <span className="ml-2 text-xs opacity-75">({centers.length})</span>
           </button>
           <button
@@ -126,7 +130,7 @@ export default function ServiceCentersPage() {
                 : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
             }`}
           >
-            Available
+            {t('serviceCenters.filters.available')}
             <span className="ml-2 text-xs opacity-75">
               ({centers.filter((c) => c.isAvailable && c.isActive).length})
             </span>
@@ -139,7 +143,7 @@ export default function ServiceCentersPage() {
                 : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
             }`}
           >
-            Unavailable
+            {t('serviceCenters.filters.unavailable')}
             <span className="ml-2 text-xs opacity-75">
               ({centers.filter((c) => !c.isAvailable || !c.isActive).length})
             </span>
@@ -151,7 +155,7 @@ export default function ServiceCentersPage() {
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading service centers...</p>
+              <p className="text-gray-600">{t('serviceCenters.loading')}</p>
             </div>
           </div>
         )}
@@ -172,13 +176,13 @@ export default function ServiceCentersPage() {
                 d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <p className="text-red-700 font-semibold mb-2">Error Loading Centers</p>
+            <p className="text-red-700 font-semibold mb-2">{t('serviceCenters.errorLoading')}</p>
             <p className="text-red-600 text-sm">{error}</p>
             <button
               onClick={() => window.location.reload()}
               className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
             >
-              Retry
+              {t('common.retry')}
             </button>
           </div>
         )}
@@ -199,11 +203,11 @@ export default function ServiceCentersPage() {
                 d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
               />
             </svg>
-            <p className="text-gray-600 font-semibold mb-2">No Service Centers Found</p>
+            <p className="text-gray-600 font-semibold mb-2">{t('serviceCenters.noResults')}</p>
             <p className="text-gray-500 text-sm">
               {filter !== "all"
-                ? `No ${filter} service centers available.`
-                : "There are no service centers to display."}
+                ? t('serviceCenters.noResultsFilter', { filter })
+                : t('serviceCenters.noResultsGeneric')}
             </p>
           </div>
         )}

@@ -1,0 +1,30 @@
+{
+  "common": {
+    "appName": "QueueLanka",
+    "signOut": "வெளியேறு",
+    "retry": "மீண்டும் முயற்சிக்கவும்",
+    "loading": "ஏற்றுகிறது...",
+    "error": "பிழை"
+  },
+  "serviceCenters": {
+    "title": "சேவை மையங்கள்",
+    "subtitle": "உங்கள் அருகில் உள்ள சேவை மையங்கள் பற்றிய தகவல்களை காணவும்.",
+    "filters": {
+      "allCenters": "அனைத்து மையங்களும்",
+      "available": "கிடைக்கக்கூடியது",
+      "unavailable": "கிடைக்காதது"
+    },
+    "loading": "சேவை மையங்கள் ஏற்றப்படுகின்றன...",
+    "errorLoading": "மையங்களை ஏற்றுவதில் பிழை",
+    "noResults": "சேவை மையங்கள் கிடைக்கவில்லை",
+    "noResultsFilter": "{{filter}} சேவை மையங்கள் இல்லை.",
+    "noResultsGeneric": "காண்பிக்க சேவை மையங்கள் இல்லை."
+  },
+  "serviceCenterCard": {
+    "available": "கிடைக்கக்கூடியது",
+    "unavailable": "கிடைக்காதது",
+    "hours": "நேரங்கள்",
+    "capacity": "திறன்",
+    "viewDetails": "விவரங்களைக் காண்க"
+  }
+}
