@@ -176,13 +176,13 @@ export default function ServiceCentersPage() {
                 d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <p className="text-red-700 font-semibold mb-2">Error Loading Centers</p>
+            <p className="text-red-700 font-semibold mb-2">{t('serviceCenters.errorLoading')}</p>
             <p className="text-red-600 text-sm">{error}</p>
             <button
               onClick={() => window.location.reload()}
               className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
             >
-              Retry
+              {t('common.retry')}
             </button>
           </div>
         )}
