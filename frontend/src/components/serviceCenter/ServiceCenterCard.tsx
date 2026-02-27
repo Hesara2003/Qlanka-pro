@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { ServiceCenter } from "../../types/serviceCenter";
 
 interface ServiceCenterCardProps {
@@ -5,6 +6,8 @@ interface ServiceCenterCardProps {
 }
 
 export default function ServiceCenterCard({ center }: ServiceCenterCardProps) {
+  const { t } = useTranslation();
+  
   return (
     <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
       <div className="p-6">
