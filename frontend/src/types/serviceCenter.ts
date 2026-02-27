@@ -1,3 +1,5 @@
+// Service Center Types - SCRUM-25
+
 export interface ServiceCenter {
   centerId: number;
   name: string;
@@ -12,6 +14,17 @@ export interface ServiceCenter {
   isAvailable: boolean;
   isActive: boolean;
   createdAt: string;
+}
+
+export interface ServiceCenterFilters {
+  isAvailable?: boolean;
+  isActive?: boolean;
+  searchQuery?: string;
+}
+
+export interface ServiceCenterApiError {
+  code: string;
+  message: string;
 }
 
 export interface ServiceCenterListResponse {
