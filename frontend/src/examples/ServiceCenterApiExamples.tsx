@@ -43,7 +43,7 @@ export function ServiceCentersListWithAutoRefresh() {
       {lastUpdated && <p>Last updated: {lastUpdated.toLocaleTimeString()}</p>}
       {loading && <div>Loading...</div>}
       {error && <div>Error: {error}</div>}
-      
+
       <div>
         {centers.map((center) => (
           <div key={center.centerId}>
@@ -86,6 +86,7 @@ export function ServiceCenterDetails({ centerId }: { centerId: number }) {
  */
 import { getAllServiceCenters, getAvailableServiceCenters } from "../api/serviceCenterApi";
 
+// eslint-disable-next-line react-refresh/only-export-components
 export async function fetchAndDisplayCenters() {
   try {
     // Fetch all centers
@@ -113,7 +114,7 @@ export function FilterableServiceCenters() {
 
   const filteredCenters = centers.filter((center: ServiceCenter) => {
     const matchesSearch = center.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         center.address.toLowerCase().includes(searchQuery.toLowerCase());
+      center.address.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesAvailability = !showOnlyAvailable || (center.isAvailable && center.isActive);
     return matchesSearch && matchesAvailability;
   });
@@ -137,7 +138,7 @@ export function FilterableServiceCenters() {
 
       {loading && <div>Loading...</div>}
       {error && <div>Error: {error}</div>}
-      
+
       <div>
         {filteredCenters.map((center) => (
           <div key={center.centerId}>
