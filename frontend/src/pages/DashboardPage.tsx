@@ -1,7 +1,8 @@
 import { Navigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { tokenApi, UserToken } from "../api/tokenApi";
+import { tokenApi } from "../api/tokenApi";
+import type { UserToken } from "../api/tokenApi";
 import { UserTokenCard } from "../components/dashboard/UserTokenCard";
 
 export default function DashboardPage() {

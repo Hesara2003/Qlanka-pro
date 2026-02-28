@@ -1,4 +1,3 @@
-import React from 'react';
 import type { UserToken } from '../../api/tokenApi';
 
 interface Props {
