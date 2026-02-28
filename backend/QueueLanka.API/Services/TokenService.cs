@@ -43,10 +43,9 @@ public class TokenService : ITokenService
                     var openingTime = availability?.OpeningTime ?? center.OpeningTime;
                     var closingTime = availability?.ClosingTime ?? center.ClosingTime;
                     
-                    var totalMinutes = (closingTime - openingTime).TotalMinutes;
-                    if (totalMinutes > 0 && center.Capacity > 0)
+                    var avgServiceTime = center.AverageServiceTimeMinutes;
+                    if (avgServiceTime > 0)
                     {
-                        var avgServiceTime = totalMinutes / center.Capacity;
                         // Use the later of OpeningTime today or current time (if today)
                         // Note: For simplicity, comparing DateTime.Now with IssuedDate
                         var baseTime = DateTime.Now;

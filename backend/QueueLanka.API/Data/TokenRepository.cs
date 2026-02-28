@@ -17,9 +17,9 @@ public class TokenRepository : ITokenRepository
     {
         const string sql = @"
             INSERT INTO tokens (center_id, user_id, appointment_id, token_number, issued_date, status, 
-                                issued_time, estimated_service_time, served_time, completed_time)
+                                issued_time, estimated_service_time, served_time, completed_time, queue_position)
             VALUES (@CenterId, @UserId, @AppointmentId, @TokenNumber, @IssuedDate, @Status,
-                    @IssuedTime, @EstimatedServiceTime, @ServedTime, @CompletedTime);
+                    @IssuedTime, @EstimatedServiceTime, @ServedTime, @CompletedTime, @QueuePosition);
             SELECT LAST_INSERT_ID();";
 
         await using var conn = new MySqlConnection(_connectionString);
@@ -36,6 +36,7 @@ public class TokenRepository : ITokenRepository
         cmd.Parameters.AddWithValue("@EstimatedServiceTime", token.EstimatedServiceTime.HasValue ? token.EstimatedServiceTime.Value : DBNull.Value);
         cmd.Parameters.AddWithValue("@ServedTime", token.ServedTime.HasValue ? token.ServedTime.Value : DBNull.Value);
         cmd.Parameters.AddWithValue("@CompletedTime", token.CompletedTime.HasValue ? token.CompletedTime.Value : DBNull.Value);
+        cmd.Parameters.AddWithValue("@QueuePosition", token.QueuePosition.HasValue ? token.QueuePosition.Value : DBNull.Value);
 
         var id = await cmd.ExecuteScalarAsync();
         token.TokenId = Convert.ToInt32(id);
@@ -48,7 +49,7 @@ public class TokenRepository : ITokenRepository
     {
         const string sql = @"
             SELECT token_id, center_id, user_id, appointment_id, token_number, issued_date, status,
-                   issued_time, estimated_service_time, served_time, completed_time, created_at, updated_at
+                   issued_time, estimated_service_time, served_time, completed_time, created_at, updated_at, queue_position
             FROM tokens
             WHERE token_id = @Id
             LIMIT 1";
@@ -66,7 +67,7 @@ public class TokenRepository : ITokenRepository
     {
         const string sql = @"
             SELECT token_id, center_id, user_id, appointment_id, token_number, issued_date, status,
-                   issued_time, estimated_service_time, served_time, completed_time, created_at, updated_at
+                   issued_time, estimated_service_time, served_time, completed_time, created_at, updated_at, queue_position
             FROM tokens
             WHERE center_id = @CenterId AND issued_date = @Date AND token_number = @TokenNumber
             LIMIT 1";
@@ -86,7 +87,7 @@ public class TokenRepository : ITokenRepository
     {
         const string sql = @"
             SELECT token_id, center_id, user_id, appointment_id, token_number, issued_date, status,
-                   issued_time, estimated_service_time, served_time, completed_time, created_at, updated_at
+                   issued_time, estimated_service_time, served_time, completed_time, created_at, updated_at, queue_position
             FROM tokens
             WHERE user_id = @UserId
             ORDER BY issued_date DESC, issued_time DESC";
@@ -109,7 +110,7 @@ public class TokenRepository : ITokenRepository
     {
         const string sql = @"
             SELECT token_id, center_id, user_id, appointment_id, token_number, issued_date, status,
-                   issued_time, estimated_service_time, served_time, completed_time, created_at, updated_at
+                   issued_time, estimated_service_time, served_time, completed_time, created_at, updated_at, queue_position
             FROM tokens
             WHERE center_id = @CenterId AND issued_date = @Date
             ORDER BY issued_time ASC";
@@ -171,7 +172,8 @@ public class TokenRepository : ITokenRepository
             ServedTime           = reader.IsDBNull(reader.GetOrdinal("served_time")) ? null : reader.GetDateTime(reader.GetOrdinal("served_time")),
             CompletedTime        = reader.IsDBNull(reader.GetOrdinal("completed_time")) ? null : reader.GetDateTime(reader.GetOrdinal("completed_time")),
             CreatedAt            = reader.GetDateTime(reader.GetOrdinal("created_at")),
-            UpdatedAt            = reader.IsDBNull(reader.GetOrdinal("updated_at")) ? null : reader.GetDateTime(reader.GetOrdinal("updated_at"))
+            UpdatedAt            = reader.IsDBNull(reader.GetOrdinal("updated_at")) ? null : reader.GetDateTime(reader.GetOrdinal("updated_at")),
+            QueuePosition        = reader.IsDBNull(reader.GetOrdinal("queue_position")) ? null : reader.GetInt32(reader.GetOrdinal("queue_position"))
         };
     }
 }
