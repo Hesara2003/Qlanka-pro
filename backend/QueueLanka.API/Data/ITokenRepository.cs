@@ -11,4 +11,5 @@ public interface ITokenRepository
     Task<IEnumerable<Token>> GetByCenterAndDateAsync(int centerId, DateTime date);
     Task<int> CountByCenterAndDateAsync(int centerId, DateTime date);
     Task<bool> UpdateStatusAsync(int tokenId, string status);
+    Task<bool> CancelUserTokenAsync(int tokenId, int userId);
 }

@@ -88,6 +88,12 @@ public class TokenService : ITokenService
             });
         }
 
+
         return responseTokens;
+    }
+
+    public async Task<bool> CancelTokenAsync(int tokenId, int userId)
+    {
+        return await _tokenRepository.CancelUserTokenAsync(tokenId, userId);
     }
 }
