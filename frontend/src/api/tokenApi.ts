@@ -4,9 +4,9 @@ import type { ApiError } from "../types/auth"; // Reusing the ApiError type comm
 
 function extractErrorMessage(error: unknown): string {
     if (error instanceof AxiosError && error.response?.data) {
-        const data = error.response.data as ApiError | { message?: string };
+        const data = error.response.data as ApiError | { message?: string, error?: string };
         // Sometimes the backend sends a raw message or a generic API Error
-        return data.message ?? (data as ApiError).error ?? "An unexpected error occurred.";
+        return data.message ?? (data as { error?: string }).error ?? "An unexpected error occurred.";
     }
     return "Network error. Please try again.";
 }
