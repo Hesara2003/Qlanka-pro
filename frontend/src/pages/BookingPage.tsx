@@ -34,8 +34,8 @@ export default function BookingPage() {
                 if (!centerId) return;
                 const data = await getServiceCenterById(parseInt(centerId, 10));
                 setCenter(data);
-            } catch (err) {
-                setError("Failed to load service center details.");
+            } catch {
+                setError("Could not load available dates. Please try again.");
             } finally {
                 setLoadingConfig(false);
             }
