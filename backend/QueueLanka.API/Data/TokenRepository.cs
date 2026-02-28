@@ -156,6 +156,22 @@ public class TokenRepository : ITokenRepository
         return affected > 0;
     }
 
+    public async Task<bool> CancelUserTokenAsync(int tokenId, int userId)
+    {
+        const string sql = @"UPDATE tokens 
+                             SET status = 'Cancelled', updated_at = UTC_TIMESTAMP() 
+                             WHERE token_id = @Id AND user_id = @UserId AND status = 'Waiting'";
+        
+        await using var conn = new MySqlConnection(_connectionString);
+        await conn.OpenAsync();
+        await using var cmd = new MySqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@Id", tokenId);
+        cmd.Parameters.AddWithValue("@UserId", userId);
+
+        var affected = await cmd.ExecuteNonQueryAsync();
+        return affected > 0;
+    }
+
     private static Token MapToken(MySqlDataReader reader)
     {
         return new Token
