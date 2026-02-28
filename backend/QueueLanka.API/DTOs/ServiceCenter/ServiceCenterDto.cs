@@ -10,6 +10,7 @@ public class ServiceCenterDto
     public string? Description { get; set; }
     public string Timezone { get; set; } = string.Empty;
     public int Capacity { get; set; }
+    public int AverageServiceTimeMinutes { get; set; } = 15;
     public string OpeningTime { get; set; } = string.Empty;
     public string ClosingTime { get; set; } = string.Empty;
     public bool IsAvailable { get; set; }

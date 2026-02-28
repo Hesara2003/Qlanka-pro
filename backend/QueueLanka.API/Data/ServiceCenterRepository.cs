@@ -17,7 +17,7 @@ public class ServiceCenterRepository : IServiceCenterRepository
     {
         const string sql = @"
             SELECT center_id, name, address, phone, email, description, timezone, 
-                   capacity, opening_time, closing_time, is_active, created_at, updated_at
+                   capacity, average_service_time_minutes, opening_time, closing_time, is_active, created_at, updated_at
             FROM centers
             ORDER BY name ASC";
 
@@ -39,7 +39,7 @@ public class ServiceCenterRepository : IServiceCenterRepository
     {
         const string sql = @"
             SELECT center_id, name, address, phone, email, description, timezone, 
-                   capacity, opening_time, closing_time, is_active, created_at, updated_at
+                   capacity, average_service_time_minutes, opening_time, closing_time, is_active, created_at, updated_at
             FROM centers
             WHERE center_id = @CenterId
             LIMIT 1";
@@ -65,6 +65,7 @@ public class ServiceCenterRepository : IServiceCenterRepository
             Description = reader.IsDBNull(reader.GetOrdinal("description")) ? null : reader.GetString(reader.GetOrdinal("description")),
             Timezone    = reader.GetString(reader.GetOrdinal("timezone")),
             Capacity    = reader.GetInt32(reader.GetOrdinal("capacity")),
+            AverageServiceTimeMinutes = reader.GetInt32(reader.GetOrdinal("average_service_time_minutes")),
             OpeningTime = (TimeSpan)reader.GetValue(reader.GetOrdinal("opening_time")),
             ClosingTime = (TimeSpan)reader.GetValue(reader.GetOrdinal("closing_time")),
             IsActive    = reader.GetBoolean(reader.GetOrdinal("is_active")),
