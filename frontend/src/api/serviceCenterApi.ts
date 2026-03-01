@@ -1,7 +1,12 @@
 // Service Center API Integration - SCRUM-25
 import { AxiosError } from "axios";
 import axiosInstance from "./axiosInstance";
-import type { ServiceCenter, ServiceCenterApiError, ApiResponse } from "../types/serviceCenter";
+import type {
+  ServiceCenter,
+  ServiceCenterApiError,
+  ApiResponse,
+  CreateServiceCenterRequest,
+} from "../types/serviceCenter";
 
 // Error handling utility
 function extractErrorMessage(error: unknown): string {
@@ -100,6 +105,26 @@ export async function getAvailableServiceCenters(): Promise<ServiceCenter[]> {
       (center) => center.isAvailable && center.isActive
     );
   } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }
+}
+
+/**
+ * Create a new service center (admin only)
+ * Does NOT use retry — write operations must not be silently re-issued.
+ */
+export async function createServiceCenter(
+  payload: CreateServiceCenterRequest
+): Promise<ServiceCenter> {
+  try {
+    const { data } = await axiosInstance.post<ApiResponse<ServiceCenter>>(
+      "/api/service-centers",
+      payload
+    );
+    return data.data;
+  } catch (error) {
+    // Re-throw AxiosError so the page can inspect .response.data.code
+    if (error instanceof AxiosError) throw error;
     throw new Error(extractErrorMessage(error));
   }
 }

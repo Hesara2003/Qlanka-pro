@@ -29,6 +29,21 @@ export interface ApiResponse<T> {
   };
 }
 
+/** Request payload for POST /api/service-centers (admin only) — SCRUM-67 */
+export interface CreateServiceCenterRequest {
+  name: string;
+  address: string;
+  phone?: string;
+  email?: string;
+  description?: string;
+  timezone: string;
+  capacity: number;
+  averageServiceTimeMinutes: number;
+  openingTime: string;
+  closingTime: string;
+  isActive: boolean;
+}
+
 export interface ServiceCenterFilters {
   isAvailable?: boolean;
   isActive?: boolean;
