@@ -129,6 +129,14 @@ public class ServiceCenterRepository : IServiceCenterRepository
             cmdDays.Parameters.AddWithValue("@Close", center.ClosingTime);
             await cmdDays.ExecuteNonQueryAsync();
 
+            // Optionally seed an initial location row when the caller supplies
+            // structured location data on the ServiceCenter.Location property.
+            if (center.Location is not null)
+            {
+                center.Location.CenterId = center.CenterId;
+                center.Location = await UpsertLocationCoreAsync(center.Location, conn, (MySqlTransaction)tx);
+            }
+
             await tx.CommitAsync();
             return center;
         }
