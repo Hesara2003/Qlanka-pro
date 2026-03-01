@@ -9,6 +9,7 @@
   "serviceCenters": {
     "title": "Service Centers",
     "subtitle": "Find and view information about available service centers near you.",
+    "searchPlaceholder": "Search by name or address...",
     "filters": {
       "allCenters": "All Centers",
       "available": "Available",
@@ -18,13 +19,16 @@
     "errorLoading": "Error Loading Centers",
     "noResults": "No Service Centers Found",
     "noResultsFilter": "No {{filter}} service centers available.",
-    "noResultsGeneric": "There are no service centers to display."
+    "noResultsGeneric": "There are no service centers to display.",
+    "noSearchResults": "No results for \"{{query}}\""
   },
   "serviceCenterCard": {
     "available": "Available",
     "unavailable": "Unavailable",
     "hours": "Hours",
     "capacity": "Capacity",
-    "viewDetails": "View Details"
+    "avgServiceTime": "Avg. Time",
+    "minutes": "min",
+    "bookAppointment": "Book Appointment"
   }
 }

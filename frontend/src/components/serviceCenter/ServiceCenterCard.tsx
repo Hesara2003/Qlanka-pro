@@ -102,6 +102,30 @@ export default function ServiceCenterCard({ center }: ServiceCenterCardProps) {
               <p className="font-semibold text-gray-900">{center.capacity}</p>
             </div>
           </div>
+
+          {/* Average Service Time */}
+          <div className="flex items-center gap-2 text-sm">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-amber-500"
+            >
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 14 14"></polyline>
+            </svg>
+            <div>
+              <p className="text-gray-500 text-xs">{t('serviceCenterCard.avgServiceTime')}</p>
+              <p className="font-semibold text-gray-900">
+                {center.averageServiceTimeMinutes} {t('serviceCenterCard.minutes')}
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Contact Information */}
@@ -154,7 +178,7 @@ export default function ServiceCenterCard({ center }: ServiceCenterCardProps) {
               : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
             }`}
         >
-          <span>{t('serviceCenterCard.viewDetails')}</span>
+          <span>{t('serviceCenterCard.bookAppointment')}</span>
           <svg
             width="16"
             height="16"

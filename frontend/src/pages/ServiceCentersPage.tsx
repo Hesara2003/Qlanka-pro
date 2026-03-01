@@ -13,6 +13,7 @@ export default function ServiceCentersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "available" | "unavailable">("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     async function fetchCenters() {
@@ -31,10 +32,20 @@ export default function ServiceCentersPage() {
     fetchCenters();
   }, []);
 
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+
   const filteredCenters = centers.filter((center) => {
-    if (filter === "available") return center.isAvailable && center.isActive;
-    if (filter === "unavailable") return !center.isAvailable || !center.isActive;
-    return true;
+    const matchesFilter =
+      filter === "all" ||
+      (filter === "available" && center.isAvailable && center.isActive) ||
+      (filter === "unavailable" && (!center.isAvailable || !center.isActive));
+
+    const matchesSearch =
+      normalizedQuery === "" ||
+      center.name.toLowerCase().includes(normalizedQuery) ||
+      center.address.toLowerCase().includes(normalizedQuery);
+
+    return matchesFilter && matchesSearch;
   });
 
   return (
@@ -107,6 +118,38 @@ export default function ServiceCentersPage() {
           <p className="text-gray-600">
             {t('serviceCenters.subtitle')}
           </p>
+        </div>
+
+        {/* Search Bar */}
+        <div className="relative mb-6">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg
+              className="h-5 w-5 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={t('serviceCenters.searchPlaceholder')}
+            className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+              aria-label="Clear search"
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
 
         {/* Filter Buttons */}
@@ -205,7 +248,9 @@ export default function ServiceCentersPage() {
             </svg>
             <p className="text-gray-600 font-semibold mb-2">{t('serviceCenters.noResults')}</p>
             <p className="text-gray-500 text-sm">
-              {filter !== "all"
+              {normalizedQuery !== ""
+                ? t('serviceCenters.noSearchResults', { query: searchQuery.trim() })
+                : filter !== "all"
                 ? t('serviceCenters.noResultsFilter', { filter })
                 : t('serviceCenters.noResultsGeneric')}
             </p>

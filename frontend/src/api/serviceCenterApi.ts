@@ -1,7 +1,7 @@
 // Service Center API Integration - SCRUM-25
 import { AxiosError } from "axios";
 import axiosInstance from "./axiosInstance";
-import type { ServiceCenter, ServiceCenterApiError } from "../types/serviceCenter";
+import type { ServiceCenter, ServiceCenterApiError, ApiResponse } from "../types/serviceCenter";
 
 // Error handling utility
 function extractErrorMessage(error: unknown): string {
@@ -62,10 +62,10 @@ async function retryWithBackoff<T>(
 export async function getAllServiceCenters(): Promise<ServiceCenter[]> {
   try {
     return await retryWithBackoff(async () => {
-      const { data } = await axiosInstance.get<ServiceCenter[]>(
+      const { data } = await axiosInstance.get<ApiResponse<ServiceCenter[]>>(
         "/api/service-centers"
       );
-      return data;
+      return data.data;
     });
   } catch (error) {
     throw new Error(extractErrorMessage(error));
@@ -80,10 +80,10 @@ export async function getServiceCenterById(
 ): Promise<ServiceCenter> {
   try {
     return await retryWithBackoff(async () => {
-      const { data } = await axiosInstance.get<ServiceCenter>(
+      const { data } = await axiosInstance.get<ApiResponse<ServiceCenter>>(
         `/api/service-centers/${centerId}`
       );
-      return data;
+      return data.data;
     });
   } catch (error) {
     throw new Error(extractErrorMessage(error));

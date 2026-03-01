@@ -9,6 +9,7 @@
   "serviceCenters": {
     "title": "சேவை மையங்கள்",
     "subtitle": "உங்கள் அருகில் உள்ள சேவை மையங்கள் பற்றிய தகவல்களை காணவும்.",
+    "searchPlaceholder": "பெயர் அல்லது முகவரி மூலம் தேடவும்...",
     "filters": {
       "allCenters": "அனைத்து மையங்களும்",
       "available": "கிடைக்கக்கூடியது",
@@ -18,13 +19,16 @@
     "errorLoading": "மையங்களை ஏற்றுவதில் பிழை",
     "noResults": "சேவை மையங்கள் கிடைக்கவில்லை",
     "noResultsFilter": "{{filter}} சேவை மையங்கள் இல்லை.",
-    "noResultsGeneric": "காண்பிக்க சேவை மையங்கள் இல்லை."
+    "noResultsGeneric": "காண்பிக்க சேவை மையங்கள் இல்லை.",
+    "noSearchResults": "\"{{query}}\" க்கான முடிவுகள் இல்லை"
   },
   "serviceCenterCard": {
     "available": "கிடைக்கக்கூடியது",
     "unavailable": "கிடைக்காதது",
     "hours": "நேரங்கள்",
     "capacity": "திறன்",
-    "viewDetails": "விவரங்களைக் காண்க"
+    "avgServiceTime": "சராசரி நேரம்",
+    "minutes": "நிமிடம்",
+    "bookAppointment": "சந்திப்பு பதிவு செய்யவும்"
   }
 }
