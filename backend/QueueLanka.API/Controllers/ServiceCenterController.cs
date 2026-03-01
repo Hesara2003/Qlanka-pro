@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using QueueLanka.API.DTOs.Common;
 using QueueLanka.API.DTOs.ServiceCenter;
@@ -137,5 +138,47 @@ public class ServiceCenterController : ControllerBase
         );
 
         return Ok(response);
+    }
+
+    /// <summary>Create a new service center.</summary>
+    /// <remarks>
+    /// Creates a new service center with the provided details and automatically seeds a default
+    /// Monday–Friday operating schedule using the supplied opening and closing times.
+    /// Saturday and Sunday are seeded as closed by default.
+    ///
+    /// **Requires Admin role.**
+    /// </remarks>
+    /// <param name="request">Service center creation payload.</param>
+    /// <response code="201">Service center created successfully</response>
+    /// <response code="400">Validation error in the request body</response>
+    /// <response code="401">Authentication required</response>
+    /// <response code="403">Admin role required</response>
+    /// <response code="409">A service center with the same name and address already exists</response>
+    /// <response code="500">Internal server error occurred</response>
+    [HttpPost]
+    [Authorize(Roles = "admin")]
+    [ProducesResponseType(typeof(ApiResponse<ServiceCenterDto>), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> CreateServiceCenter([FromBody] CreateServiceCenterRequestDto request)
+    {
+        _logger.LogInformation("Admin creating service center: {Name} at {Address}", request.Name, request.Address);
+
+        var created = await _serviceCenterService.CreateServiceCenterAsync(request);
+
+        var response = new ApiResponse<ServiceCenterDto>(
+            created,
+            new ResponseMetadata { CorrelationId = HttpContext.TraceIdentifier },
+            $"Service center \"{created.Name}\" created successfully."
+        );
+
+        return CreatedAtAction(
+            nameof(GetServiceCenterById),
+            new { id = created.CenterId },
+            response
+        );
     }
 }

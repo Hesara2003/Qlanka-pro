@@ -40,6 +40,18 @@ public class InvalidServiceCenterDataException : AppException
 }
 
 /// <summary>
+/// Exception thrown when a service center with the same name and address already exists — SCRUM-65.
+/// </summary>
+public class DuplicateServiceCenterException : AppException
+{
+    public DuplicateServiceCenterException(string name, string address)
+        : base(409, "DUPLICATE_SERVICE_CENTER",
+               $"A service center named \"{name}\" already exists at \"{address}\".")
+    {
+    }
+}
+
+/// <summary>
 /// Exception for database or data access errors - SCRUM-29
 /// </summary>
 public class DataAccessException : AppException

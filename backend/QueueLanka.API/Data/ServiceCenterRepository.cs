@@ -53,6 +53,86 @@ public class ServiceCenterRepository : IServiceCenterRepository
         return await reader.ReadAsync() ? MapServiceCenter((MySqlDataReader)reader) : null;
     }
 
+    public async Task<bool> ExistsByNameAndAddressAsync(string name, string address)
+    {
+        const string sql = @"
+            SELECT COUNT(*) FROM centers
+            WHERE LOWER(name) = LOWER(@Name) AND LOWER(address) = LOWER(@Address)";
+
+        await using var conn = new MySqlConnection(_connectionString);
+        await conn.OpenAsync();
+        await using var cmd = new MySqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@Name", name);
+        cmd.Parameters.AddWithValue("@Address", address);
+
+        var count = Convert.ToInt32(await cmd.ExecuteScalarAsync());
+        return count > 0;
+    }
+
+    public async Task<ServiceCenter> CreateAsync(ServiceCenter center)
+    {
+        // Insert the center row inside a transaction so that the default operating-day
+        // rows (Mon–Fri) are always created atomically with the center itself.
+        await using var conn = new MySqlConnection(_connectionString);
+        await conn.OpenAsync();
+        await using var tx = await conn.BeginTransactionAsync();
+
+        try
+        {
+            const string insertCenter = @"
+                INSERT INTO centers
+                    (name, address, phone, email, description, timezone, capacity,
+                     average_service_time_minutes, opening_time, closing_time, is_active)
+                VALUES
+                    (@Name, @Address, @Phone, @Email, @Description, @Timezone, @Capacity,
+                     @AvgTime, @OpeningTime, @ClosingTime, @IsActive);
+                SELECT LAST_INSERT_ID();";
+
+            await using var cmdInsert = new MySqlCommand(insertCenter, conn, (MySqlTransaction)tx);
+            cmdInsert.Parameters.AddWithValue("@Name",        center.Name);
+            cmdInsert.Parameters.AddWithValue("@Address",     center.Address);
+            cmdInsert.Parameters.AddWithValue("@Phone",       (object?)center.Phone       ?? DBNull.Value);
+            cmdInsert.Parameters.AddWithValue("@Email",       (object?)center.Email       ?? DBNull.Value);
+            cmdInsert.Parameters.AddWithValue("@Description", (object?)center.Description ?? DBNull.Value);
+            cmdInsert.Parameters.AddWithValue("@Timezone",    center.Timezone);
+            cmdInsert.Parameters.AddWithValue("@Capacity",    center.Capacity);
+            cmdInsert.Parameters.AddWithValue("@AvgTime",     center.AverageServiceTimeMinutes);
+            cmdInsert.Parameters.AddWithValue("@OpeningTime", center.OpeningTime);
+            cmdInsert.Parameters.AddWithValue("@ClosingTime", center.ClosingTime);
+            cmdInsert.Parameters.AddWithValue("@IsActive",    center.IsActive);
+
+            center.CenterId = Convert.ToInt32(await cmdInsert.ExecuteScalarAsync());
+            center.CreatedAt = DateTime.UtcNow;
+
+            // Seed default Mon–Fri operating days (mirrors migration 003 behaviour for new centers).
+            const string insertDays = @"
+                INSERT INTO center_operating_days
+                    (center_id, day_of_week, is_open, opening_time, closing_time)
+                VALUES
+                    (@CId, 'monday',    TRUE, @Open, @Close),
+                    (@CId, 'tuesday',   TRUE, @Open, @Close),
+                    (@CId, 'wednesday', TRUE, @Open, @Close),
+                    (@CId, 'thursday',  TRUE, @Open, @Close),
+                    (@CId, 'friday',    TRUE, @Open, @Close),
+                    (@CId, 'saturday',  FALSE, @Open, @Close),
+                    (@CId, 'sunday',    FALSE, @Open, @Close);";
+
+            await using var cmdDays = new MySqlCommand(insertDays, conn, (MySqlTransaction)tx);
+            cmdDays.Parameters.AddWithValue("@CId",   center.CenterId);
+            cmdDays.Parameters.AddWithValue("@Open",  center.OpeningTime);
+            cmdDays.Parameters.AddWithValue("@Close", center.ClosingTime);
+            await cmdDays.ExecuteNonQueryAsync();
+
+            await tx.CommitAsync();
+            return center;
+        }
+        catch
+        {
+            await tx.RollbackAsync();
+            throw;
+        }
+    }
+
     private static ServiceCenter MapServiceCenter(MySqlDataReader reader)
     {
         return new ServiceCenter
