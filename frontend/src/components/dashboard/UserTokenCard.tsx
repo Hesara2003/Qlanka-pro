@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { CancelTokenError } from '../../api/tokenApi';
 import type { UserToken } from '../../api/tokenApi';
 
 interface Props {
@@ -9,7 +10,46 @@ interface Props {
 export function UserTokenCard({ token, onCancel }: Props) {
     const [confirming, setConfirming] = useState(false);
     const [cancelling, setCancelling] = useState(false);
-    const [cancelError, setCancelError] = useState<string | null>(null);
+    const [cancelError, setCancelError] = useState<{ message: string; isNetwork: boolean } | null>(null);
+
+    /** Maps a thrown error to a user-friendly message string. */
+    function getCancelErrorDetails(err: unknown): { message: string; isNetwork: boolean } {
+        if (err instanceof CancelTokenError) {
+            switch (err.code) {
+                case 'TOKEN_ALREADY_CANCELLED':
+                    return {
+                        message: 'This token was already cancelled (possibly from another session). Refreshing your list…',
+                        isNetwork: false,
+                    };
+                case 'TOKEN_NOT_CANCELLABLE':
+                    return {
+                        message: 'This token can no longer be cancelled — it is currently being served, completed, or marked as a no-show.',
+                        isNetwork: false,
+                    };
+                case 'TOKEN_NOT_FOUND':
+                    return {
+                        message: 'We could not find this token on your account. Please refresh your tokens list.',
+                        isNetwork: false,
+                    };
+                case 'AUTH_ERROR':
+                    return {
+                        message: 'Your session has expired. Please sign out and sign in again to continue.',
+                        isNetwork: false,
+                    };
+                case 'NETWORK_ERROR':
+                    return {
+                        message: "Couldn't reach the server. Please check your connection and try again.",
+                        isNetwork: true,
+                    };
+                default:
+                    return { message: err.message, isNetwork: false };
+            }
+        }
+        return {
+            message: err instanceof Error ? err.message : 'An unexpected error occurred.',
+            isNetwork: false,
+        };
+    }
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString(undefined, {
@@ -44,7 +84,7 @@ export function UserTokenCard({ token, onCancel }: Props) {
         try {
             await onCancel(token.tokenId);
         } catch (err) {
-            setCancelError(err instanceof Error ? err.message : 'Failed to cancel token.');
+            setCancelError(getCancelErrorDetails(err));
             setCancelling(false);
             setConfirming(false);
         }
@@ -226,16 +266,37 @@ export function UserTokenCard({ token, onCancel }: Props) {
                     {cancelError && (
                         <div
                             style={{
-                                background: '#fef2f2',
-                                border: '1px solid #fecaca',
+                                background: cancelError.isNetwork ? '#eff6ff' : '#fef2f2',
+                                border: `1px solid ${cancelError.isNetwork ? '#bfdbfe' : '#fecaca'}`,
                                 borderRadius: '8px',
                                 padding: '0.6rem 0.75rem',
-                                color: '#b91c1c',
+                                color: cancelError.isNetwork ? '#1e40af' : '#b91c1c',
                                 fontSize: '0.82rem',
                                 marginBottom: '0.75rem',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '0.4rem',
                             }}
                         >
-                            {cancelError}
+                            <span>{cancelError.message}</span>
+                            {cancelError.isNetwork && (
+                                <button
+                                    onClick={() => { setCancelError(null); setConfirming(true); }}
+                                    style={{
+                                        alignSelf: 'flex-start',
+                                        padding: '0.25rem 0.65rem',
+                                        background: '#1e40af',
+                                        color: '#fff',
+                                        border: 'none',
+                                        borderRadius: '4px',
+                                        cursor: 'pointer',
+                                        fontSize: '0.78rem',
+                                        fontWeight: 600,
+                                    }}
+                                >
+                                    Try again
+                                </button>
+                            )}
                         </div>
                     )}
 
