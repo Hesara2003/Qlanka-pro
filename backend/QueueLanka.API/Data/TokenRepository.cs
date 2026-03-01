@@ -49,7 +49,7 @@ public class TokenRepository : ITokenRepository
     {
         const string sql = @"
             SELECT token_id, center_id, user_id, appointment_id, token_number, issued_date, status,
-                   issued_time, estimated_service_time, served_time, completed_time, created_at, updated_at, queue_position
+                   issued_time, estimated_service_time, served_time, completed_time, cancelled_at, created_at, updated_at, queue_position
             FROM tokens
             WHERE token_id = @Id
             LIMIT 1";
@@ -67,7 +67,7 @@ public class TokenRepository : ITokenRepository
     {
         const string sql = @"
             SELECT token_id, center_id, user_id, appointment_id, token_number, issued_date, status,
-                   issued_time, estimated_service_time, served_time, completed_time, created_at, updated_at, queue_position
+                   issued_time, estimated_service_time, served_time, completed_time, cancelled_at, created_at, updated_at, queue_position
             FROM tokens
             WHERE center_id = @CenterId AND issued_date = @Date AND token_number = @TokenNumber
             LIMIT 1";
@@ -87,7 +87,7 @@ public class TokenRepository : ITokenRepository
     {
         const string sql = @"
             SELECT token_id, center_id, user_id, appointment_id, token_number, issued_date, status,
-                   issued_time, estimated_service_time, served_time, completed_time, created_at, updated_at, queue_position
+                   issued_time, estimated_service_time, served_time, completed_time, cancelled_at, created_at, updated_at, queue_position
             FROM tokens
             WHERE user_id = @UserId
             ORDER BY issued_date DESC, issued_time DESC";
@@ -110,7 +110,7 @@ public class TokenRepository : ITokenRepository
     {
         const string sql = @"
             SELECT token_id, center_id, user_id, appointment_id, token_number, issued_date, status,
-                   issued_time, estimated_service_time, served_time, completed_time, created_at, updated_at, queue_position
+                   issued_time, estimated_service_time, served_time, completed_time, cancelled_at, created_at, updated_at, queue_position
             FROM tokens
             WHERE center_id = @CenterId AND issued_date = @Date
             ORDER BY issued_time ASC";
