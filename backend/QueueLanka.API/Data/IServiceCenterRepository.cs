@@ -10,7 +10,7 @@ public interface IServiceCenterRepository
     Task<IEnumerable<CenterOperatingDay>> GetOperatingDaysAsync(int centerId);
     Task<bool> IsCenterAvailableAsync(int centerId, DateTime date);
 
-    /// <summary>Persists a new service center row and returns the entity with its generated ID.</summary>
+    /// <summary>Persists a new service center row (and optional location row) atomically.</summary>
     Task<ServiceCenter> CreateAsync(ServiceCenter center);
 
     /// <summary>
@@ -18,4 +18,15 @@ public interface IServiceCenterRepository
     /// already exists — used to prevent accidental duplicates on creation.
     /// </summary>
     Task<bool> ExistsByNameAndAddressAsync(string name, string address);
+
+    // ── Location ───────────────────────────────────────────────────
+
+    /// <summary>Loads the structured location row for a center. Returns <c>null</c> when absent.</summary>
+    Task<CenterLocation?> GetLocationAsync(int centerId);
+
+    /// <summary>
+    /// INSERT … ON DUPLICATE KEY UPDATE: creates or fully replaces the location row
+    /// for the given center. Returns the saved entity with its <c>LocationId</c> populated.
+    /// </summary>
+    Task<CenterLocation> UpsertLocationAsync(CenterLocation location);
 }
