@@ -219,7 +219,7 @@ export default function ServiceCentersPage() {
           </button>
         </div>
 
-        {/* Loading State */
+        {/* Loading State */}
         {loading && (
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
