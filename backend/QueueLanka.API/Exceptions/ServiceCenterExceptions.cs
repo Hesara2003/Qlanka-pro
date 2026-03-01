@@ -73,11 +73,3 @@ public class LocationNotFoundException : AppException
     {
     }
 }
-    {
-        if (innerException != null)
-        {
-            // Store inner exception for logging purposes
-            Data["InnerException"] = innerException.Message;
-        }
-    }
-}
