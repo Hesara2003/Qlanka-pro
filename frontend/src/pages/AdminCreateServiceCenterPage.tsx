@@ -362,6 +362,8 @@ export default function AdminCreateServiceCenterPage() {
 
       {/* ── Content ── */}
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Scroll anchor — scrolled to when validation fails on submit */}
+        <div ref={formTopRef} />
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">
           <Link to="/service-centers" className="hover:text-blue-600 transition-colors">
