@@ -6,6 +6,7 @@ import DashboardPage from "./pages/DashboardPage";
 import ServiceCentersPage from "./pages/ServiceCentersPage";
 import BookingPage from "./pages/BookingPage";
 import AdminCreateServiceCenterPage from "./pages/AdminCreateServiceCenterPage";
+import AdminUsersPage from "./pages/AdminUsersPage";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
       <Route path="/service-centers" element={<ServiceCentersPage />} />
       <Route path="/book/:centerId" element={<BookingPage />} />
       <Route path="/admin/service-centers/create" element={<AdminCreateServiceCenterPage />} />
+      <Route path="/admin/users" element={<AdminUsersPage />} />
     </Routes>
   );
 }
