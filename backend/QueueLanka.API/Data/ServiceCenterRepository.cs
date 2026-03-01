@@ -15,10 +15,15 @@ public class ServiceCenterRepository : IServiceCenterRepository
 
     public async Task<IEnumerable<ServiceCenter>> GetAllAsync()
     {
+        // v_center_with_location LEFT JOINs centers ↔ center_locations so
+        // the location columns are present but nullable for centers without a row.
         const string sql = @"
-            SELECT center_id, name, address, phone, email, description, timezone, 
-                   capacity, average_service_time_minutes, opening_time, closing_time, is_active, created_at, updated_at
-            FROM centers
+            SELECT center_id, full_address AS address, name, phone, email, description, timezone,
+                   capacity, average_service_time_minutes, opening_time, closing_time,
+                   is_active, created_at, updated_at,
+                   location_id, street_address, city, district, province, postal_code,
+                   country, latitude, longitude, google_maps_url, landmark
+            FROM v_center_with_location
             ORDER BY name ASC";
 
         await using var conn = new MySqlConnection(_connectionString);
@@ -28,9 +33,7 @@ public class ServiceCenterRepository : IServiceCenterRepository
 
         var centers = new List<ServiceCenter>();
         while (await reader.ReadAsync())
-        {
             centers.Add(MapServiceCenter((MySqlDataReader)reader));
-        }
 
         return centers;
     }
@@ -38,9 +41,12 @@ public class ServiceCenterRepository : IServiceCenterRepository
     public async Task<ServiceCenter?> GetByIdAsync(int centerId)
     {
         const string sql = @"
-            SELECT center_id, name, address, phone, email, description, timezone, 
-                   capacity, average_service_time_minutes, opening_time, closing_time, is_active, created_at, updated_at
-            FROM centers
+            SELECT center_id, full_address AS address, name, phone, email, description, timezone,
+                   capacity, average_service_time_minutes, opening_time, closing_time,
+                   is_active, created_at, updated_at,
+                   location_id, street_address, city, district, province, postal_code,
+                   country, latitude, longitude, google_maps_url, landmark
+            FROM v_center_with_location
             WHERE center_id = @CenterId
             LIMIT 1";
 
