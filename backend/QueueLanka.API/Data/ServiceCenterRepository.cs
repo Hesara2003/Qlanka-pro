@@ -15,10 +15,15 @@ public class ServiceCenterRepository : IServiceCenterRepository
 
     public async Task<IEnumerable<ServiceCenter>> GetAllAsync()
     {
+        // v_center_with_location LEFT JOINs centers ↔ center_locations so
+        // the location columns are present but nullable for centers without a row.
         const string sql = @"
-            SELECT center_id, name, address, phone, email, description, timezone, 
-                   capacity, average_service_time_minutes, opening_time, closing_time, is_active, created_at, updated_at
-            FROM centers
+            SELECT center_id, full_address AS address, name, phone, email, description, timezone,
+                   capacity, average_service_time_minutes, opening_time, closing_time,
+                   is_active, created_at, updated_at,
+                   location_id, street_address, city, district, province, postal_code,
+                   country, latitude, longitude, google_maps_url, landmark
+            FROM v_center_with_location
             ORDER BY name ASC";
 
         await using var conn = new MySqlConnection(_connectionString);
@@ -28,9 +33,7 @@ public class ServiceCenterRepository : IServiceCenterRepository
 
         var centers = new List<ServiceCenter>();
         while (await reader.ReadAsync())
-        {
             centers.Add(MapServiceCenter((MySqlDataReader)reader));
-        }
 
         return centers;
     }
@@ -38,9 +41,12 @@ public class ServiceCenterRepository : IServiceCenterRepository
     public async Task<ServiceCenter?> GetByIdAsync(int centerId)
     {
         const string sql = @"
-            SELECT center_id, name, address, phone, email, description, timezone, 
-                   capacity, average_service_time_minutes, opening_time, closing_time, is_active, created_at, updated_at
-            FROM centers
+            SELECT center_id, full_address AS address, name, phone, email, description, timezone,
+                   capacity, average_service_time_minutes, opening_time, closing_time,
+                   is_active, created_at, updated_at,
+                   location_id, street_address, city, district, province, postal_code,
+                   country, latitude, longitude, google_maps_url, landmark
+            FROM v_center_with_location
             WHERE center_id = @CenterId
             LIMIT 1";
 
@@ -123,6 +129,14 @@ public class ServiceCenterRepository : IServiceCenterRepository
             cmdDays.Parameters.AddWithValue("@Close", center.ClosingTime);
             await cmdDays.ExecuteNonQueryAsync();
 
+            // Optionally seed an initial location row when the caller supplies
+            // structured location data on the ServiceCenter.Location property.
+            if (center.Location is not null)
+            {
+                center.Location.CenterId = center.CenterId;
+                center.Location = await UpsertLocationCoreAsync(center.Location, conn, (MySqlTransaction)tx);
+            }
+
             await tx.CommitAsync();
             return center;
         }
@@ -135,14 +149,14 @@ public class ServiceCenterRepository : IServiceCenterRepository
 
     private static ServiceCenter MapServiceCenter(MySqlDataReader reader)
     {
-        return new ServiceCenter
+        var center = new ServiceCenter
         {
             CenterId    = reader.GetInt32(reader.GetOrdinal("center_id")),
             Name        = reader.GetString(reader.GetOrdinal("name")),
             Address     = reader.GetString(reader.GetOrdinal("address")),
-            Phone       = reader.IsDBNull(reader.GetOrdinal("phone")) ? null : reader.GetString(reader.GetOrdinal("phone")),
-            Email       = reader.IsDBNull(reader.GetOrdinal("email")) ? null : reader.GetString(reader.GetOrdinal("email")),
-            Description = reader.IsDBNull(reader.GetOrdinal("description")) ? null : reader.GetString(reader.GetOrdinal("description")),
+            Phone       = reader.IsDBNull(reader.GetOrdinal("phone"))        ? null : reader.GetString(reader.GetOrdinal("phone")),
+            Email       = reader.IsDBNull(reader.GetOrdinal("email"))        ? null : reader.GetString(reader.GetOrdinal("email")),
+            Description = reader.IsDBNull(reader.GetOrdinal("description"))  ? null : reader.GetString(reader.GetOrdinal("description")),
             Timezone    = reader.GetString(reader.GetOrdinal("timezone")),
             Capacity    = reader.GetInt32(reader.GetOrdinal("capacity")),
             AverageServiceTimeMinutes = reader.GetInt32(reader.GetOrdinal("average_service_time_minutes")),
@@ -151,6 +165,134 @@ public class ServiceCenterRepository : IServiceCenterRepository
             IsActive    = reader.GetBoolean(reader.GetOrdinal("is_active")),
             CreatedAt   = reader.GetDateTime(reader.GetOrdinal("created_at")),
             UpdatedAt   = reader.IsDBNull(reader.GetOrdinal("updated_at")) ? null : reader.GetDateTime(reader.GetOrdinal("updated_at"))
+        };
+
+        // Populate the structured location when the result set includes location columns
+        // (present when using v_center_with_location; absent on raw centers queries).
+        int locationIdOrdinal = reader.GetOrdinal("location_id");
+        if (!reader.IsDBNull(locationIdOrdinal))
+        {
+            center.Location = new CenterLocation
+            {
+                LocationId    = reader.GetInt32(locationIdOrdinal),
+                CenterId      = center.CenterId,
+                StreetAddress = reader.IsDBNull(reader.GetOrdinal("street_address")) ? null : reader.GetString(reader.GetOrdinal("street_address")),
+                City          = reader.IsDBNull(reader.GetOrdinal("city"))           ? null : reader.GetString(reader.GetOrdinal("city")),
+                District      = reader.IsDBNull(reader.GetOrdinal("district"))       ? null : reader.GetString(reader.GetOrdinal("district")),
+                Province      = reader.IsDBNull(reader.GetOrdinal("province"))       ? null : reader.GetString(reader.GetOrdinal("province")),
+                PostalCode    = reader.IsDBNull(reader.GetOrdinal("postal_code"))    ? null : reader.GetString(reader.GetOrdinal("postal_code")),
+                Country       = reader.IsDBNull(reader.GetOrdinal("country"))        ? "Sri Lanka" : reader.GetString(reader.GetOrdinal("country")),
+                Latitude      = reader.IsDBNull(reader.GetOrdinal("latitude"))       ? null : reader.GetDecimal(reader.GetOrdinal("latitude")),
+                Longitude     = reader.IsDBNull(reader.GetOrdinal("longitude"))      ? null : reader.GetDecimal(reader.GetOrdinal("longitude")),
+                GoogleMapsUrl = reader.IsDBNull(reader.GetOrdinal("google_maps_url")) ? null : reader.GetString(reader.GetOrdinal("google_maps_url")),
+                Landmark      = reader.IsDBNull(reader.GetOrdinal("landmark"))       ? null : reader.GetString(reader.GetOrdinal("landmark")),
+            };
+        }
+
+        return center;
+    }
+
+    // ── Location methods ──────────────────────────────────────────────────
+
+    public async Task<CenterLocation?> GetLocationAsync(int centerId)
+    {
+        const string sql = @"
+            SELECT location_id, center_id, street_address, city, district, province,
+                   postal_code, country, latitude, longitude, google_maps_url, landmark,
+                   created_at, updated_at
+            FROM center_locations
+            WHERE center_id = @CenterId
+            LIMIT 1";
+
+        await using var conn = new MySqlConnection(_connectionString);
+        await conn.OpenAsync();
+        await using var cmd = new MySqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@CenterId", centerId);
+
+        await using var reader = await cmd.ExecuteReaderAsync();
+        return await reader.ReadAsync() ? MapLocation((MySqlDataReader)reader) : null;
+    }
+
+    public async Task<CenterLocation> UpsertLocationAsync(CenterLocation location)
+    {
+        await using var conn = new MySqlConnection(_connectionString);
+        await conn.OpenAsync();
+        return await UpsertLocationCoreAsync(location, conn, null);
+    }
+
+    /// <summary>
+    /// Core INSERT … ON DUPLICATE KEY UPDATE. Can be called inside an existing
+    /// transaction (pass <paramref name="tx"/>) or standalone (pass <c>null</c>).
+    /// </summary>
+    private static async Task<CenterLocation> UpsertLocationCoreAsync(
+        CenterLocation location,
+        MySqlConnection conn,
+        MySqlTransaction? tx)
+    {
+        const string sql = @"
+            INSERT INTO center_locations
+                (center_id, street_address, city, district, province, postal_code,
+                 country, latitude, longitude, google_maps_url, landmark)
+            VALUES
+                (@CenterId, @StreetAddress, @City, @District, @Province, @PostalCode,
+                 @Country, @Latitude, @Longitude, @GoogleMapsUrl, @Landmark)
+            ON DUPLICATE KEY UPDATE
+                street_address  = VALUES(street_address),
+                city            = VALUES(city),
+                district        = VALUES(district),
+                province        = VALUES(province),
+                postal_code     = VALUES(postal_code),
+                country         = VALUES(country),
+                latitude        = VALUES(latitude),
+                longitude       = VALUES(longitude),
+                google_maps_url = VALUES(google_maps_url),
+                landmark        = VALUES(landmark);
+            SELECT LAST_INSERT_ID();";
+
+        await using var cmd = tx is null
+            ? new MySqlCommand(sql, conn)
+            : new MySqlCommand(sql, conn, tx);
+
+        cmd.Parameters.AddWithValue("@CenterId",      location.CenterId);
+        cmd.Parameters.AddWithValue("@StreetAddress", (object?)location.StreetAddress ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@City",          (object?)location.City          ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@District",      (object?)location.District      ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@Province",      (object?)location.Province      ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@PostalCode",    (object?)location.PostalCode    ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@Country",       location.Country);
+        cmd.Parameters.AddWithValue("@Latitude",      (object?)location.Latitude      ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@Longitude",     (object?)location.Longitude     ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@GoogleMapsUrl", (object?)location.GoogleMapsUrl ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@Landmark",      (object?)location.Landmark      ?? DBNull.Value);
+
+        var result = await cmd.ExecuteScalarAsync();
+        // LAST_INSERT_ID() returns 0 on an UPDATE; in that case re-load the existing row's ID.
+        long insertId = Convert.ToInt64(result);
+        if (insertId > 0)
+            location.LocationId = (int)insertId;
+
+        location.CreatedAt = DateTime.UtcNow;
+        return location;
+    }
+
+    private static CenterLocation MapLocation(MySqlDataReader reader)
+    {
+        return new CenterLocation
+        {
+            LocationId    = reader.GetInt32(reader.GetOrdinal("location_id")),
+            CenterId      = reader.GetInt32(reader.GetOrdinal("center_id")),
+            StreetAddress = reader.IsDBNull(reader.GetOrdinal("street_address")) ? null : reader.GetString(reader.GetOrdinal("street_address")),
+            City          = reader.IsDBNull(reader.GetOrdinal("city"))           ? null : reader.GetString(reader.GetOrdinal("city")),
+            District      = reader.IsDBNull(reader.GetOrdinal("district"))       ? null : reader.GetString(reader.GetOrdinal("district")),
+            Province      = reader.IsDBNull(reader.GetOrdinal("province"))       ? null : reader.GetString(reader.GetOrdinal("province")),
+            PostalCode    = reader.IsDBNull(reader.GetOrdinal("postal_code"))    ? null : reader.GetString(reader.GetOrdinal("postal_code")),
+            Country       = reader.IsDBNull(reader.GetOrdinal("country"))        ? "Sri Lanka" : reader.GetString(reader.GetOrdinal("country")),
+            Latitude      = reader.IsDBNull(reader.GetOrdinal("latitude"))       ? null : reader.GetDecimal(reader.GetOrdinal("latitude")),
+            Longitude     = reader.IsDBNull(reader.GetOrdinal("longitude"))      ? null : reader.GetDecimal(reader.GetOrdinal("longitude")),
+            GoogleMapsUrl = reader.IsDBNull(reader.GetOrdinal("google_maps_url")) ? null : reader.GetString(reader.GetOrdinal("google_maps_url")),
+            Landmark      = reader.IsDBNull(reader.GetOrdinal("landmark"))       ? null : reader.GetString(reader.GetOrdinal("landmark")),
+            CreatedAt     = reader.GetDateTime(reader.GetOrdinal("created_at")),
+            UpdatedAt     = reader.IsDBNull(reader.GetOrdinal("updated_at"))     ? null : reader.GetDateTime(reader.GetOrdinal("updated_at")),
         };
     }
 
