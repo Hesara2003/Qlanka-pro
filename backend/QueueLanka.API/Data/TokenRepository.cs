@@ -159,7 +159,7 @@ public class TokenRepository : ITokenRepository
     public async Task<bool> CancelUserTokenAsync(int tokenId, int userId)
     {
         const string sql = @"UPDATE tokens 
-                             SET status = 'Cancelled', updated_at = UTC_TIMESTAMP() 
+                             SET status = 'Cancelled', cancelled_at = UTC_TIMESTAMP(), updated_at = UTC_TIMESTAMP() 
                              WHERE token_id = @Id AND user_id = @UserId AND status = 'Waiting'";
         
         await using var conn = new MySqlConnection(_connectionString);
@@ -170,6 +170,29 @@ public class TokenRepository : ITokenRepository
 
         var affected = await cmd.ExecuteNonQueryAsync();
         return affected > 0;
+    }
+
+    public async Task<bool> CancelAndShiftQueueAsync(int tokenId, int userId)
+    {
+        const string sql = "CALL sp_cancel_token_shift_queue(@TokenId, @UserId, @Success)";
+
+        await using var conn = new MySqlConnection(_connectionString);
+        await conn.OpenAsync();
+        await using var cmd = new MySqlCommand(sql, conn);
+        cmd.Parameters.AddWithValue("@TokenId", tokenId);
+        cmd.Parameters.AddWithValue("@UserId", userId);
+
+        // OUT parameter — MySQL sends it back as a result-set row.
+        var successParam = new MySqlParameter("@Success", MySqlDbType.Byte)
+        {
+            Direction = System.Data.ParameterDirection.Output
+        };
+        cmd.Parameters.Add(successParam);
+
+        await cmd.ExecuteNonQueryAsync();
+
+        // The stored procedure sets @Success = 1 on success, 0 otherwise.
+        return Convert.ToByte(successParam.Value) == 1;
     }
 
     private static Token MapToken(MySqlDataReader reader)
@@ -187,6 +210,7 @@ public class TokenRepository : ITokenRepository
             EstimatedServiceTime = reader.IsDBNull(reader.GetOrdinal("estimated_service_time")) ? null : reader.GetDateTime(reader.GetOrdinal("estimated_service_time")),
             ServedTime           = reader.IsDBNull(reader.GetOrdinal("served_time")) ? null : reader.GetDateTime(reader.GetOrdinal("served_time")),
             CompletedTime        = reader.IsDBNull(reader.GetOrdinal("completed_time")) ? null : reader.GetDateTime(reader.GetOrdinal("completed_time")),
+            CancelledAt          = reader.IsDBNull(reader.GetOrdinal("cancelled_at")) ? null : reader.GetDateTime(reader.GetOrdinal("cancelled_at")),
             CreatedAt            = reader.GetDateTime(reader.GetOrdinal("created_at")),
             UpdatedAt            = reader.IsDBNull(reader.GetOrdinal("updated_at")) ? null : reader.GetDateTime(reader.GetOrdinal("updated_at")),
             QueuePosition        = reader.IsDBNull(reader.GetOrdinal("queue_position")) ? null : reader.GetInt32(reader.GetOrdinal("queue_position"))
