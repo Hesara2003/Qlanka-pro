@@ -22,6 +22,7 @@ export interface UserToken {
     estimatedServiceTime: string | null;
     servedTime: string | null;
     completedTime: string | null;
+    cancelledAt: string | null;
     queuePosition: number | null;
     eta: string | null;
 }
@@ -31,6 +32,14 @@ export const tokenApi = {
         try {
             const response = await axiosInstance.get(`/Token/my-tokens`);
             return response.data;
+        } catch (error) {
+            throw new Error(extractErrorMessage(error));
+        }
+    },
+
+    cancelToken: async (tokenId: number): Promise<void> => {
+        try {
+            await axiosInstance.put(`/Token/${tokenId}/cancel`);
         } catch (error) {
             throw new Error(extractErrorMessage(error));
         }
