@@ -4,12 +4,14 @@
     "signOut": "ඉවත් වන්න",
     "retry": "නැවත උත්සාහ කරන්න",
     "loading": "පූරණය වෙමින්...",
-    "error": "දෝෂයකි"
+    "error": "දෝෂයකි",
+    "refresh": "නැවු"
   },
   "serviceCenters": {
     "title": "සේවා මධ්‍යස්ථාන",
     "subtitle": "ඔබ අසල ඇති සේවා මධ්‍යස්ථාන පිළිබඳ තොරතුරු සොයා බලන්න.",
     "searchPlaceholder": "නම හෝ ලිපිනය අනුව සොයන්න...",
+    "createNew": "සේවා මධ්‍යස්ථානයක් කරන්න",
     "filters": {
       "allCenters": "සියලු මධ්‍යස්ථාන",
       "available": "ලබා ගත හැකි",
@@ -20,7 +22,8 @@
     "noResults": "සේවා මධ්‍යස්ථාන හමු නොවිය",
     "noResultsFilter": "{{filter}} සේවා මධ්‍යස්ථාන නොමැත.",
     "noResultsGeneric": "සේවා මධ්‍යස්ථාන නොමැත.",
-    "noSearchResults": "\"{{query}}\" සඳහා ප්‍රතිඵල නොමැත"
+    "noSearchResults": "\"{{query}}\" සඳහා ප්‍රතිඵල නොමැත",
+    "lastUpdated": "{{time}} දී යාවත්කාලීන විය"
   },
   "serviceCenterCard": {
     "available": "ලබා ගත හැකි",

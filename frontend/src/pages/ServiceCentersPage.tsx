@@ -1,9 +1,8 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { getAllServiceCenters } from "../api/serviceCenterApi";
-import type { ServiceCenter } from "../types/serviceCenter";
+import { useServiceCenters } from "../hooks/useServiceCenters";
 import ServiceCenterCard from "../components/serviceCenter/ServiceCenterCard";
 import LanguageSelector from "../components/common/LanguageSelector";
 
@@ -11,28 +10,14 @@ export default function ServiceCentersPage() {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [centers, setCenters] = useState<ServiceCenter[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "available" | "unavailable">("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  useEffect(() => {
-    async function fetchCenters() {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await getAllServiceCenters();
-        setCenters(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load service centers");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchCenters();
-  }, []);
+  // SCRUM-68: use shared hook — auto-refreshes every 60 s, exposes refresh() and lastUpdated
+  const { centers, loading, error, refresh, lastUpdated } = useServiceCenters({
+    autoRefresh: true,
+    refreshInterval: 60_000,
+  });
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
 
@@ -209,7 +194,32 @@ export default function ServiceCentersPage() {
           </button>
         </div>
 
-        {/* Loading State */}
+        {/* Refresh controls — SCRUM-68 */}
+        <div className="flex items-center justify-end gap-3 mb-4 min-h-[28px]">
+          {lastUpdated && (
+            <span className="text-xs text-gray-400">
+              {t('serviceCenters.lastUpdated', { time: lastUpdated.toLocaleTimeString() })}
+            </span>
+          )}
+          <button
+            onClick={refresh}
+            disabled={loading}
+            aria-label="Refresh service centers"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-40"
+          >
+            <svg
+              className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            {t('common.refresh')}
+          </button>
+        </div>
+
+        {/* Loading State */
         {loading && (
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
@@ -238,7 +248,7 @@ export default function ServiceCentersPage() {
             <p className="text-red-700 font-semibold mb-2">{t('serviceCenters.errorLoading')}</p>
             <p className="text-red-600 text-sm">{error}</p>
             <button
-              onClick={() => window.location.reload()}
+              onClick={refresh}
               className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
             >
               {t('common.retry')}
