@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getAllServiceCenters } from "../api/serviceCenterApi";
 import type { ServiceCenter } from "../types/serviceCenter";
@@ -9,6 +10,7 @@ import LanguageSelector from "../components/common/LanguageSelector";
 export default function ServiceCentersPage() {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [centers, setCenters] = useState<ServiceCenter[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -113,11 +115,25 @@ export default function ServiceCentersPage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('serviceCenters.title')}</h1>
-          <p className="text-gray-600">
-            {t('serviceCenters.subtitle')}
-          </p>
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('serviceCenters.title')}</h1>
+            <p className="text-gray-600">
+              {t('serviceCenters.subtitle')}
+            </p>
+          </div>
+          {/* Admin-only: Create New Service Center button */}
+          {user?.role === "admin" && (
+            <button
+              onClick={() => navigate("/admin/service-centers/create")}
+              className="shrink-0 flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-sm transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              {t('serviceCenters.createNew')}
+            </button>
+          )}
         </div>
 
         {/* Search Bar */}

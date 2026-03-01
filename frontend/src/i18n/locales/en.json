@@ -10,6 +10,7 @@
     "title": "Service Centers",
     "subtitle": "Find and view information about available service centers near you.",
     "searchPlaceholder": "Search by name or address...",
+    "createNew": "Create Service Center",
     "filters": {
       "allCenters": "All Centers",
       "available": "Available",
@@ -30,5 +31,52 @@
     "avgServiceTime": "Avg. Time",
     "minutes": "min",
     "bookAppointment": "Book Appointment"
+  },
+  "adminCreateCenter": {
+    "title": "Create Service Center",
+    "subtitle": "Fill in the details below to register a new service center.",
+    "breadcrumb": "Create New",
+    "sections": {
+      "basicInfo": "Basic Information",
+      "location": "Location",
+      "locationHint": "Provide the full physical address and select the matching timezone for accurate service hour calculations.",
+      "hours": "Operating Hours",
+      "capacity": "Capacity",
+      "settings": "Settings"
+    },
+    "fields": {
+      "name": "Service Center Name",
+      "address": "Full Address",
+      "phone": "Phone Number",
+      "email": "Email Address",
+      "description": "Description",
+      "timezone": "Timezone",
+      "timezoneHint": "Select the IANA timezone of the center's physical location.",
+      "openingTime": "Opening Time",
+      "closingTime": "Closing Time",
+      "capacity": "Daily Capacity",
+      "capacityHint": "Maximum tokens issued per day (1\u201310,000).",
+      "avgServiceTime": "Average Service Time",
+      "avgServiceTimeHint": "Estimated minutes per customer (1\u2013480).",
+      "isActive": "Active immediately",
+      "isActiveOn": "Center will be visible and available for bookings.",
+      "isActiveOff": "Center will be created but hidden from citizens."
+    },
+    "placeholders": {
+      "name": "e.g. Colombo Municipal Council",
+      "address": "No. 1, Main Street, Colombo 01",
+      "description": "Short description of the services offered..."
+    },
+    "actions": {
+      "create": "Create Service Center",
+      "creating": "Creating...",
+      "cancel": "Cancel"
+    },
+    "success": {
+      "title": "Service Center Created!",
+      "message": "\"{{name}}\" has been successfully registered.",
+      "createAnother": "Create Another",
+      "viewAll": "View All Centers"
+    }
   }
 }
