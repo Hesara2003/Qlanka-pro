@@ -43,10 +43,11 @@ export function UserTokenCard({ token, onCancel }: Props) {
         setCancelError(null);
         try {
             await onCancel(token.tokenId);
+            setConfirming(false);
         } catch (err) {
             setCancelError(err instanceof Error ? err.message : 'Failed to cancel token.');
+        } finally {
             setCancelling(false);
-            setConfirming(false);
         }
     };
 
