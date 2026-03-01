@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AxiosError } from "axios";
 import { useAuth } from "../context/AuthContext";
@@ -43,54 +43,56 @@ interface FormErrors {
   closingTime?: string;
 }
 
-function validate(form: CreateServiceCenterRequest): FormErrors {
+type TFn = (key: string, opts?: Record<string, unknown>) => string;
+
+function validate(form: CreateServiceCenterRequest, t: TFn): FormErrors {
   const errors: FormErrors = {};
 
   if (!form.name.trim()) {
-    errors.name = "Name is required.";
+    errors.name = t("adminCreateCenter.errors.nameRequired");
   } else if (form.name.trim().length < 2 || form.name.trim().length > 100) {
-    errors.name = "Name must be between 2 and 100 characters.";
+    errors.name = t("adminCreateCenter.errors.nameLength");
   }
 
   if (!form.address.trim()) {
-    errors.address = "Address is required.";
+    errors.address = t("adminCreateCenter.errors.addressRequired");
   } else if (form.address.trim().length < 5 || form.address.trim().length > 255) {
-    errors.address = "Address must be between 5 and 255 characters.";
+    errors.address = t("adminCreateCenter.errors.addressLength");
   }
 
   if (form.phone && !/^[+\d\s\-().]{0,20}$/.test(form.phone)) {
-    errors.phone = "Phone must be a valid phone number (max 20 characters).";
+    errors.phone = t("adminCreateCenter.errors.phoneInvalid");
   }
 
   if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-    errors.email = "Email must be a valid email address.";
+    errors.email = t("adminCreateCenter.errors.emailInvalid");
   }
 
   if (form.description && form.description.length > 1000) {
-    errors.description = "Description must not exceed 1,000 characters.";
+    errors.description = t("adminCreateCenter.errors.descriptionLength");
   }
 
-  if (form.capacity < 1 || form.capacity > 10000) {
-    errors.capacity = "Capacity must be between 1 and 10,000.";
+  if (isNaN(form.capacity) || form.capacity < 1 || form.capacity > 10000) {
+    errors.capacity = t("adminCreateCenter.errors.capacityRange");
   }
 
-  if (form.averageServiceTimeMinutes < 1 || form.averageServiceTimeMinutes > 480) {
-    errors.averageServiceTimeMinutes = "Average service time must be between 1 and 480 minutes.";
+  if (isNaN(form.averageServiceTimeMinutes) || form.averageServiceTimeMinutes < 1 || form.averageServiceTimeMinutes > 480) {
+    errors.averageServiceTimeMinutes = t("adminCreateCenter.errors.avgTimeRange");
   }
 
   const timeRe = /^([01]\d|2[0-3]):[0-5]\d$/;
   if (!form.openingTime || !timeRe.test(form.openingTime)) {
-    errors.openingTime = "Opening time must be in HH:mm format.";
+    errors.openingTime = t("adminCreateCenter.errors.openingTimeInvalid");
   }
   if (!form.closingTime || !timeRe.test(form.closingTime)) {
-    errors.closingTime = "Closing time must be in HH:mm format.";
+    errors.closingTime = t("adminCreateCenter.errors.closingTimeInvalid");
   }
   if (
     !errors.openingTime &&
     !errors.closingTime &&
     form.closingTime <= form.openingTime
   ) {
-    errors.closingTime = "Closing time must be after opening time.";
+    errors.closingTime = t("adminCreateCenter.errors.closingBeforeOpening");
   }
 
   return errors;
@@ -116,9 +118,13 @@ const INITIAL: CreateServiceCenterRequest = {
 // ──────────────────────────────────────────────
 //  Reusable field-level error hint
 // ──────────────────────────────────────────────
-function FieldError({ msg }: { msg?: string }) {
+function FieldError({ msg, id }: { msg?: string; id?: string }) {
   if (!msg) return null;
-  return <p className="mt-1 text-xs text-red-600">{msg}</p>;
+  return (
+    <p id={id} role="alert" className="mt-1 text-xs text-red-600">
+      {msg}
+    </p>
+  );
 }
 
 // ──────────────────────────────────────────────
@@ -140,9 +146,12 @@ export default function AdminCreateServiceCenterPage() {
 
   const [form, setForm] = useState<CreateServiceCenterRequest>(INITIAL);
   const [fieldErrors, setFieldErrors] = useState<FormErrors>({});
+  const [touched, setTouched] = useState<Partial<Record<keyof FormErrors, boolean>>>({});
+  const [submitAttempted, setSubmitAttempted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [createdName, setCreatedName] = useState<string | null>(null);
+  const formTopRef = useRef<HTMLDivElement>(null);
 
   // ── Handlers ──────────────────────────────────────────
   function handleChange(
@@ -156,25 +165,46 @@ export default function AdminCreateServiceCenterPage() {
         ? (e.target as HTMLInputElement).checked
         : e.target.value;
 
-    setForm((prev) => ({ ...prev, [name]: value }));
-    // Clear the field error on change
-    setFieldErrors((prev) => ({ ...prev, [name]: undefined }));
+    const newForm = { ...form, [name]: value } as CreateServiceCenterRequest;
+    setForm(newForm);
+    // Re-validate immediately if the field (or form) was already touched
+    if (touched[name as keyof FormErrors] || submitAttempted) {
+      setFieldErrors(validate(newForm, t));
+    }
     setSubmitError(null);
   }
 
   function handleNumberChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: parseInt(value, 10) || 0 }));
-    setFieldErrors((prev) => ({ ...prev, [name]: undefined }));
+    const { name } = e.target;
+    const numeric = e.target.valueAsNumber; // NaN when input is cleared
+    const newForm = { ...form, [name]: numeric } as CreateServiceCenterRequest;
+    setForm(newForm);
+    if (touched[name as keyof FormErrors] || submitAttempted) {
+      setFieldErrors(validate(newForm, t));
+    }
     setSubmitError(null);
+  }
+
+  function handleBlur(field: keyof FormErrors) {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+    setFieldErrors(validate(form, t));
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    const errors = validate(form);
+    const errors = validate(form, t);
+    // Mark every errored field as touched so all messages surface
+    const allTouched = (Object.keys(errors) as (keyof FormErrors)[]).reduce(
+      (acc, key) => ({ ...acc, [key]: true }),
+      {} as Partial<Record<keyof FormErrors, boolean>>
+    );
+    setTouched((prev) => ({ ...prev, ...allTouched }));
+    setSubmitAttempted(true);
+    setFieldErrors(errors);
+
     if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
+      formTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       return;
     }
 
@@ -194,18 +224,42 @@ export default function AdminCreateServiceCenterPage() {
       setCreatedName(payload.name);
     } catch (err) {
       if (err instanceof AxiosError && err.response?.data) {
-        const code: string = err.response.data?.code ?? "";
+        const data = err.response.data;
+        const code: string = data?.code ?? "";
         if (code === "DUPLICATE_SERVICE_CENTER") {
-          setSubmitError(
-            `A service center named "${form.name.trim()}" at this address already exists.`
-          );
+          setSubmitError(t("adminCreateCenter.errors.duplicate"));
+        } else if (code === "VALIDATION_ERROR" && Array.isArray(data.validationErrors)) {
+          // Map backend field-level errors back to the form
+          const BACKEND_FIELD_MAP: Record<string, keyof FormErrors> = {
+            Name: "name",
+            Address: "address",
+            Phone: "phone",
+            Email: "email",
+            Description: "description",
+            Capacity: "capacity",
+            AverageServiceTimeMinutes: "averageServiceTimeMinutes",
+            OpeningTime: "openingTime",
+            ClosingTime: "closingTime",
+          };
+          const backendErrors: FormErrors = {};
+          for (const ve of data.validationErrors as { field: string; message: string }[]) {
+            const frontendKey = BACKEND_FIELD_MAP[ve.field];
+            if (frontendKey && !backendErrors[frontendKey]) {
+              backendErrors[frontendKey] = ve.message;
+            }
+          }
+          if (Object.keys(backendErrors).length > 0) {
+            setFieldErrors(backendErrors);
+            setSubmitAttempted(true);
+            formTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+          } else {
+            setSubmitError(data.message ?? t("adminCreateCenter.errors.serverError"));
+          }
         } else {
-          setSubmitError(
-            err.response.data?.message ?? "Failed to create service center."
-          );
+          setSubmitError(data?.message ?? t("adminCreateCenter.errors.serverError"));
         }
       } else {
-        setSubmitError("Network error. Please check your connection and try again.");
+        setSubmitError(t("adminCreateCenter.errors.networkError"));
       }
     } finally {
       setSubmitting(false);
