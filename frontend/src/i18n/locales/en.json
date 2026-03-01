@@ -4,7 +4,8 @@
     "signOut": "Sign Out",
     "retry": "Retry",
     "loading": "Loading...",
-    "error": "Error"
+    "error": "Error",
+    "refresh": "Refresh"
   },
   "serviceCenters": {
     "title": "Service Centers",
@@ -21,7 +22,8 @@
     "noResults": "No Service Centers Found",
     "noResultsFilter": "No {{filter}} service centers available.",
     "noResultsGeneric": "There are no service centers to display.",
-    "noSearchResults": "No results for \"{{query}}\""
+    "noSearchResults": "No results for \"{{query}}\"",
+    "lastUpdated": "Updated {{time}}"
   },
   "serviceCenterCard": {
     "available": "Available",

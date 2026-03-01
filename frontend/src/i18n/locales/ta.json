@@ -4,7 +4,8 @@
     "signOut": "வெளியேறு",
     "retry": "மீண்டும் முயற்சிக்கவும்",
     "loading": "ஏற்றுகிறது...",
-    "error": "பிழை"
+    "error": "பிழை",
+    "refresh": "புதுப்பி"
   },
   "serviceCenters": {
     "title": "சேவை மையங்கள்",
@@ -21,7 +22,8 @@
     "noResults": "சேவை மையங்கள் கிடைக்கவில்லை",
     "noResultsFilter": "{{filter}} சேவை மையங்கள் இல்லை.",
     "noResultsGeneric": "காண்பிக்க சேவை மையங்கள் இல்லை.",
-    "noSearchResults": "\"{{query}}\" க்கான முடிவுகள் இல்லை"
+    "noSearchResults": "\"{{query}}\" க்கான முடிவுகள் இல்லை",
+    "lastUpdated": "{{time}} இல் புதுப்பிக்கப்பட்டது"
   },
   "serviceCenterCard": {
     "available": "கிடைக்கக்கூடியது",
