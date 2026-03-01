@@ -58,4 +58,49 @@ public class CreateServiceCenterRequestDto
 
     /// <summary>Whether the center should be active immediately upon creation.</summary>
     public bool IsActive { get; set; } = true;
+
+    // ── Optional structured location — SCRUM-72 ──────────────────
+    // When any of these fields are provided a center_locations row is created
+    // atomically alongside the center, associating it with its physical location.
+
+    /// <summary>Street number and name (e.g. "No. 1, Main Street").</summary>
+    [StringLength(255, ErrorMessage = "StreetAddress must not exceed 255 characters.")]
+    public string? StreetAddress { get; set; }
+
+    /// <summary>City or town name.</summary>
+    [StringLength(100, ErrorMessage = "City must not exceed 100 characters.")]
+    public string? City { get; set; }
+
+    /// <summary>Administrative district (e.g. "Colombo").</summary>
+    [StringLength(100, ErrorMessage = "District must not exceed 100 characters.")]
+    public string? District { get; set; }
+
+    /// <summary>Province name (e.g. "Western Province").</summary>
+    [StringLength(100, ErrorMessage = "Province must not exceed 100 characters.")]
+    public string? Province { get; set; }
+
+    /// <summary>Postal / ZIP code.</summary>
+    [StringLength(20, ErrorMessage = "PostalCode must not exceed 20 characters.")]
+    public string? PostalCode { get; set; }
+
+    /// <summary>Country name. Defaults to \"Sri Lanka\".</summary>
+    [StringLength(100, ErrorMessage = "Country must not exceed 100 characters.")]
+    public string? Country { get; set; } = "Sri Lanka";
+
+    /// <summary>WGS-84 latitude (−90 to +90). Must be paired with Longitude.</summary>
+    [Range(-90.0, 90.0, ErrorMessage = "Latitude must be between -90 and 90.")]
+    public decimal? Latitude { get; set; }
+
+    /// <summary>WGS-84 longitude (−180 to +180). Must be paired with Latitude.</summary>
+    [Range(-180.0, 180.0, ErrorMessage = "Longitude must be between -180 and 180.")]
+    public decimal? Longitude { get; set; }
+
+    /// <summary>Google Maps deep-link URL for the center pin.</summary>
+    [StringLength(500, ErrorMessage = "GoogleMapsUrl must not exceed 500 characters.")]
+    [Url(ErrorMessage = "GoogleMapsUrl must be a valid URL.")]
+    public string? GoogleMapsUrl { get; set; }
+
+    /// <summary>Nearby landmark to aid navigation (e.g. "Opposite Keells supermarket").</summary>
+    [StringLength(255, ErrorMessage = "Landmark must not exceed 255 characters.")]
+    public string? Landmark { get; set; }
 }
