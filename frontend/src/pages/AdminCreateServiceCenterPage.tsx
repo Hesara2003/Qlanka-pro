@@ -266,6 +266,22 @@ export default function AdminCreateServiceCenterPage() {
     }
   }
 
+  // ── Derived helpers ───────────────────────────────────
+  /** Show a field error only if it was touched or a submit was attempted */
+  const showError = (field: keyof FormErrors) =>
+    !!(fieldErrors[field] && (touched[field] || submitAttempted));
+
+  /** Section-level error indicators (only after a submit attempt) */
+  const sec1HasError = submitAttempted &&
+    !!(fieldErrors.name || fieldErrors.description || fieldErrors.phone || fieldErrors.email);
+  const sec2HasError = submitAttempted && !!fieldErrors.address;
+  const sec3HasError = submitAttempted &&
+    !!(fieldErrors.openingTime || fieldErrors.closingTime);
+  const sec4HasError = submitAttempted &&
+    !!(fieldErrors.capacity || fieldErrors.averageServiceTimeMinutes);
+
+  const totalErrorCount = Object.values(fieldErrors).filter(Boolean).length;
+
   // ── Success screen ─────────────────────────────────────
   if (createdName) {
     return (
