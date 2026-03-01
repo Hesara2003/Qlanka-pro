@@ -433,11 +433,14 @@ export default function AdminCreateServiceCenterPage() {
                   name="name"
                   value={form.name}
                   onChange={handleChange}
+                  onBlur={() => handleBlur("name")}
                   maxLength={100}
                   placeholder={t("adminCreateCenter.placeholders.name")}
-                  className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${fieldErrors.name ? "border-red-400 bg-red-50" : "border-gray-300"}`}
+                  aria-invalid={showError("name")}
+                  aria-describedby={showError("name") ? "err-name" : undefined}
+                  className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${showError("name") ? "border-red-400 bg-red-50" : "border-gray-300"}`}
                 />
-                <FieldError msg={fieldErrors.name} />
+                <FieldError msg={showError("name") ? fieldErrors.name : undefined} id="err-name" />
               </div>
 
               {/* Description */}
@@ -449,13 +452,16 @@ export default function AdminCreateServiceCenterPage() {
                   name="description"
                   value={form.description}
                   onChange={handleChange}
+                  onBlur={() => handleBlur("description")}
                   maxLength={1000}
                   rows={3}
                   placeholder={t("adminCreateCenter.placeholders.description")}
-                  className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none ${fieldErrors.description ? "border-red-400 bg-red-50" : "border-gray-300"}`}
+                  aria-invalid={showError("description")}
+                  aria-describedby={showError("description") ? "err-description" : undefined}
+                  className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none ${showError("description") ? "border-red-400 bg-red-50" : "border-gray-300"}`}
                 />
                 <div className="flex justify-between mt-0.5">
-                  <FieldError msg={fieldErrors.description} />
+                  <FieldError msg={showError("description") ? fieldErrors.description : undefined} id="err-description" />
                   <span className="text-xs text-gray-400 ml-auto">{(form.description ?? "").length}/1000</span>
                 </div>
               </div>
@@ -471,11 +477,14 @@ export default function AdminCreateServiceCenterPage() {
                     name="phone"
                     value={form.phone}
                     onChange={handleChange}
+                    onBlur={() => handleBlur("phone")}
                     maxLength={20}
                     placeholder="+94 11 234 5678"
-                    className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${fieldErrors.phone ? "border-red-400 bg-red-50" : "border-gray-300"}`}
+                    aria-invalid={showError("phone")}
+                    aria-describedby={showError("phone") ? "err-phone" : undefined}
+                    className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${showError("phone") ? "border-red-400 bg-red-50" : "border-gray-300"}`}
                   />
-                  <FieldError msg={fieldErrors.phone} />
+                  <FieldError msg={showError("phone") ? fieldErrors.phone : undefined} id="err-phone" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">
@@ -486,11 +495,14 @@ export default function AdminCreateServiceCenterPage() {
                     name="email"
                     value={form.email}
                     onChange={handleChange}
+                    onBlur={() => handleBlur("email")}
                     maxLength={100}
                     placeholder="center@example.com"
-                    className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${fieldErrors.email ? "border-red-400 bg-red-50" : "border-gray-300"}`}
+                    aria-invalid={showError("email")}
+                    aria-describedby={showError("email") ? "err-email" : undefined}
+                    className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${showError("email") ? "border-red-400 bg-red-50" : "border-gray-300"}`}
                   />
-                  <FieldError msg={fieldErrors.email} />
+                  <FieldError msg={showError("email") ? fieldErrors.email : undefined} id="err-email" />
                 </div>
               </div>
             </div>
@@ -526,12 +538,15 @@ export default function AdminCreateServiceCenterPage() {
                     name="address"
                     value={form.address}
                     onChange={handleChange}
+                    onBlur={() => handleBlur("address")}
                     maxLength={255}
                     placeholder={t("adminCreateCenter.placeholders.address")}
-                    className={`block w-full pl-9 pr-4 py-2.5 border rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${fieldErrors.address ? "border-red-400 bg-red-50" : "border-gray-300"}`}
+                    aria-invalid={showError("address")}
+                    aria-describedby={showError("address") ? "err-address" : undefined}
+                    className={`block w-full pl-9 pr-4 py-2.5 border rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${showError("address") ? "border-red-400 bg-red-50" : "border-gray-300"}`}
                   />
                 </div>
-                <FieldError msg={fieldErrors.address} />
+                <FieldError msg={showError("address") ? fieldErrors.address : undefined} id="err-address" />
               </div>
 
               {/* Timezone */}
@@ -577,9 +592,12 @@ export default function AdminCreateServiceCenterPage() {
                   name="openingTime"
                   value={form.openingTime}
                   onChange={handleChange}
-                  className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${fieldErrors.openingTime ? "border-red-400 bg-red-50" : "border-gray-300"}`}
+                  onBlur={() => handleBlur("openingTime")}
+                  aria-invalid={showError("openingTime")}
+                  aria-describedby={showError("openingTime") ? "err-openingTime" : undefined}
+                  className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${showError("openingTime") ? "border-red-400 bg-red-50" : "border-gray-300"}`}
                 />
-                <FieldError msg={fieldErrors.openingTime} />
+                <FieldError msg={showError("openingTime") ? fieldErrors.openingTime : undefined} id="err-openingTime" />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">
@@ -590,9 +608,12 @@ export default function AdminCreateServiceCenterPage() {
                   name="closingTime"
                   value={form.closingTime}
                   onChange={handleChange}
-                  className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${fieldErrors.closingTime ? "border-red-400 bg-red-50" : "border-gray-300"}`}
+                  onBlur={() => handleBlur("closingTime")}
+                  aria-invalid={showError("closingTime")}
+                  aria-describedby={showError("closingTime") ? "err-closingTime" : undefined}
+                  className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${showError("closingTime") ? "border-red-400 bg-red-50" : "border-gray-300"}`}
                 />
-                <FieldError msg={fieldErrors.closingTime} />
+                <FieldError msg={showError("closingTime") ? fieldErrors.closingTime : undefined} id="err-closingTime" />
               </div>
             </div>
           </section>
@@ -614,14 +635,17 @@ export default function AdminCreateServiceCenterPage() {
                 <input
                   type="number"
                   name="capacity"
-                  value={form.capacity}
+                  value={isNaN(form.capacity) ? "" : form.capacity}
                   onChange={handleNumberChange}
+                  onBlur={() => handleBlur("capacity")}
                   min={1}
                   max={10000}
-                  className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${fieldErrors.capacity ? "border-red-400 bg-red-50" : "border-gray-300"}`}
+                  aria-invalid={showError("capacity")}
+                  aria-describedby={showError("capacity") ? "err-capacity" : undefined}
+                  className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${showError("capacity") ? "border-red-400 bg-red-50" : "border-gray-300"}`}
                 />
                 <p className="mt-1 text-xs text-gray-400">{t("adminCreateCenter.fields.capacityHint")}</p>
-                <FieldError msg={fieldErrors.capacity} />
+                <FieldError msg={showError("capacity") ? fieldErrors.capacity : undefined} id="err-capacity" />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">
@@ -631,18 +655,21 @@ export default function AdminCreateServiceCenterPage() {
                   <input
                     type="number"
                     name="averageServiceTimeMinutes"
-                    value={form.averageServiceTimeMinutes}
+                    value={isNaN(form.averageServiceTimeMinutes) ? "" : form.averageServiceTimeMinutes}
                     onChange={handleNumberChange}
+                    onBlur={() => handleBlur("averageServiceTimeMinutes")}
                     min={1}
                     max={480}
-                    className={`block w-full px-4 py-2.5 pr-16 border rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${fieldErrors.averageServiceTimeMinutes ? "border-red-400 bg-red-50" : "border-gray-300"}`}
+                    aria-invalid={showError("averageServiceTimeMinutes")}
+                    aria-describedby={showError("averageServiceTimeMinutes") ? "err-avgTime" : undefined}
+                    className={`block w-full px-4 py-2.5 pr-16 border rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${showError("averageServiceTimeMinutes") ? "border-red-400 bg-red-50" : "border-gray-300"}`}
                   />
                   <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 text-sm pointer-events-none">
                     {t("serviceCenterCard.minutes")}
                   </span>
                 </div>
                 <p className="mt-1 text-xs text-gray-400">{t("adminCreateCenter.fields.avgServiceTimeHint")}</p>
-                <FieldError msg={fieldErrors.averageServiceTimeMinutes} />
+                <FieldError msg={showError("averageServiceTimeMinutes") ? fieldErrors.averageServiceTimeMinutes : undefined} id="err-avgTime" />
               </div>
             </div>
           </section>
