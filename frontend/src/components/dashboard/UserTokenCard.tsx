@@ -343,8 +343,6 @@ export function UserTokenCard({ token, onCancel }: Props) {
                 </div>
             )}
 
-            {/* Spin keyframe — injected once per card; harmless duplication */}
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
     );
 }
