@@ -79,6 +79,25 @@
       "message": "\"{{name}}\" has been successfully registered.",
       "createAnother": "Create Another",
       "viewAll": "View All Centers"
+    },
+    "errors": {
+      "nameRequired": "Name is required.",
+      "nameLength": "Name must be between 2 and 100 characters.",
+      "addressRequired": "Address is required.",
+      "addressLength": "Address must be between 5 and 255 characters.",
+      "phoneInvalid": "Phone must be a valid phone number (max 20 characters).",
+      "emailInvalid": "Please enter a valid email address.",
+      "descriptionLength": "Description must not exceed 1,000 characters.",
+      "capacityRange": "Capacity must be between 1 and 10,000.",
+      "avgTimeRange": "Average service time must be between 1 and 480 minutes.",
+      "openingTimeInvalid": "Opening time must be in HH:mm format.",
+      "closingTimeInvalid": "Closing time must be in HH:mm format.",
+      "closingBeforeOpening": "Closing time must be after opening time.",
+      "duplicate": "A service center with this name at this address already exists.",
+      "networkError": "Network error. Please check your connection and try again.",
+      "serverError": "Failed to create service center. Please try again.",
+      "validationSummary": "Please fix {{count}} validation error(s) before submitting.",
+      "sectionHasErrors": "This section has errors"
     }
   }
 }

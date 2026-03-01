@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AxiosError } from "axios";
 import { useAuth } from "../context/AuthContext";
@@ -43,54 +43,56 @@ interface FormErrors {
   closingTime?: string;
 }
 
-function validate(form: CreateServiceCenterRequest): FormErrors {
+type TFn = (key: string, opts?: Record<string, unknown>) => string;
+
+function validate(form: CreateServiceCenterRequest, t: TFn): FormErrors {
   const errors: FormErrors = {};
 
   if (!form.name.trim()) {
-    errors.name = "Name is required.";
+    errors.name = t("adminCreateCenter.errors.nameRequired");
   } else if (form.name.trim().length < 2 || form.name.trim().length > 100) {
-    errors.name = "Name must be between 2 and 100 characters.";
+    errors.name = t("adminCreateCenter.errors.nameLength");
   }
 
   if (!form.address.trim()) {
-    errors.address = "Address is required.";
+    errors.address = t("adminCreateCenter.errors.addressRequired");
   } else if (form.address.trim().length < 5 || form.address.trim().length > 255) {
-    errors.address = "Address must be between 5 and 255 characters.";
+    errors.address = t("adminCreateCenter.errors.addressLength");
   }
 
   if (form.phone && !/^[+\d\s\-().]{0,20}$/.test(form.phone)) {
-    errors.phone = "Phone must be a valid phone number (max 20 characters).";
+    errors.phone = t("adminCreateCenter.errors.phoneInvalid");
   }
 
   if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-    errors.email = "Email must be a valid email address.";
+    errors.email = t("adminCreateCenter.errors.emailInvalid");
   }
 
   if (form.description && form.description.length > 1000) {
-    errors.description = "Description must not exceed 1,000 characters.";
+    errors.description = t("adminCreateCenter.errors.descriptionLength");
   }
 
-  if (form.capacity < 1 || form.capacity > 10000) {
-    errors.capacity = "Capacity must be between 1 and 10,000.";
+  if (isNaN(form.capacity) || form.capacity < 1 || form.capacity > 10000) {
+    errors.capacity = t("adminCreateCenter.errors.capacityRange");
   }
 
-  if (form.averageServiceTimeMinutes < 1 || form.averageServiceTimeMinutes > 480) {
-    errors.averageServiceTimeMinutes = "Average service time must be between 1 and 480 minutes.";
+  if (isNaN(form.averageServiceTimeMinutes) || form.averageServiceTimeMinutes < 1 || form.averageServiceTimeMinutes > 480) {
+    errors.averageServiceTimeMinutes = t("adminCreateCenter.errors.avgTimeRange");
   }
 
   const timeRe = /^([01]\d|2[0-3]):[0-5]\d$/;
   if (!form.openingTime || !timeRe.test(form.openingTime)) {
-    errors.openingTime = "Opening time must be in HH:mm format.";
+    errors.openingTime = t("adminCreateCenter.errors.openingTimeInvalid");
   }
   if (!form.closingTime || !timeRe.test(form.closingTime)) {
-    errors.closingTime = "Closing time must be in HH:mm format.";
+    errors.closingTime = t("adminCreateCenter.errors.closingTimeInvalid");
   }
   if (
     !errors.openingTime &&
     !errors.closingTime &&
     form.closingTime <= form.openingTime
   ) {
-    errors.closingTime = "Closing time must be after opening time.";
+    errors.closingTime = t("adminCreateCenter.errors.closingBeforeOpening");
   }
 
   return errors;
@@ -116,9 +118,13 @@ const INITIAL: CreateServiceCenterRequest = {
 // ──────────────────────────────────────────────
 //  Reusable field-level error hint
 // ──────────────────────────────────────────────
-function FieldError({ msg }: { msg?: string }) {
+function FieldError({ msg, id }: { msg?: string; id?: string }) {
   if (!msg) return null;
-  return <p className="mt-1 text-xs text-red-600">{msg}</p>;
+  return (
+    <p id={id} role="alert" className="mt-1 text-xs text-red-600">
+      {msg}
+    </p>
+  );
 }
 
 // ──────────────────────────────────────────────
@@ -140,9 +146,12 @@ export default function AdminCreateServiceCenterPage() {
 
   const [form, setForm] = useState<CreateServiceCenterRequest>(INITIAL);
   const [fieldErrors, setFieldErrors] = useState<FormErrors>({});
+  const [touched, setTouched] = useState<Partial<Record<keyof FormErrors, boolean>>>({});
+  const [submitAttempted, setSubmitAttempted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [createdName, setCreatedName] = useState<string | null>(null);
+  const formTopRef = useRef<HTMLDivElement>(null);
 
   // ── Handlers ──────────────────────────────────────────
   function handleChange(
@@ -156,25 +165,46 @@ export default function AdminCreateServiceCenterPage() {
         ? (e.target as HTMLInputElement).checked
         : e.target.value;
 
-    setForm((prev) => ({ ...prev, [name]: value }));
-    // Clear the field error on change
-    setFieldErrors((prev) => ({ ...prev, [name]: undefined }));
+    const newForm = { ...form, [name]: value } as CreateServiceCenterRequest;
+    setForm(newForm);
+    // Re-validate immediately if the field (or form) was already touched
+    if (touched[name as keyof FormErrors] || submitAttempted) {
+      setFieldErrors(validate(newForm, t));
+    }
     setSubmitError(null);
   }
 
   function handleNumberChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: parseInt(value, 10) || 0 }));
-    setFieldErrors((prev) => ({ ...prev, [name]: undefined }));
+    const { name } = e.target;
+    const numeric = e.target.valueAsNumber; // NaN when input is cleared
+    const newForm = { ...form, [name]: numeric } as CreateServiceCenterRequest;
+    setForm(newForm);
+    if (touched[name as keyof FormErrors] || submitAttempted) {
+      setFieldErrors(validate(newForm, t));
+    }
     setSubmitError(null);
+  }
+
+  function handleBlur(field: keyof FormErrors) {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+    setFieldErrors(validate(form, t));
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    const errors = validate(form);
+    const errors = validate(form, t);
+    // Mark every errored field as touched so all messages surface
+    const allTouched = (Object.keys(errors) as (keyof FormErrors)[]).reduce(
+      (acc, key) => ({ ...acc, [key]: true }),
+      {} as Partial<Record<keyof FormErrors, boolean>>
+    );
+    setTouched((prev) => ({ ...prev, ...allTouched }));
+    setSubmitAttempted(true);
+    setFieldErrors(errors);
+
     if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
+      formTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       return;
     }
 
@@ -194,23 +224,63 @@ export default function AdminCreateServiceCenterPage() {
       setCreatedName(payload.name);
     } catch (err) {
       if (err instanceof AxiosError && err.response?.data) {
-        const code: string = err.response.data?.code ?? "";
+        const data = err.response.data;
+        const code: string = data?.code ?? "";
         if (code === "DUPLICATE_SERVICE_CENTER") {
-          setSubmitError(
-            `A service center named "${form.name.trim()}" at this address already exists.`
-          );
+          setSubmitError(t("adminCreateCenter.errors.duplicate"));
+        } else if (code === "VALIDATION_ERROR" && Array.isArray(data.validationErrors)) {
+          // Map backend field-level errors back to the form
+          const BACKEND_FIELD_MAP: Record<string, keyof FormErrors> = {
+            Name: "name",
+            Address: "address",
+            Phone: "phone",
+            Email: "email",
+            Description: "description",
+            Capacity: "capacity",
+            AverageServiceTimeMinutes: "averageServiceTimeMinutes",
+            OpeningTime: "openingTime",
+            ClosingTime: "closingTime",
+          };
+          const backendErrors: FormErrors = {};
+          for (const ve of data.validationErrors as { field: string; message: string }[]) {
+            const frontendKey = BACKEND_FIELD_MAP[ve.field];
+            if (frontendKey && !backendErrors[frontendKey]) {
+              backendErrors[frontendKey] = ve.message;
+            }
+          }
+          if (Object.keys(backendErrors).length > 0) {
+            setFieldErrors(backendErrors);
+            setSubmitAttempted(true);
+            formTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+          } else {
+            setSubmitError(data.message ?? t("adminCreateCenter.errors.serverError"));
+          }
         } else {
-          setSubmitError(
-            err.response.data?.message ?? "Failed to create service center."
-          );
+          setSubmitError(data?.message ?? t("adminCreateCenter.errors.serverError"));
         }
       } else {
-        setSubmitError("Network error. Please check your connection and try again.");
+        setSubmitError(t("adminCreateCenter.errors.networkError"));
       }
     } finally {
       setSubmitting(false);
     }
   }
+
+  // ── Derived helpers ───────────────────────────────────
+  /** Show a field error only if it was touched or a submit was attempted */
+  const showError = (field: keyof FormErrors) =>
+    !!(fieldErrors[field] && (touched[field] || submitAttempted));
+
+  /** Section-level error indicators (only after a submit attempt) */
+  const sec1HasError = submitAttempted &&
+    !!(fieldErrors.name || fieldErrors.description || fieldErrors.phone || fieldErrors.email);
+  const sec2HasError = submitAttempted && !!fieldErrors.address;
+  const sec3HasError = submitAttempted &&
+    !!(fieldErrors.openingTime || fieldErrors.closingTime);
+  const sec4HasError = submitAttempted &&
+    !!(fieldErrors.capacity || fieldErrors.averageServiceTimeMinutes);
+
+  const totalErrorCount = Object.values(fieldErrors).filter(Boolean).length;
 
   // ── Success screen ─────────────────────────────────────
   if (createdName) {
@@ -230,7 +300,14 @@ export default function AdminCreateServiceCenterPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
-              onClick={() => { setForm(INITIAL); setCreatedName(null); }}
+              onClick={() => {
+                setForm(INITIAL);
+                setCreatedName(null);
+                setFieldErrors({});
+                setTouched({});
+                setSubmitAttempted(false);
+                setSubmitError(null);
+              }}
               className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
             >
               {t("adminCreateCenter.success.createAnother")}
@@ -285,6 +362,8 @@ export default function AdminCreateServiceCenterPage() {
 
       {/* ── Content ── */}
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Scroll anchor — scrolled to when validation fails on submit */}
+        <div ref={formTopRef} />
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">
           <Link to="/service-centers" className="hover:text-blue-600 transition-colors">
@@ -304,9 +383,28 @@ export default function AdminCreateServiceCenterPage() {
           <p className="text-gray-600">{t("adminCreateCenter.subtitle")}</p>
         </div>
 
-        {/* Submit-level error banner */}
+        {/* Validation summary — shown after a failed submit attempt */}
+        {submitAttempted && totalErrorCount > 0 && (
+          <div
+            role="alert"
+            aria-live="polite"
+            className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3"
+          >
+            <svg className="w-5 h-5 text-red-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-red-700 text-sm font-medium">
+              {t("adminCreateCenter.errors.validationSummary", { count: totalErrorCount })}
+            </p>
+          </div>
+        )}
+
+        {/* Server / network error banner */}
         {submitError && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
+          <div
+            role="alert"
+            className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3"
+          >
             <svg className="w-5 h-5 text-red-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -318,8 +416,11 @@ export default function AdminCreateServiceCenterPage() {
           {/* ─── Section 1: Basic Information ─── */}
           <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-lg font-bold text-gray-900 mb-5 flex items-center gap-2">
-              <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 text-xs font-bold">1</div>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${sec1HasError ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"}`}>1</div>
               {t("adminCreateCenter.sections.basicInfo")}
+              {sec1HasError && (
+                <span className="ml-1 w-2 h-2 rounded-full bg-red-500 inline-block" aria-label={t("adminCreateCenter.errors.sectionHasErrors")} />
+              )}
             </h2>
             <div className="grid grid-cols-1 gap-5">
               {/* Name */}
@@ -332,11 +433,14 @@ export default function AdminCreateServiceCenterPage() {
                   name="name"
                   value={form.name}
                   onChange={handleChange}
+                  onBlur={() => handleBlur("name")}
                   maxLength={100}
                   placeholder={t("adminCreateCenter.placeholders.name")}
-                  className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${fieldErrors.name ? "border-red-400 bg-red-50" : "border-gray-300"}`}
+                  aria-invalid={showError("name")}
+                  aria-describedby={showError("name") ? "err-name" : undefined}
+                  className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${showError("name") ? "border-red-400 bg-red-50" : "border-gray-300"}`}
                 />
-                <FieldError msg={fieldErrors.name} />
+                <FieldError msg={showError("name") ? fieldErrors.name : undefined} id="err-name" />
               </div>
 
               {/* Description */}
@@ -348,13 +452,16 @@ export default function AdminCreateServiceCenterPage() {
                   name="description"
                   value={form.description}
                   onChange={handleChange}
+                  onBlur={() => handleBlur("description")}
                   maxLength={1000}
                   rows={3}
                   placeholder={t("adminCreateCenter.placeholders.description")}
-                  className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none ${fieldErrors.description ? "border-red-400 bg-red-50" : "border-gray-300"}`}
+                  aria-invalid={showError("description")}
+                  aria-describedby={showError("description") ? "err-description" : undefined}
+                  className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none ${showError("description") ? "border-red-400 bg-red-50" : "border-gray-300"}`}
                 />
                 <div className="flex justify-between mt-0.5">
-                  <FieldError msg={fieldErrors.description} />
+                  <FieldError msg={showError("description") ? fieldErrors.description : undefined} id="err-description" />
                   <span className="text-xs text-gray-400 ml-auto">{(form.description ?? "").length}/1000</span>
                 </div>
               </div>
@@ -370,11 +477,14 @@ export default function AdminCreateServiceCenterPage() {
                     name="phone"
                     value={form.phone}
                     onChange={handleChange}
+                    onBlur={() => handleBlur("phone")}
                     maxLength={20}
                     placeholder="+94 11 234 5678"
-                    className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${fieldErrors.phone ? "border-red-400 bg-red-50" : "border-gray-300"}`}
+                    aria-invalid={showError("phone")}
+                    aria-describedby={showError("phone") ? "err-phone" : undefined}
+                    className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${showError("phone") ? "border-red-400 bg-red-50" : "border-gray-300"}`}
                   />
-                  <FieldError msg={fieldErrors.phone} />
+                  <FieldError msg={showError("phone") ? fieldErrors.phone : undefined} id="err-phone" />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-1">
@@ -385,11 +495,14 @@ export default function AdminCreateServiceCenterPage() {
                     name="email"
                     value={form.email}
                     onChange={handleChange}
+                    onBlur={() => handleBlur("email")}
                     maxLength={100}
                     placeholder="center@example.com"
-                    className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${fieldErrors.email ? "border-red-400 bg-red-50" : "border-gray-300"}`}
+                    aria-invalid={showError("email")}
+                    aria-describedby={showError("email") ? "err-email" : undefined}
+                    className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${showError("email") ? "border-red-400 bg-red-50" : "border-gray-300"}`}
                   />
-                  <FieldError msg={fieldErrors.email} />
+                  <FieldError msg={showError("email") ? fieldErrors.email : undefined} id="err-email" />
                 </div>
               </div>
             </div>
@@ -398,8 +511,11 @@ export default function AdminCreateServiceCenterPage() {
           {/* ─── Section 2: Location ─── */}
           <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
-              <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center text-green-700 text-xs font-bold">2</div>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${sec2HasError ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}>2</div>
               {t("adminCreateCenter.sections.location")}
+              {sec2HasError && (
+                <span className="ml-1 w-2 h-2 rounded-full bg-red-500 inline-block" aria-label={t("adminCreateCenter.errors.sectionHasErrors")} />
+              )}
             </h2>
             <p className="text-sm text-gray-500 mb-5">
               {t("adminCreateCenter.sections.locationHint")}
@@ -422,12 +538,15 @@ export default function AdminCreateServiceCenterPage() {
                     name="address"
                     value={form.address}
                     onChange={handleChange}
+                    onBlur={() => handleBlur("address")}
                     maxLength={255}
                     placeholder={t("adminCreateCenter.placeholders.address")}
-                    className={`block w-full pl-9 pr-4 py-2.5 border rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${fieldErrors.address ? "border-red-400 bg-red-50" : "border-gray-300"}`}
+                    aria-invalid={showError("address")}
+                    aria-describedby={showError("address") ? "err-address" : undefined}
+                    className={`block w-full pl-9 pr-4 py-2.5 border rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${showError("address") ? "border-red-400 bg-red-50" : "border-gray-300"}`}
                   />
                 </div>
-                <FieldError msg={fieldErrors.address} />
+                <FieldError msg={showError("address") ? fieldErrors.address : undefined} id="err-address" />
               </div>
 
               {/* Timezone */}
@@ -457,8 +576,11 @@ export default function AdminCreateServiceCenterPage() {
           {/* ─── Section 3: Operating Hours ─── */}
           <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-lg font-bold text-gray-900 mb-5 flex items-center gap-2">
-              <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center text-purple-700 text-xs font-bold">3</div>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${sec3HasError ? "bg-red-100 text-red-700" : "bg-purple-100 text-purple-700"}`}>3</div>
               {t("adminCreateCenter.sections.hours")}
+              {sec3HasError && (
+                <span className="ml-1 w-2 h-2 rounded-full bg-red-500 inline-block" aria-label={t("adminCreateCenter.errors.sectionHasErrors")} />
+              )}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
@@ -470,9 +592,12 @@ export default function AdminCreateServiceCenterPage() {
                   name="openingTime"
                   value={form.openingTime}
                   onChange={handleChange}
-                  className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${fieldErrors.openingTime ? "border-red-400 bg-red-50" : "border-gray-300"}`}
+                  onBlur={() => handleBlur("openingTime")}
+                  aria-invalid={showError("openingTime")}
+                  aria-describedby={showError("openingTime") ? "err-openingTime" : undefined}
+                  className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${showError("openingTime") ? "border-red-400 bg-red-50" : "border-gray-300"}`}
                 />
-                <FieldError msg={fieldErrors.openingTime} />
+                <FieldError msg={showError("openingTime") ? fieldErrors.openingTime : undefined} id="err-openingTime" />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">
@@ -483,9 +608,12 @@ export default function AdminCreateServiceCenterPage() {
                   name="closingTime"
                   value={form.closingTime}
                   onChange={handleChange}
-                  className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${fieldErrors.closingTime ? "border-red-400 bg-red-50" : "border-gray-300"}`}
+                  onBlur={() => handleBlur("closingTime")}
+                  aria-invalid={showError("closingTime")}
+                  aria-describedby={showError("closingTime") ? "err-closingTime" : undefined}
+                  className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${showError("closingTime") ? "border-red-400 bg-red-50" : "border-gray-300"}`}
                 />
-                <FieldError msg={fieldErrors.closingTime} />
+                <FieldError msg={showError("closingTime") ? fieldErrors.closingTime : undefined} id="err-closingTime" />
               </div>
             </div>
           </section>
@@ -493,8 +621,11 @@ export default function AdminCreateServiceCenterPage() {
           {/* ─── Section 4: Capacity ─── */}
           <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-lg font-bold text-gray-900 mb-5 flex items-center gap-2">
-              <div className="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center text-orange-700 text-xs font-bold">4</div>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${sec4HasError ? "bg-red-100 text-red-700" : "bg-orange-100 text-orange-700"}`}>4</div>
               {t("adminCreateCenter.sections.capacity")}
+              {sec4HasError && (
+                <span className="ml-1 w-2 h-2 rounded-full bg-red-500 inline-block" aria-label={t("adminCreateCenter.errors.sectionHasErrors")} />
+              )}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
@@ -504,14 +635,17 @@ export default function AdminCreateServiceCenterPage() {
                 <input
                   type="number"
                   name="capacity"
-                  value={form.capacity}
+                  value={isNaN(form.capacity) ? "" : form.capacity}
                   onChange={handleNumberChange}
+                  onBlur={() => handleBlur("capacity")}
                   min={1}
                   max={10000}
-                  className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${fieldErrors.capacity ? "border-red-400 bg-red-50" : "border-gray-300"}`}
+                  aria-invalid={showError("capacity")}
+                  aria-describedby={showError("capacity") ? "err-capacity" : undefined}
+                  className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${showError("capacity") ? "border-red-400 bg-red-50" : "border-gray-300"}`}
                 />
                 <p className="mt-1 text-xs text-gray-400">{t("adminCreateCenter.fields.capacityHint")}</p>
-                <FieldError msg={fieldErrors.capacity} />
+                <FieldError msg={showError("capacity") ? fieldErrors.capacity : undefined} id="err-capacity" />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">
@@ -521,18 +655,21 @@ export default function AdminCreateServiceCenterPage() {
                   <input
                     type="number"
                     name="averageServiceTimeMinutes"
-                    value={form.averageServiceTimeMinutes}
+                    value={isNaN(form.averageServiceTimeMinutes) ? "" : form.averageServiceTimeMinutes}
                     onChange={handleNumberChange}
+                    onBlur={() => handleBlur("averageServiceTimeMinutes")}
                     min={1}
                     max={480}
-                    className={`block w-full px-4 py-2.5 pr-16 border rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${fieldErrors.averageServiceTimeMinutes ? "border-red-400 bg-red-50" : "border-gray-300"}`}
+                    aria-invalid={showError("averageServiceTimeMinutes")}
+                    aria-describedby={showError("averageServiceTimeMinutes") ? "err-avgTime" : undefined}
+                    className={`block w-full px-4 py-2.5 pr-16 border rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${showError("averageServiceTimeMinutes") ? "border-red-400 bg-red-50" : "border-gray-300"}`}
                   />
                   <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 text-sm pointer-events-none">
                     {t("serviceCenterCard.minutes")}
                   </span>
                 </div>
                 <p className="mt-1 text-xs text-gray-400">{t("adminCreateCenter.fields.avgServiceTimeHint")}</p>
-                <FieldError msg={fieldErrors.averageServiceTimeMinutes} />
+                <FieldError msg={showError("averageServiceTimeMinutes") ? fieldErrors.averageServiceTimeMinutes : undefined} id="err-avgTime" />
               </div>
             </div>
           </section>
