@@ -1,6 +1,7 @@
-// Custom React Hook for User Token Data — SCRUM-58
+// Custom React Hook for User Token Data — SCRUM-58 / SCRUM-63
 import { useState, useEffect, useCallback, useRef } from "react";
 import { tokenApi } from "../api/tokenApi";
+import { CancelTokenError } from "../api/tokenApi";
 import type { UserToken } from "../api/tokenApi";
 
 interface UseTokensOptions {
@@ -109,7 +110,17 @@ export function useTokens(options: UseTokensOptions = {}): UseTokensResult {
                 // Waiting tokens (shifted by the stored procedure) come through.
                 fetchTokens(true);
             } catch (err) {
-                // Roll back to the previous state so the card can show the error.
+                // Special case: the token was ALREADY cancelled on the server
+                // (e.g. cancelled from another session / device).
+                // The optimistic state (status=Cancelled) already reflects reality —
+                // do NOT roll back, just let a silent re-fetch confirm the server state.
+                if (err instanceof CancelTokenError && err.code === "TOKEN_ALREADY_CANCELLED") {
+                    fetchTokens(true);
+                    throw err; // still throw so the card can show the contextual message
+                }
+
+                // For every other failure (not found, not cancellable, network, auth)
+                // the optimistic Cancelled state is wrong — restore the snapshot.
                 if (isMountedRef.current) setTokens(snapshot);
                 throw err;
             }

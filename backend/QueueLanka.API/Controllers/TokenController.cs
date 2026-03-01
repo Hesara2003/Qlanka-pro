@@ -46,13 +46,33 @@ public class TokenController : ControllerBase
             return Unauthorized(new { code = "INVALID_USER", message = "User ID not found in token." });
         }
 
-        var success = await _tokenService.CancelTokenAsync(tokenId, userId);
-        
-        if (!success)
-        {
-            return BadRequest(new { message = "Token could not be cancelled. It may not exist, belong to you, or is no longer waiting." });
-        }
+        var result = await _tokenService.CancelTokenAsync(tokenId, userId);
 
-        return Ok(new { message = "Token cancelled successfully." });
+        return result switch
+        {
+            CancellationResult.Success =>
+                Ok(new { message = "Token cancelled successfully." }),
+
+            CancellationResult.AlreadyCancelled =>
+                Conflict(new
+                {
+                    code    = "TOKEN_ALREADY_CANCELLED",
+                    message = "This token has already been cancelled."
+                }),
+
+            CancellationResult.NotCancellable =>
+                UnprocessableEntity(new
+                {
+                    code    = "TOKEN_NOT_CANCELLABLE",
+                    message = "This token cannot be cancelled because it is currently being served, has already been completed, or has been marked as a no-show."
+                }),
+
+            _ => // TokenNotFound
+                NotFound(new
+                {
+                    code    = "TOKEN_NOT_FOUND",
+                    message = "Token not found or does not belong to your account."
+                })
+        };
     }
 }
