@@ -300,7 +300,14 @@ export default function AdminCreateServiceCenterPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
-              onClick={() => { setForm(INITIAL); setCreatedName(null); }}
+              onClick={() => {
+                setForm(INITIAL);
+                setCreatedName(null);
+                setFieldErrors({});
+                setTouched({});
+                setSubmitAttempted(false);
+                setSubmitError(null);
+              }}
               className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
             >
               {t("adminCreateCenter.success.createAnother")}
