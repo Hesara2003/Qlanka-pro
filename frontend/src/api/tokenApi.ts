@@ -14,12 +14,12 @@ export type CancelErrorCode =
 
 /** Typed error thrown by `tokenApi.cancelToken`. Carries a `code` for scenario-specific UI. */
 export class CancelTokenError extends Error {
-    constructor(
-        public readonly code: CancelErrorCode,
-        message: string
-    ) {
+    readonly code: CancelErrorCode;
+
+    constructor(code: CancelErrorCode, message: string) {
         super(message);
         this.name = "CancelTokenError";
+        this.code = code;
     }
 }
 
