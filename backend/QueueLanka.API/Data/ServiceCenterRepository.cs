@@ -1,4 +1,5 @@
 using MySql.Data.MySqlClient;
+using QueueLanka.API.Exceptions;
 using QueueLanka.API.Models;
 
 namespace QueueLanka.API.Data;
@@ -15,8 +16,6 @@ public class ServiceCenterRepository : IServiceCenterRepository
 
     public async Task<IEnumerable<ServiceCenter>> GetAllAsync()
     {
-        // v_center_with_location LEFT JOINs centers ↔ center_locations so
-        // the location columns are present but nullable for centers without a row.
         const string sql = @"
             SELECT center_id, full_address AS address, name, phone, email, description, timezone,
                    capacity, average_service_time_minutes, opening_time, closing_time,
@@ -26,16 +25,23 @@ public class ServiceCenterRepository : IServiceCenterRepository
             FROM v_center_with_location
             ORDER BY name ASC";
 
-        await using var conn = new MySqlConnection(_connectionString);
-        await conn.OpenAsync();
-        await using var cmd = new MySqlCommand(sql, conn);
-        await using var reader = await cmd.ExecuteReaderAsync();
+        try
+        {
+            await using var conn = new MySqlConnection(_connectionString);
+            await conn.OpenAsync();
+            await using var cmd = new MySqlCommand(sql, conn);
+            await using var reader = await cmd.ExecuteReaderAsync();
 
-        var centers = new List<ServiceCenter>();
-        while (await reader.ReadAsync())
-            centers.Add(MapServiceCenter((MySqlDataReader)reader));
+            var centers = new List<ServiceCenter>();
+            while (await reader.ReadAsync())
+                centers.Add(MapServiceCenter((MySqlDataReader)reader));
 
-        return centers;
+            return centers;
+        }
+        catch (MySqlException ex)
+        {
+            throw new DataAccessException("Database error while retrieving service centers.", ex);
+        }
     }
 
     public async Task<ServiceCenter?> GetByIdAsync(int centerId)
@@ -50,13 +56,20 @@ public class ServiceCenterRepository : IServiceCenterRepository
             WHERE center_id = @CenterId
             LIMIT 1";
 
-        await using var conn = new MySqlConnection(_connectionString);
-        await conn.OpenAsync();
-        await using var cmd = new MySqlCommand(sql, conn);
-        cmd.Parameters.AddWithValue("@CenterId", centerId);
+        try
+        {
+            await using var conn = new MySqlConnection(_connectionString);
+            await conn.OpenAsync();
+            await using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@CenterId", centerId);
 
-        await using var reader = await cmd.ExecuteReaderAsync();
-        return await reader.ReadAsync() ? MapServiceCenter((MySqlDataReader)reader) : null;
+            await using var reader = await cmd.ExecuteReaderAsync();
+            return await reader.ReadAsync() ? MapServiceCenter((MySqlDataReader)reader) : null;
+        }
+        catch (MySqlException ex)
+        {
+            throw new DataAccessException($"Database error while retrieving service center {centerId}.", ex);
+        }
     }
 
     public async Task<bool> ExistsByNameAndAddressAsync(string name, string address)
@@ -65,23 +78,30 @@ public class ServiceCenterRepository : IServiceCenterRepository
             SELECT COUNT(*) FROM centers
             WHERE LOWER(name) = LOWER(@Name) AND LOWER(address) = LOWER(@Address)";
 
-        await using var conn = new MySqlConnection(_connectionString);
-        await conn.OpenAsync();
-        await using var cmd = new MySqlCommand(sql, conn);
-        cmd.Parameters.AddWithValue("@Name", name);
-        cmd.Parameters.AddWithValue("@Address", address);
+        try
+        {
+            await using var conn = new MySqlConnection(_connectionString);
+            await conn.OpenAsync();
+            await using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@Name",    name);
+            cmd.Parameters.AddWithValue("@Address", address);
 
-        var count = Convert.ToInt32(await cmd.ExecuteScalarAsync());
-        return count > 0;
+            var count = Convert.ToInt32(await cmd.ExecuteScalarAsync());
+            return count > 0;
+        }
+        catch (MySqlException ex)
+        {
+            throw new DataAccessException("Database error while checking for duplicate service center.", ex);
+        }
     }
 
     public async Task<ServiceCenter> CreateAsync(ServiceCenter center)
     {
-        // Insert the center row inside a transaction so that the default operating-day
-        // rows (Mon–Fri) are always created atomically with the center itself.
-        await using var conn = new MySqlConnection(_connectionString);
-        await conn.OpenAsync();
-        await using var tx = await conn.BeginTransactionAsync();
+        try
+        {
+            await using var conn = new MySqlConnection(_connectionString);
+            await conn.OpenAsync();
+            await using var tx = await conn.BeginTransactionAsync();
 
         try
         {
@@ -145,6 +165,11 @@ public class ServiceCenterRepository : IServiceCenterRepository
             await tx.RollbackAsync();
             throw;
         }
+        }
+        catch (MySqlException ex)
+        {
+            throw new DataAccessException("Database error while creating service center.", ex);
+        }
     }
 
     private static ServiceCenter MapServiceCenter(MySqlDataReader reader)
@@ -204,20 +229,34 @@ public class ServiceCenterRepository : IServiceCenterRepository
             WHERE center_id = @CenterId
             LIMIT 1";
 
-        await using var conn = new MySqlConnection(_connectionString);
-        await conn.OpenAsync();
-        await using var cmd = new MySqlCommand(sql, conn);
-        cmd.Parameters.AddWithValue("@CenterId", centerId);
+        try
+        {
+            await using var conn = new MySqlConnection(_connectionString);
+            await conn.OpenAsync();
+            await using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@CenterId", centerId);
 
-        await using var reader = await cmd.ExecuteReaderAsync();
-        return await reader.ReadAsync() ? MapLocation((MySqlDataReader)reader) : null;
+            await using var reader = await cmd.ExecuteReaderAsync();
+            return await reader.ReadAsync() ? MapLocation((MySqlDataReader)reader) : null;
+        }
+        catch (MySqlException ex)
+        {
+            throw new DataAccessException($"Database error while retrieving location for center {centerId}.", ex);
+        }
     }
 
     public async Task<CenterLocation> UpsertLocationAsync(CenterLocation location)
     {
-        await using var conn = new MySqlConnection(_connectionString);
-        await conn.OpenAsync();
-        return await UpsertLocationCoreAsync(location, conn, null);
+        try
+        {
+            await using var conn = new MySqlConnection(_connectionString);
+            await conn.OpenAsync();
+            return await UpsertLocationCoreAsync(location, conn, null);
+        }
+        catch (MySqlException ex)
+        {
+            throw new DataAccessException("Database error while upserting location.", ex);
+        }
     }
 
     /// <summary>
@@ -305,28 +344,34 @@ public class ServiceCenterRepository : IServiceCenterRepository
             WHERE center_id = @CenterId AND date = @Date
             LIMIT 1";
 
-        await using var conn = new MySqlConnection(_connectionString);
-        await conn.OpenAsync();
-        await using var cmd = new MySqlCommand(sql, conn);
-        cmd.Parameters.AddWithValue("@CenterId", centerId);
-        cmd.Parameters.AddWithValue("@Date", date.Date);
-
-        await using var reader = await cmd.ExecuteReaderAsync();
-        if (!await reader.ReadAsync())
-            return null;
-
-        return new CenterAvailability
+        try
         {
-            AvailabilityId = reader.GetInt32(reader.GetOrdinal("availability_id")),
-            CenterId       = reader.GetInt32(reader.GetOrdinal("center_id")),
-            Date           = reader.GetDateTime(reader.GetOrdinal("date")),
-            IsAvailable    = reader.GetBoolean(reader.GetOrdinal("is_available")),
-            OpeningTime    = reader.IsDBNull(reader.GetOrdinal("opening_time")) ? null : (TimeSpan)reader.GetValue(reader.GetOrdinal("opening_time")),
-            ClosingTime    = reader.IsDBNull(reader.GetOrdinal("closing_time")) ? null : (TimeSpan)reader.GetValue(reader.GetOrdinal("closing_time")),
-            Reason         = reader.IsDBNull(reader.GetOrdinal("reason")) ? null : reader.GetString(reader.GetOrdinal("reason")),
-            CreatedAt      = reader.GetDateTime(reader.GetOrdinal("created_at")),
-            UpdatedAt      = reader.IsDBNull(reader.GetOrdinal("updated_at")) ? null : reader.GetDateTime(reader.GetOrdinal("updated_at"))
-        };
+            await using var conn = new MySqlConnection(_connectionString);
+            await conn.OpenAsync();
+            await using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@CenterId", centerId);
+            cmd.Parameters.AddWithValue("@Date", date.Date);
+
+            await using var reader = await cmd.ExecuteReaderAsync();
+            if (!await reader.ReadAsync()) return null;
+
+            return new CenterAvailability
+            {
+                AvailabilityId = reader.GetInt32(reader.GetOrdinal("availability_id")),
+                CenterId       = reader.GetInt32(reader.GetOrdinal("center_id")),
+                Date           = reader.GetDateTime(reader.GetOrdinal("date")),
+                IsAvailable    = reader.GetBoolean(reader.GetOrdinal("is_available")),
+                OpeningTime    = reader.IsDBNull(reader.GetOrdinal("opening_time")) ? null : (TimeSpan)reader.GetValue(reader.GetOrdinal("opening_time")),
+                ClosingTime    = reader.IsDBNull(reader.GetOrdinal("closing_time")) ? null : (TimeSpan)reader.GetValue(reader.GetOrdinal("closing_time")),
+                Reason         = reader.IsDBNull(reader.GetOrdinal("reason")) ? null : reader.GetString(reader.GetOrdinal("reason")),
+                CreatedAt      = reader.GetDateTime(reader.GetOrdinal("created_at")),
+                UpdatedAt      = reader.IsDBNull(reader.GetOrdinal("updated_at")) ? null : reader.GetDateTime(reader.GetOrdinal("updated_at"))
+            };
+        }
+        catch (MySqlException ex)
+        {
+            throw new DataAccessException($"Database error while retrieving availability for center {centerId}.", ex);
+        }
     }
 
     public async Task<IEnumerable<CenterOperatingDay>> GetOperatingDaysAsync(int centerId)
@@ -337,29 +382,36 @@ public class ServiceCenterRepository : IServiceCenterRepository
             WHERE center_id = @CenterId
             ORDER BY FIELD(day_of_week, 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday')";
 
-        await using var conn = new MySqlConnection(_connectionString);
-        await conn.OpenAsync();
-        await using var cmd = new MySqlCommand(sql, conn);
-        cmd.Parameters.AddWithValue("@CenterId", centerId);
-
-        await using var reader = await cmd.ExecuteReaderAsync();
-        var operatingDays = new List<CenterOperatingDay>();
-
-        while (await reader.ReadAsync())
+        try
         {
-            operatingDays.Add(new CenterOperatingDay
-            {
-                OperatingDayId = reader.GetInt32(reader.GetOrdinal("operating_day_id")),
-                CenterId       = reader.GetInt32(reader.GetOrdinal("center_id")),
-                DayOfWeek      = reader.GetString(reader.GetOrdinal("day_of_week")),
-                IsOpen         = reader.GetBoolean(reader.GetOrdinal("is_open")),
-                OpeningTime    = reader.IsDBNull(reader.GetOrdinal("opening_time")) ? null : (TimeSpan)reader.GetValue(reader.GetOrdinal("opening_time")),
-                ClosingTime    = reader.IsDBNull(reader.GetOrdinal("closing_time")) ? null : (TimeSpan)reader.GetValue(reader.GetOrdinal("closing_time")),
-                CreatedAt      = reader.GetDateTime(reader.GetOrdinal("created_at"))
-            });
-        }
+            await using var conn = new MySqlConnection(_connectionString);
+            await conn.OpenAsync();
+            await using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@CenterId", centerId);
 
-        return operatingDays;
+            await using var reader = await cmd.ExecuteReaderAsync();
+            var operatingDays = new List<CenterOperatingDay>();
+
+            while (await reader.ReadAsync())
+            {
+                operatingDays.Add(new CenterOperatingDay
+                {
+                    OperatingDayId = reader.GetInt32(reader.GetOrdinal("operating_day_id")),
+                    CenterId       = reader.GetInt32(reader.GetOrdinal("center_id")),
+                    DayOfWeek      = reader.GetString(reader.GetOrdinal("day_of_week")),
+                    IsOpen         = reader.GetBoolean(reader.GetOrdinal("is_open")),
+                    OpeningTime    = reader.IsDBNull(reader.GetOrdinal("opening_time")) ? null : (TimeSpan)reader.GetValue(reader.GetOrdinal("opening_time")),
+                    ClosingTime    = reader.IsDBNull(reader.GetOrdinal("closing_time")) ? null : (TimeSpan)reader.GetValue(reader.GetOrdinal("closing_time")),
+                    CreatedAt      = reader.GetDateTime(reader.GetOrdinal("created_at"))
+                });
+            }
+
+            return operatingDays;
+        }
+        catch (MySqlException ex)
+        {
+            throw new DataAccessException($"Database error while retrieving operating days for center {centerId}.", ex);
+        }
     }
 
     public async Task<bool> IsCenterAvailableAsync(int centerId, DateTime date)
@@ -369,12 +421,19 @@ public class ServiceCenterRepository : IServiceCenterRepository
             FROM v_center_current_availability
             WHERE center_id = @CenterId";
 
-        await using var conn = new MySqlConnection(_connectionString);
-        await conn.OpenAsync();
-        await using var cmd = new MySqlCommand(sql, conn);
-        cmd.Parameters.AddWithValue("@CenterId", centerId);
+        try
+        {
+            await using var conn = new MySqlConnection(_connectionString);
+            await conn.OpenAsync();
+            await using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@CenterId", centerId);
 
-        var result = await cmd.ExecuteScalarAsync();
-        return result != null && Convert.ToBoolean(result);
+            var result = await cmd.ExecuteScalarAsync();
+            return result != null && Convert.ToBoolean(result);
+        }
+        catch (MySqlException ex)
+        {
+            throw new DataAccessException($"Database error while checking availability for center {centerId}.", ex);
+        }
     }
 }
