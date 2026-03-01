@@ -99,5 +99,47 @@
       "validationSummary": "Please fix {{count}} validation error(s) before submitting.",
       "sectionHasErrors": "This section has errors"
     }
+  },
+  "adminUsers": {
+    "title": "User Management",
+    "subtitle": "View, search, and manage all registered user accounts.",
+    "breadcrumbHome": "Dashboard",
+    "totalLabel": "{{count}} total",
+    "loading": "Loading users...",
+    "errorLoading": "Failed to load users.",
+    "noUsers": "No users found.",
+    "noFilterResults": "No users match the current filters.",
+    "showingResults": "Showing {{shown}} of {{total}} users",
+    "searchPlaceholder": "Search by username or email…",
+    "clearFilters": "Clear filters",
+    "unverified": "Unverified",
+    "deleteUser": "Delete",
+    "cannotDeleteAdmin": "Admin accounts cannot be deleted.",
+    "deleteSuccess": "\"{{username}}\" has been deleted.",
+    "deleteError": "Failed to delete user. Please try again.",
+    "filters": {
+      "allRoles": "All Roles",
+      "admin": "Admin",
+      "officer": "Officer",
+      "citizen": "Citizen",
+      "allStatus": "All Status",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "table": {
+      "user": "User",
+      "role": "Role",
+      "status": "Status",
+      "lastLogin": "Last Login",
+      "joined": "Joined"
+    },
+    "deleteDialog": {
+      "title": "Delete User?",
+      "message": "You are about to delete \"{{username}}\". This action cannot be undone.",
+      "warning": "The user's appointment history will be preserved. Their account will be soft-deleted and hidden from the system.",
+      "confirm": "Yes, Delete",
+      "cancel": "Cancel",
+      "deleting": "Deleting…"
+    }
   }
 }
