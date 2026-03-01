@@ -1,44 +1,42 @@
 import { Navigate, Link } from "react-router-dom";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { tokenApi } from "../api/tokenApi";
-import type { UserToken } from "../api/tokenApi";
+import { useTokens } from "../hooks/useTokens";
 import { UserTokenCard } from "../components/dashboard/UserTokenCard";
+
+/** Auto-dismissing success toast duration (ms). */
+const TOAST_DURATION = 4000;
 
 export default function DashboardPage() {
   const { user, logout } = useAuth();
-  const [tokens, setTokens] = useState<UserToken[]>([]);
-  const [loadingTokens, setLoadingTokens] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { tokens, loading: loadingTokens, error, lastUpdated, refresh, cancelToken } =
+    useTokens({ pollInterval: 30_000 });
 
-  const fetchTokens = useCallback(() => {
-    if (!user) return;
-    setLoadingTokens(true);
-    tokenApi.getMyTokens()
-      .then(data => {
-        setTokens(data);
-        setError(null);
-      })
-      .catch((err: Error) => {
-        console.error("Failed to fetch tokens:", err);
-        setError(err.message);
-      })
-      .finally(() => {
-        setLoadingTokens(false);
-      });
-  }, [user]);
+  // ── Success toast ─────────────────────────────────────────────
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    fetchTokens();
-  }, [fetchTokens]);
+  const showToast = useCallback((message: string) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    setToastMessage(message);
+    toastTimerRef.current = setTimeout(() => setToastMessage(null), TOAST_DURATION);
+  }, []);
 
-  /** Cancel a token then re-fetch so queue positions of remaining tokens refresh. */
+  useEffect(() => () => { if (toastTimerRef.current) clearTimeout(toastTimerRef.current); }, []);
+
+  // ── Cancel handler ────────────────────────────────────────────
   const handleCancelToken = useCallback(async (tokenId: number) => {
-    await tokenApi.cancelToken(tokenId);
-    fetchTokens();
-  }, [fetchTokens]);
+    const tokenNumber = tokens.find(t => t.tokenId === tokenId)?.tokenNumber ?? "token";
+    await cancelToken(tokenId); // throws on failure — card surfaces the error
+    showToast(`Token ${tokenNumber} has been cancelled. Your queue spot has been released.`);
+  }, [tokens, cancelToken, showToast]);
 
   if (!user) return <Navigate to="/login" replace />;
+
+  // ── Last-updated label ────────────────────────────────────────
+  const lastUpdatedLabel = lastUpdated
+    ? lastUpdated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+    : null;
 
   return (
     <div
@@ -53,6 +51,44 @@ export default function DashboardPage() {
         gap: "1rem",
       }}
     >
+      {/* ── Success toast ── */}
+      {toastMessage && (
+        <div
+          style={{
+            position: "fixed",
+            top: "1.25rem",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 9999,
+            background: "#ecfdf5",
+            border: "1px solid #6ee7b7",
+            borderRadius: "10px",
+            padding: "0.75rem 1.25rem",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.6rem",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+            maxWidth: "480px",
+            width: "calc(100% - 2rem)",
+            animation: "fadeInDown 0.2s ease",
+          }}
+        >
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#059669" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+          <span style={{ color: "#065f46", fontSize: "0.9rem", fontWeight: 500, flex: 1 }}>
+            {toastMessage}
+          </span>
+          <button
+            onClick={() => setToastMessage(null)}
+            style={{ background: "none", border: "none", cursor: "pointer", color: "#6ee7b7", padding: "0", lineHeight: 1, fontSize: "1.1rem" }}
+            aria-label="Dismiss"
+          >
+            ✕
+          </button>
+          <style>{`@keyframes fadeInDown { from { opacity:0; transform:translate(-50%,-8px) } to { opacity:1; transform:translate(-50%,0) } }`}</style>
+        </div>
+      )}
       <h1 style={{ color: "#1a1a2e" }}>Welcome, {user.username}!</h1>
       <p style={{ color: "#6b7280" }}>
         Role: <strong>{user.role}</strong>
@@ -93,9 +129,51 @@ export default function DashboardPage() {
       </div>
 
       <div style={{ width: "100%", maxWidth: "1200px", marginTop: "2rem", padding: "0 1rem" }}>
-        <h2 style={{ color: "#1a1a2e", marginBottom: "1rem", borderBottom: "2px solid #e5e7eb", paddingBottom: "0.5rem" }}>
-          My Tokens
-        </h2>
+        {/* Section header with live indicator + refresh */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem", borderBottom: "2px solid #e5e7eb", paddingBottom: "0.5rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+            <h2 style={{ color: "#1a1a2e", margin: 0 }}>My Tokens</h2>
+            {/* Pulsing live dot — visible when not in error state */}
+            {!error && (
+              <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                <span
+                  style={{
+                    width: "8px", height: "8px", borderRadius: "50%",
+                    background: "#10b981",
+                    display: "inline-block",
+                    animation: "livePulse 2s ease-in-out infinite",
+                  }}
+                />
+                <span style={{ color: "#6b7280", fontSize: "0.78rem", fontWeight: 500 }}>LIVE</span>
+              </span>
+            )}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+            {lastUpdatedLabel && (
+              <span style={{ color: "#9ca3af", fontSize: "0.78rem" }}>
+                Updated {lastUpdatedLabel}
+              </span>
+            )}
+            <button
+              onClick={refresh}
+              disabled={loadingTokens}
+              style={{
+                padding: "0.35rem 0.85rem",
+                background: "#f3f4f6",
+                border: "1px solid #d1d5db",
+                borderRadius: "6px",
+                cursor: loadingTokens ? "not-allowed" : "pointer",
+                fontSize: "0.82rem",
+                fontWeight: 600,
+                color: "#374151",
+                opacity: loadingTokens ? 0.5 : 1,
+              }}
+            >
+              ↻ Refresh
+            </button>
+          </div>
+        </div>
+        <style>{`@keyframes livePulse { 0%,100%{opacity:1} 50%{opacity:0.3} }`}</style>
 
         {error ? (
           <div style={{ background: "#fef2f2", color: "#b91c1c", padding: "1.5rem", borderRadius: "12px", border: "1px solid #fecaca", textAlign: "center" }}>
