@@ -416,8 +416,11 @@ export default function AdminCreateServiceCenterPage() {
           {/* ─── Section 1: Basic Information ─── */}
           <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-lg font-bold text-gray-900 mb-5 flex items-center gap-2">
-              <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 text-xs font-bold">1</div>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${sec1HasError ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"}`}>1</div>
               {t("adminCreateCenter.sections.basicInfo")}
+              {sec1HasError && (
+                <span className="ml-1 w-2 h-2 rounded-full bg-red-500 inline-block" aria-label={t("adminCreateCenter.errors.sectionHasErrors")} />
+              )}
             </h2>
             <div className="grid grid-cols-1 gap-5">
               {/* Name */}
@@ -496,8 +499,11 @@ export default function AdminCreateServiceCenterPage() {
           {/* ─── Section 2: Location ─── */}
           <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
-              <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center text-green-700 text-xs font-bold">2</div>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${sec2HasError ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}>2</div>
               {t("adminCreateCenter.sections.location")}
+              {sec2HasError && (
+                <span className="ml-1 w-2 h-2 rounded-full bg-red-500 inline-block" aria-label={t("adminCreateCenter.errors.sectionHasErrors")} />
+              )}
             </h2>
             <p className="text-sm text-gray-500 mb-5">
               {t("adminCreateCenter.sections.locationHint")}
@@ -555,8 +561,11 @@ export default function AdminCreateServiceCenterPage() {
           {/* ─── Section 3: Operating Hours ─── */}
           <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-lg font-bold text-gray-900 mb-5 flex items-center gap-2">
-              <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center text-purple-700 text-xs font-bold">3</div>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${sec3HasError ? "bg-red-100 text-red-700" : "bg-purple-100 text-purple-700"}`}>3</div>
               {t("adminCreateCenter.sections.hours")}
+              {sec3HasError && (
+                <span className="ml-1 w-2 h-2 rounded-full bg-red-500 inline-block" aria-label={t("adminCreateCenter.errors.sectionHasErrors")} />
+              )}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
@@ -591,8 +600,11 @@ export default function AdminCreateServiceCenterPage() {
           {/* ─── Section 4: Capacity ─── */}
           <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-lg font-bold text-gray-900 mb-5 flex items-center gap-2">
-              <div className="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center text-orange-700 text-xs font-bold">4</div>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${sec4HasError ? "bg-red-100 text-red-700" : "bg-orange-100 text-orange-700"}`}>4</div>
               {t("adminCreateCenter.sections.capacity")}
+              {sec4HasError && (
+                <span className="ml-1 w-2 h-2 rounded-full bg-red-500 inline-block" aria-label={t("adminCreateCenter.errors.sectionHasErrors")} />
+              )}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
