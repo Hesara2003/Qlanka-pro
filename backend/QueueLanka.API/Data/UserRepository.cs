@@ -5,6 +5,14 @@ namespace QueueLanka.API.Data;
 
 public class UserRepository : IUserRepository
 {
+    private readonly string _connectionString;
+
+    public UserRepository(IConfiguration configuration)
+    {
+        _connectionString = configuration.GetConnectionString("Default")
+            ?? throw new InvalidOperationException("Connection string 'Default' is not configured.");
+    }
+
     // ── GetAllAsync ────────────────────────────────────────────────────────
     public async Task<IEnumerable<User>> GetAllAsync(string? role = null, bool? isActive = null)
     {
@@ -32,21 +40,15 @@ public class UserRepository : IUserRepository
         return users;
     }
 
-    private readonly string _connectionString;
-
-    public UserRepository(IConfiguration configuration)
-    {
-        _connectionString = configuration.GetConnectionString("Default")
-            ?? throw new InvalidOperationException("Connection string 'Default' is not configured.");
-    }
-
     public async Task<User?> GetByIdAsync(int userId)
     {
         const string sql = @"
-            SELECT user_id, username, email, password_hash, role, center_id, is_active, is_email_verified, created_at
-            FROM users
-            WHERE user_id = @UserId
-            LIMIT 1";
+            SELECT user_id, username, email, password_hash, role, center_id,
+                   is_active, is_email_verified, created_at,
+                   updated_at, deleted_at, deleted_by, last_login_at
+            FROM   users
+            WHERE  user_id = @UserId
+            LIMIT  1";
 
         await using var conn = new MySqlConnection(_connectionString);
         await conn.OpenAsync();
@@ -60,10 +62,12 @@ public class UserRepository : IUserRepository
     public async Task<User?> GetByUsernameAsync(string username)
     {
         const string sql = @"
-            SELECT user_id, username, email, password_hash, role, center_id, is_active, is_email_verified, created_at
-            FROM users
-            WHERE username = @Username
-            LIMIT 1";
+            SELECT user_id, username, email, password_hash, role, center_id,
+                   is_active, is_email_verified, created_at,
+                   updated_at, deleted_at, deleted_by, last_login_at
+            FROM   users
+            WHERE  username = @Username
+            LIMIT  1";
 
         await using var conn = new MySqlConnection(_connectionString);
         await conn.OpenAsync();
@@ -77,10 +81,12 @@ public class UserRepository : IUserRepository
     public async Task<User?> GetByEmailAsync(string email)
     {
         const string sql = @"
-            SELECT user_id, username, email, password_hash, role, center_id, is_active, is_email_verified, created_at
-            FROM users
-            WHERE email = @Email
-            LIMIT 1";
+            SELECT user_id, username, email, password_hash, role, center_id,
+                   is_active, is_email_verified, created_at,
+                   updated_at, deleted_at, deleted_by, last_login_at
+            FROM   users
+            WHERE  email = @Email
+            LIMIT  1";
 
         await using var conn = new MySqlConnection(_connectionString);
         await conn.OpenAsync();
