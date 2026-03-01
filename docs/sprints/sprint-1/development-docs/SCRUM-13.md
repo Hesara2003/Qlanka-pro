@@ -158,11 +158,5 @@ This document defines the API contract for the authentication endpoints implemen
 	- Integration tests for `POST /api/auth/register` and `POST /api/auth/login` checking status and response.
 	- Security tests for brute-force, token tampering and replay.
 
-	**Next steps**
 
-	- Add curl or Postman examples for API consumers (I can add if you want).
-	- Implement refresh-token persistence and rotation.
-	- Add rate-limiting middleware and account lockout.
-
-	---
 	Document made after reading `AuthController`, `AuthService`, and DTO files in `backend/QueueLanka.API`.
