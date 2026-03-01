@@ -9,11 +9,24 @@ export interface ServiceCenter {
   description?: string;
   timezone: string;
   capacity: number;
+  averageServiceTimeMinutes: number;
   openingTime: string;
   closingTime: string;
   isAvailable: boolean;
   isActive: boolean;
   createdAt: string;
+}
+
+/** Wrapper shape returned by all backend ApiResponse<T> endpoints */
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+  metadata?: {
+    totalCount?: number;
+    correlationId?: string;
+    timestamp?: string;
+  };
 }
 
 export interface ServiceCenterFilters {
