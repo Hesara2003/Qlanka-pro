@@ -1,5 +1,7 @@
 using QueueLanka.API.Data;
 using QueueLanka.API.DTOs.ServiceCenter;
+using QueueLanka.API.Exceptions;
+using QueueLanka.API.Models;
 
 namespace QueueLanka.API.Services;
 
@@ -78,6 +80,57 @@ public class ServiceCenterService : IServiceCenterService
             IsAvailable = isAvailable,
             IsActive    = center.IsActive,
             CreatedAt   = center.CreatedAt
+        };
+    }
+
+    public async Task<ServiceCenterDto> CreateServiceCenterAsync(CreateServiceCenterRequestDto dto)
+    {
+        // Guard against duplicate name + address combinations.
+        bool exists = await _serviceCenterRepository.ExistsByNameAndAddressAsync(dto.Name, dto.Address);
+        if (exists)
+            throw new DuplicateServiceCenterException(dto.Name, dto.Address);
+
+        // Parse validated time strings into TimeSpan (format guaranteed by regex annotation).
+        var openingTime = TimeSpan.Parse(dto.OpeningTime);
+        var closingTime = TimeSpan.Parse(dto.ClosingTime);
+
+        if (closingTime <= openingTime)
+            throw new InvalidServiceCenterDataException(
+                "ClosingTime must be later than OpeningTime.");
+
+        var center = new ServiceCenter
+        {
+            Name                      = dto.Name.Trim(),
+            Address                   = dto.Address.Trim(),
+            Phone                     = dto.Phone?.Trim(),
+            Email                     = dto.Email?.Trim().ToLowerInvariant(),
+            Description               = dto.Description?.Trim(),
+            Timezone                  = dto.Timezone.Trim(),
+            Capacity                  = dto.Capacity,
+            AverageServiceTimeMinutes = dto.AverageServiceTimeMinutes,
+            OpeningTime               = openingTime,
+            ClosingTime               = closingTime,
+            IsActive                  = dto.IsActive,
+        };
+
+        var created = await _serviceCenterRepository.CreateAsync(center);
+
+        return new ServiceCenterDto
+        {
+            CenterId                  = created.CenterId,
+            Name                      = created.Name,
+            Address                   = created.Address,
+            Phone                     = created.Phone,
+            Email                     = created.Email,
+            Description               = created.Description,
+            Timezone                  = created.Timezone,
+            Capacity                  = created.Capacity,
+            AverageServiceTimeMinutes = created.AverageServiceTimeMinutes,
+            OpeningTime               = created.OpeningTime.ToString(@"hh\:mm"),
+            ClosingTime               = created.ClosingTime.ToString(@"hh\:mm"),
+            IsAvailable               = created.IsActive,
+            IsActive                  = created.IsActive,
+            CreatedAt                 = created.CreatedAt,
         };
     }
 }

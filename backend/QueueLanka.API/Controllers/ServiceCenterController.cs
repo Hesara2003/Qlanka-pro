@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using QueueLanka.API.DTOs.Common;
 using QueueLanka.API.DTOs.ServiceCenter;
