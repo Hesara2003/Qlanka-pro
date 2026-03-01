@@ -59,10 +59,17 @@ public class DataAccessException : AppException
     public DataAccessException(string message, Exception? innerException = null)
         : base(500, "DATA_ACCESS_ERROR", message)
     {
-        if (innerException != null)
-        {
-            // Store inner exception for logging purposes
-            Data["InnerException"] = innerException.Message;
-        }
+    }
+}
+
+/// <summary>
+/// Exception thrown when a center_locations row is requested but does not exist — SCRUM-74.
+/// </summary>
+public class LocationNotFoundException : AppException
+{
+    public LocationNotFoundException(int centerId)
+        : base(404, "LOCATION_NOT_FOUND",
+               $"No location record found for service center {centerId}.")
+    {
     }
 }

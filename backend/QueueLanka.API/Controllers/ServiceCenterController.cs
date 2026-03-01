@@ -181,4 +181,74 @@ public class ServiceCenterController : ControllerBase
             response
         );
     }
+
+    /// <summary>Get the structured location record for a service center.</summary>
+    /// <param name="id">The service center ID</param>
+    /// <response code="200">Location record retrieved successfully</response>
+    /// <response code="400">Invalid service center ID provided</response>
+    /// <response code="404">Service center or location record not found</response>
+    /// <response code="500">Internal server error occurred</response>
+    [HttpGet("{id}/location")]
+    [ProducesResponseType(typeof(ApiResponse<CenterLocationDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetLocation(int id)
+    {
+        if (id <= 0)
+            throw new InvalidServiceCenterDataException("Service center ID must be greater than zero.");
+
+        _logger.LogInformation("Fetching location for service center {CenterId}", id);
+
+        var location = await _serviceCenterService.GetLocationAsync(id);
+
+        var response = new ApiResponse<CenterLocationDto>(
+            location,
+            new ResponseMetadata { CorrelationId = HttpContext.TraceIdentifier },
+            "Location retrieved successfully."
+        );
+
+        return Ok(response);
+    }
+
+    /// <summary>Create or update the structured location record for a service center.</summary>
+    /// <param name="id">The service center ID</param>
+    /// <param name="request">Location upsert payload</param>
+    /// <remarks>
+    /// Inserts a new <c>center_locations</c> row or updates it if one already exists.
+    /// Latitude and Longitude must be supplied together or not at all.
+    ///
+    /// **Requires Admin role.**
+    /// </remarks>
+    /// <response code="200">Location upserted successfully</response>
+    /// <response code="400">Validation error or mismatched coordinate pair</response>
+    /// <response code="401">Authentication required</response>
+    /// <response code="403">Admin role required</response>
+    /// <response code="404">Service center not found</response>
+    /// <response code="500">Internal server error occurred</response>
+    [HttpPut("{id}/location")]
+    [Authorize(Roles = "admin")]
+    [ProducesResponseType(typeof(ApiResponse<CenterLocationDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> UpsertLocation(int id, [FromBody] UpsertLocationRequestDto request)
+    {
+        if (id <= 0)
+            throw new InvalidServiceCenterDataException("Service center ID must be greater than zero.");
+
+        _logger.LogInformation("Admin upserting location for service center {CenterId}", id);
+
+        var location = await _serviceCenterService.UpsertLocationAsync(id, request);
+
+        var response = new ApiResponse<CenterLocationDto>(
+            location,
+            new ResponseMetadata { CorrelationId = HttpContext.TraceIdentifier },
+            "Location saved successfully."
+        );
+
+        return Ok(response);
+    }
 }
