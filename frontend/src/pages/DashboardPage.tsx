@@ -1,5 +1,5 @@
 import { Navigate, Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { tokenApi } from "../api/tokenApi";
 import type { UserToken } from "../api/tokenApi";
@@ -11,22 +11,32 @@ export default function DashboardPage() {
   const [loadingTokens, setLoadingTokens] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (user) {
-      tokenApi.getMyTokens()
-        .then(data => {
-          setTokens(data);
-          setError(null);
-        })
-        .catch((err: Error) => {
-          console.error("Failed to fetch tokens:", err);
-          setError(err.message);
-        })
-        .finally(() => {
-          setLoadingTokens(false);
-        });
-    }
+  const fetchTokens = useCallback(() => {
+    if (!user) return;
+    setLoadingTokens(true);
+    tokenApi.getMyTokens()
+      .then(data => {
+        setTokens(data);
+        setError(null);
+      })
+      .catch((err: Error) => {
+        console.error("Failed to fetch tokens:", err);
+        setError(err.message);
+      })
+      .finally(() => {
+        setLoadingTokens(false);
+      });
   }, [user]);
+
+  useEffect(() => {
+    fetchTokens();
+  }, [fetchTokens]);
+
+  /** Cancel a token then re-fetch so queue positions of remaining tokens refresh. */
+  const handleCancelToken = useCallback(async (tokenId: number) => {
+    await tokenApi.cancelToken(tokenId);
+    fetchTokens();
+  }, [fetchTokens]);
 
   if (!user) return <Navigate to="/login" replace />;
 
@@ -121,7 +131,7 @@ export default function DashboardPage() {
             }}
           >
             {tokens.map((token) => (
-              <UserTokenCard key={token.tokenId} token={token} />
+              <UserTokenCard key={token.tokenId} token={token} onCancel={handleCancelToken} />
             ))}
           </div>
         )}
