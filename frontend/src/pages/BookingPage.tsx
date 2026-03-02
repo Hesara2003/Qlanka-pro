@@ -5,7 +5,6 @@ import { useServiceCenter } from "../hooks/useServiceCenters";
 import { bookToken } from "../api/appointmentApi";
 import type { AppointmentResponseDto } from "../api/appointmentApi";
 import { isAxiosError } from "axios";
-import AppNavbar from "../components/common/AppNavbar";
 
 export default function BookingPage() {
     const { centerId } = useParams();
@@ -67,44 +66,36 @@ export default function BookingPage() {
 
     if (loadingConfig) {
         return (
-            <>
-                <AppNavbar />
-                <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                </div>
-            </>
+            <div className="w-full h-64 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
         );
     }
 
     // SCRUM-68: surface center-load errors (e.g. invalid ID, network failure) before rendering form
     if (centerError) {
         return (
-            <>
-                <AppNavbar />
-                <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-xl shadow-md p-8 max-w-md w-full text-center">
-                        <svg className="w-12 h-12 text-red-500 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <p className="text-red-700 font-semibold mb-2">Service Center Unavailable</p>
-                        <p className="text-red-600 text-sm mb-4">{centerError}</p>
-                        <button
-                            onClick={() => navigate("/service-centers")}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
-                        >
-                            Back to Centers
-                        </button>
-                    </div>
+            <div className="w-full flex items-center justify-center p-4 pt-12">
+                <div className="bg-white rounded-xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-gray-100 p-8 max-w-md w-full text-center">
+                    <svg className="w-12 h-12 text-red-500 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p className="text-red-700 font-semibold mb-2">Service Center Unavailable</p>
+                    <p className="text-red-600 text-sm mb-4">{centerError}</p>
+                    <button
+                        onClick={() => navigate("/service-centers")}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+                    >
+                        Back to Centers
+                    </button>
                 </div>
-            </>
+            </div>
         );
     }
 
     return (
-        <>
-        <AppNavbar />
-        <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-8">
+        <div className="w-full pt-8">
+            <div className="max-w-md mx-auto bg-white rounded-xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-gray-100 overflow-hidden p-8">
 
                 {/* Header */}
                 <div className="mb-6">
@@ -214,6 +205,5 @@ export default function BookingPage() {
                 )}
             </div>
         </div>
-        </>
     );
 }
