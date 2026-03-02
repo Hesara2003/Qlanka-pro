@@ -72,6 +72,7 @@ function ConfirmDeleteDialog({ user, deleting, onConfirm, onCancel }: ConfirmDia
       aria-modal="true"
       aria-labelledby="confirm-dialog-title"
       aria-describedby="confirm-dialog-desc"
+      data-testid="confirm-delete-dialog"
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
     >
       {/* Backdrop */}
@@ -120,6 +121,7 @@ function ConfirmDeleteDialog({ user, deleting, onConfirm, onCancel }: ConfirmDia
             ref={cancelRef}
             onClick={onCancel}
             disabled={deleting}
+            data-testid="confirm-delete-cancel"
             className="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
           >
             {t("adminUsers.deleteDialog.cancel")}
@@ -127,6 +129,7 @@ function ConfirmDeleteDialog({ user, deleting, onConfirm, onCancel }: ConfirmDia
           <button
             onClick={onConfirm}
             disabled={deleting}
+            data-testid="confirm-delete-confirm"
             className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
           >
             {deleting ? (
@@ -484,6 +487,7 @@ export default function AdminUsersPage() {
                         <button
                           onClick={() => setPendingDelete(u)}
                           disabled={u.role === "admin"}
+                          data-testid={`delete-user-${u.userId}`}
                           title={u.role === "admin" ? t("adminUsers.cannotDeleteAdmin") : t("adminUsers.deleteUser")}
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:border-transparent"
                         >
@@ -517,6 +521,7 @@ export default function AdminUsersPage() {
                     <button
                       onClick={() => setPendingDelete(u)}
                       disabled={u.role === "admin"}
+                      data-testid={`delete-user-mobile-${u.userId}`}
                       className="shrink-0 p-2 rounded-lg text-red-500 hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                       aria-label={t("adminUsers.deleteUser")}
                     >
