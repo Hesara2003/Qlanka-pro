@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getAllServiceCenters } from "../api/serviceCenterApi";
 import { getAdminUsers } from "../api/userApi";
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  BarChart, Bar
+} from "recharts";
 
 interface Stats {
   centers: number;
@@ -53,6 +57,22 @@ const ACTIONS = [
     status: "Active",
     statusBg: "bg-emerald-100 text-emerald-600",
   },
+];
+
+const ACTIVITY_DATA = [
+  { name: 'Mon', active: 400, tokens: 240 },
+  { name: 'Tue', active: 300, tokens: 139 },
+  { name: 'Wed', active: 550, tokens: 980 },
+  { name: 'Thu', active: 278, tokens: 390 },
+  { name: 'Fri', active: 189, tokens: 480 },
+  { name: 'Sat', active: 239, tokens: 380 },
+  { name: 'Sun', active: 349, tokens: 430 },
+];
+
+const ROLE_DATA = [
+  { name: 'Citizens', users: 850, fill: '#3b82f6' },
+  { name: 'Officers', users: 120, fill: '#10b981' },
+  { name: 'Admins', users: 30, fill: '#f59e0b' },
 ];
 
 export default function AdminDashboardPage() {
@@ -207,6 +227,73 @@ export default function AdminDashboardPage() {
             </button>
           </div>
 
+        </div>
+
+        {/* Charts Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+
+          {/* Main Area Chart (2/3 width) */}
+          <div className="bg-white rounded-3xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-gray-100 p-6 lg:col-span-2">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h3 className="text-[17px] font-bold text-gray-900 tracking-tight">Platform Activity</h3>
+                <p className="text-[12px] font-bold text-gray-400 mt-1 uppercase tracking-widest">Last 7 Days</p>
+              </div>
+              <div className="flex gap-4 text-[12px] font-bold">
+                <div className="flex items-center gap-1.5 text-blue-600"><div className="w-2.5 h-2.5 rounded-full bg-blue-500"></div> Active Accounts</div>
+                <div className="flex items-center gap-1.5 text-emerald-600"><div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div> Tokens Issued</div>
+              </div>
+            </div>
+            <div className="h-[280px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={ACTIVITY_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorActive" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="colorTokens" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12, fontWeight: 600 }} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12, fontWeight: 600 }} />
+                  <Tooltip
+                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 4px 20px -2px rgba(0,0,0,0.1)', fontWeight: 'bold' }}
+                    itemStyle={{ fontSize: '13px' }}
+                    labelStyle={{ color: '#9ca3af', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}
+                  />
+                  <Area type="monotone" dataKey="active" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorActive)" activeDot={{ r: 6, strokeWidth: 0 }} />
+                  <Area type="monotone" dataKey="tokens" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorTokens)" activeDot={{ r: 6, strokeWidth: 0 }} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Secondary Bar Chart (1/3 width) */}
+          <div className="bg-white rounded-3xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-gray-100 p-6 flex flex-col">
+            <div className="mb-6">
+              <h3 className="text-[17px] font-bold text-gray-900 tracking-tight">System Distribution</h3>
+              <p className="text-[12px] font-bold text-gray-400 mt-1 uppercase tracking-widest">Registered Roles</p>
+            </div>
+            <div className="flex-1 w-full min-h-[220px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={ROLE_DATA} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12, fontWeight: 600 }} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12, fontWeight: 600 }} />
+                  <Tooltip
+                    cursor={{ fill: '#f9fafb' }}
+                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px -2px rgba(0,0,0,0.1)', fontWeight: 'bold' }}
+                    itemStyle={{ fontSize: '13px', color: '#111827' }}
+                  />
+                  <Bar dataKey="users" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </div>
 
         {/* Recently Payments Cards (Wait, I used the horizontal card space here) */}
