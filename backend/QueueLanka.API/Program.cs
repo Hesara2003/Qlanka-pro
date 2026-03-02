@@ -113,9 +113,7 @@ builder.Services.AddScoped<IUserManagementService, UserManagementService>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
-        policy.WithOrigins(
-                  "http://localhost:3000",
-                  "http://localhost:5173")
+        policy.SetIsOriginAllowed(origin => true) // Allow any localhost/127.0.0.1 port for local dev
               .AllowAnyHeader()
               .AllowAnyMethod());
 });

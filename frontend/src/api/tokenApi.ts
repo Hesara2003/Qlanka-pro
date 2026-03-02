@@ -51,7 +51,7 @@ export interface UserToken {
 export const tokenApi = {
     getMyTokens: async (): Promise<UserToken[]> => {
         try {
-            const response = await axiosInstance.get(`/Token/my-tokens`);
+            const response = await axiosInstance.get(`/api/Token/my-tokens`);
             return response.data;
         } catch (error) {
             throw new Error(extractErrorMessage(error));
@@ -60,7 +60,7 @@ export const tokenApi = {
 
     cancelToken: async (tokenId: number): Promise<void> => {
         try {
-            await axiosInstance.put(`/Token/${tokenId}/cancel`);
+            await axiosInstance.put(`/api/Token/${tokenId}/cancel`);
         } catch (error) {
             if (error instanceof AxiosError) {
                 const status = error.response?.status;

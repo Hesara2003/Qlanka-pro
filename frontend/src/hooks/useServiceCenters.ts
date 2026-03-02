@@ -35,7 +35,7 @@ export function useServiceCenters(
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  
+
   const intervalRef = useRef<number | null>(null);
   const isMountedRef = useRef(true);
 
@@ -43,20 +43,20 @@ export function useServiceCenters(
     try {
       setLoading(true);
       setError(null);
-      
+
       const data = await getAllServiceCenters();
-      
+
       if (isMountedRef.current) {
         setCenters(data);
         setLastUpdated(new Date());
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to load service centers";
-      
+
       if (isMountedRef.current) {
         setError(errorMessage);
       }
-      
+
       if (onError && err instanceof Error) {
         onError(err);
       }
@@ -89,6 +89,7 @@ export function useServiceCenters(
 
   // Cleanup on unmount
   useEffect(() => {
+    isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
       if (intervalRef.current) {
@@ -140,7 +141,7 @@ export function useServiceCenter(
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  
+
   const intervalRef = useRef<number | null>(null);
   const isMountedRef = useRef(true);
 
@@ -148,20 +149,20 @@ export function useServiceCenter(
     try {
       setLoading(true);
       setError(null);
-      
+
       const data = await getServiceCenterById(centerId);
-      
+
       if (isMountedRef.current) {
         setCenter(data);
         setLastUpdated(new Date());
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to load service center";
-      
+
       if (isMountedRef.current) {
         setError(errorMessage);
       }
-      
+
       if (onError && err instanceof Error) {
         onError(err);
       }
@@ -191,6 +192,7 @@ export function useServiceCenter(
   }, [autoRefresh, refreshInterval, fetchCenter]);
 
   useEffect(() => {
+    isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
       if (intervalRef.current) {
