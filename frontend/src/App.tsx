@@ -12,6 +12,7 @@ import AdminServiceCentersPage from "./pages/AdminServiceCentersPage";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import AdminRoute from "./components/common/AdminRoute";
 import AdminLayout from "./components/common/AdminLayout";
+import UserLayout from "./components/common/UserLayout";
 
 function App() {
   return (
@@ -23,9 +24,11 @@ function App() {
 
       {/* ── Protected: any authenticated user ─────────────── */}
       <Route element={<ProtectedRoute />}>
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/service-centers" element={<ServiceCentersPage />} />
-        <Route path="/book/:centerId" element={<BookingPage />} />
+        <Route element={<UserLayout />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/service-centers" element={<ServiceCentersPage />} />
+          <Route path="/book/:centerId" element={<BookingPage />} />
+        </Route>
       </Route>
 
       {/* ── Admin-only routes ─────────────────────────────── */}

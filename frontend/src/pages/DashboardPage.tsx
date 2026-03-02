@@ -21,7 +21,7 @@ const BOOKING_TRENDS = [
 const TOAST_DURATION = 4000;
 
 export default function DashboardPage() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { tokens, loading: loadingTokens, error, lastUpdated, refresh, cancelToken } =
     useTokens({ pollInterval: 30_000 });
 
@@ -52,7 +52,7 @@ export default function DashboardPage() {
     : null;
 
   return (
-    <div className="min-h-screen bg-[#f8f9fb] flex flex-col items-center py-10 px-4 sm:px-6">
+    <div className="w-full flex flex-col pt-4">
       {/* ── Success toast ── */}
       {toastMessage && (
         <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-emerald-50 border border-emerald-300 rounded-2xl px-5 py-3 flex items-center gap-3 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] w-11/12 max-w-md animate-[fadeInDown_0.2s_ease]">
@@ -64,37 +64,22 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Header Profile Card */}
-      <div className="w-full max-w-6xl bg-white rounded-3xl p-8 sm:p-10 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-gray-100 flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
-        <div className="flex items-center gap-6">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-3xl font-bold shadow-md shrink-0">
-            {user.username.charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Welcome back, {user.username}!</h1>
-            <p className="text-sm font-bold text-gray-400 uppercase tracking-widest mt-1">
-              Role: <span className="text-blue-600">{user.role}</span>
-            </p>
-          </div>
+      {/* Book a Token Action Bar */}
+      <div className="w-full bg-white rounded-3xl p-6 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-gray-100 flex items-center justify-between mb-8">
+        <div>
+          <h2 className="text-xl font-extrabold text-gray-900 tracking-tight">Need to visit a center?</h2>
+          <p className="text-sm text-gray-500 mt-1">Find a center near you and join the queue virtually.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <Link
-            to="/service-centers"
-            className="px-6 py-3 bg-black hover:bg-gray-900 text-white text-sm font-bold rounded-full transition-colors shadow-sm"
-          >
-            Book a Token
-          </Link>
-          <button
-            onClick={logout}
-            className="px-6 py-3 bg-red-50 hover:bg-red-100 text-red-600 text-sm font-bold rounded-full transition-colors"
-          >
-            Sign out
-          </button>
-        </div>
+        <Link
+          to="/service-centers"
+          className="px-6 py-3 bg-black hover:bg-gray-900 text-white text-sm font-bold rounded-full transition-colors shadow-sm whitespace-nowrap"
+        >
+          Book a Token
+        </Link>
       </div>
 
       {/* Charts / Insights Row */}
-      <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="md:col-span-2 bg-white rounded-3xl p-8 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-gray-100 flex flex-col">
           <div className="mb-6">
             <h3 className="text-[17px] font-bold text-gray-900 tracking-tight">Your Weekly Activity</h3>
@@ -135,7 +120,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Main Tokens Content */}
-      <div className="w-full max-w-6xl">
+      <div className="w-full">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 pb-4 border-b border-gray-200/60 gap-4">
           <div className="flex items-center gap-3">
             <h2 className="text-xl font-extrabold text-gray-900 tracking-tight">Active Queue Positions</h2>
