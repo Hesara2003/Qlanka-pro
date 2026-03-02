@@ -10,7 +10,7 @@ const config = {
     multipleStatements: true,
 };
 
-const migrationsDir = path.join(__dirname, 'backend', 'QueueLanka.API', 'Database', 'Migrations');
+const migrationsDir = path.join(__dirname, '..', 'backend', 'QueueLanka.API', 'Database', 'Migrations');
 
 async function run() {
     const connection = await mysql.createConnection(config);
