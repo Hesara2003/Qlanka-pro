@@ -107,6 +107,7 @@ builder.Services.AddScoped<IServiceCenterService, ServiceCenterService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IUserManagementService, UserManagementService>();
 
 // ── CORS (development) ────────────────────────────────────────
 builder.Services.AddCors(options =>
