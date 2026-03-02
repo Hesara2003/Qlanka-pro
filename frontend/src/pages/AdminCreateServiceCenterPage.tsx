@@ -246,9 +246,9 @@ export default function AdminCreateServiceCenterPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Center Created!</h2>
-            <p className="text-gray-500 text-sm mb-6">
-              <span className="font-semibold text-gray-700">"{createdName}"</span> has been registered successfully.
+            <h2 className="text-[26px] tracking-tight font-bold text-gray-900 mb-2">Center Created!</h2>
+            <p className="text-[13px] font-bold text-gray-400 uppercase tracking-widest mb-6">
+              <span className="text-gray-900 font-extrabold">"{createdName}"</span> has been registered successfully.
             </p>
             <div className="flex flex-col gap-2">
               <button
@@ -320,10 +320,10 @@ export default function AdminCreateServiceCenterPage() {
 
           {/* Step heading */}
           <div className="mb-6">
-            <p className="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-0.5">
+            <p className="text-[11px] font-bold text-blue-600 uppercase tracking-widest mb-1.5">
               Step {step + 1} of {STEPS.length}
             </p>
-            <h1 className="text-2xl font-bold text-gray-900">{STEPS[step].label}</h1>
+            <h1 className="text-[26px] font-bold text-gray-900 tracking-tight">{STEPS[step].label}</h1>
           </div>
 
           {/* Global error banner */}
@@ -340,7 +340,7 @@ export default function AdminCreateServiceCenterPage() {
           {/* Step 1 – Basic Info                                              */}
           {/* ──────────────────────────────────────────────────────────────── */}
           {step === 0 && (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
+            <div className="bg-white rounded-3xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-gray-100 p-8 space-y-6">
               {/* Name */}
               <div>
                 <Label required>Center Name</Label>
