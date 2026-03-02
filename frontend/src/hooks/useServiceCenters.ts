@@ -17,8 +17,13 @@ interface UseServiceCentersResult {
   lastUpdated: Date | null;
 }
 
+// Global cache for service centers to prevent unnecessary API calls
+let globalCentersCache: ServiceCenter[] | null = null;
+let globalLastFetchCache: Date | null = null;
+const CACHE_DURATION_MS = 60_000; // 1 minute
+
 /**
- * Custom hook to fetch and manage service center data with auto-refresh
+ * Custom hook to fetch and manage service center data with auto-refresh and caching
  * @param options - Configuration options for the hook
  * @returns UseServiceCentersResult
  */
@@ -31,24 +36,42 @@ export function useServiceCenters(
     onError,
   } = options;
 
-  const [centers, setCenters] = useState<ServiceCenter[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [centers, setCenters] = useState<ServiceCenter[]>(globalCentersCache || []);
+  const [loading, setLoading] = useState(!globalCentersCache);
   const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(globalLastFetchCache);
 
   const intervalRef = useRef<number | null>(null);
   const isMountedRef = useRef(true);
 
-  const fetchCenters = useCallback(async () => {
+  const fetchCenters = useCallback(async (forceRefresh = false) => {
+    // Check cache valid if not force refresh
+    if (!forceRefresh && globalCentersCache && globalLastFetchCache) {
+      const isCacheValid = (new Date().getTime() - globalLastFetchCache.getTime()) < CACHE_DURATION_MS;
+      if (isCacheValid) {
+        if (isMountedRef.current) {
+          setCenters(globalCentersCache);
+          setLastUpdated(globalLastFetchCache);
+          setLoading(false);
+          setError(null);
+        }
+        return;
+      }
+    }
+
     try {
       setLoading(true);
       setError(null);
 
       const data = await getAllServiceCenters();
 
+      // Update global cache
+      globalCentersCache = data;
+      globalLastFetchCache = new Date();
+
       if (isMountedRef.current) {
-        setCenters(data);
-        setLastUpdated(new Date());
+        setCenters(globalCentersCache);
+        setLastUpdated(globalLastFetchCache);
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to load service centers";
@@ -76,7 +99,7 @@ export function useServiceCenters(
   useEffect(() => {
     if (autoRefresh) {
       intervalRef.current = setInterval(() => {
-        fetchCenters();
+        fetchCenters(true); // Always force refresh on the interval tick
       }, refreshInterval);
 
       return () => {
@@ -102,7 +125,7 @@ export function useServiceCenters(
     centers,
     loading,
     error,
-    refresh: fetchCenters,
+    refresh: () => fetchCenters(true), // Expose force-refresh override function
     lastUpdated,
   };
 }

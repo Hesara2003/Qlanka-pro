@@ -57,7 +57,6 @@ const ACTIONS = [
 
 export default function AdminDashboardPage() {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
 
