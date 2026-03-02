@@ -3,9 +3,10 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getAllServiceCenters } from "../api/serviceCenterApi";
 import { getAdminUsers } from "../api/userApi";
+import type { AdminUser } from "../types/user";
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  BarChart, Bar
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  BarChart, Bar, Cell
 } from "recharts";
 
 interface Stats {
@@ -59,26 +60,11 @@ const ACTIONS = [
   },
 ];
 
-const ACTIVITY_DATA = [
-  { name: 'Mon', active: 400, tokens: 240 },
-  { name: 'Tue', active: 300, tokens: 139 },
-  { name: 'Wed', active: 550, tokens: 980 },
-  { name: 'Thu', active: 278, tokens: 390 },
-  { name: 'Fri', active: 189, tokens: 480 },
-  { name: 'Sat', active: 239, tokens: 380 },
-  { name: 'Sun', active: 349, tokens: 430 },
-];
-
-const ROLE_DATA = [
-  { name: 'Citizens', users: 850, fill: '#3b82f6' },
-  { name: 'Officers', users: 120, fill: '#10b981' },
-  { name: 'Admins', users: 30, fill: '#f59e0b' },
-];
-
 export default function AdminDashboardPage() {
   const { user } = useAuth();
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [stats,    setStats]    = useState<Stats | null>(null);
+  const [allUsers, setAllUsers] = useState<AdminUser[]>([]);
+  const [loading,  setLoading]  = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -90,6 +76,7 @@ export default function AdminDashboardPage() {
           getAdminUsers(),
         ]);
         if (!cancelled) {
+          setAllUsers(users);
           setStats({
             centers: centers.length,
             users: users.length,
@@ -97,7 +84,7 @@ export default function AdminDashboardPage() {
           });
         }
       } catch {
-        if (!cancelled) setStats({ centers: 0, users: 0, activeUsers: 0 });
+        if (!cancelled) { setAllUsers([]); setStats({ centers: 0, users: 0, activeUsers: 0 }); }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -106,23 +93,28 @@ export default function AdminDashboardPage() {
     return () => { cancelled = true; };
   }, []);
 
+  // ── Derived — computed from real fetched users ──────────────────────────
+  const citizens = allUsers.filter(u => u.role === 'citizen').length;
+  const officers = allUsers.filter(u => u.role === 'officer').length;
+  const admins   = allUsers.filter(u => u.role === 'admin').length;
+  const verified = allUsers.filter(u => u.isEmailVerified).length;
+  const inactive = stats ? stats.users - stats.activeUsers : 0;
+
+  const roleData = [
+    { name: 'Citizens', users: citizens, fill: '#3b82f6' },
+    { name: 'Officers', users: officers, fill: '#10b981' },
+    { name: 'Admins',   users: admins,   fill: '#f59e0b' },
+  ];
+
+  const roleRows = [
+    { label: 'Citizens', count: citizens, bar: 'bg-blue-500',    badge: 'bg-blue-50 text-blue-700'       },
+    { label: 'Officers', count: officers, bar: 'bg-emerald-500', badge: 'bg-emerald-50 text-emerald-700' },
+    { label: 'Admins',   count: admins,   bar: 'bg-amber-500',   badge: 'bg-amber-50 text-amber-700'     },
+  ];
+
   return (
     <>
-      {/* ── Main Content ── */}
       <div className="px-10 py-8">
-        {/* Top Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-6">
-            <div>
-              <h1 className="text-[26px] font-bold text-gray-900 tracking-tight">Analytics</h1>
-              <p className="text-sm text-gray-400 font-medium mt-0.5">Welcome back, {user?.username}</p>
-            </div>
-          </div>
-          <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold ring-4 ring-white shadow-sm border border-gray-100">
-            {user?.username?.[0]?.toUpperCase()}
-          </div>
-        </div>
-
         {/* ── 4 Stat Cards Row ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
 
@@ -198,55 +190,69 @@ export default function AdminDashboardPage() {
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
 
-          {/* Main Area Chart (2/3 width) */}
+          {/* User Distribution panel — real data (left 2/3) */}
           <div className="bg-white rounded-3xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-gray-100 p-6 lg:col-span-2">
-            <div className="flex justify-between items-center mb-6">
-              <div>
-                <h3 className="text-[17px] font-bold text-gray-900 tracking-tight">Platform Activity</h3>
-                <p className="text-[12px] font-bold text-gray-400 mt-1 uppercase tracking-widest">Last 7 Days</p>
-              </div>
-              <div className="flex gap-4 text-[12px] font-bold">
-                <div className="flex items-center gap-1.5 text-blue-600"><div className="w-2.5 h-2.5 rounded-full bg-blue-500"></div> Active Accounts</div>
-                <div className="flex items-center gap-1.5 text-emerald-600"><div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div> Tokens Issued</div>
-              </div>
+            <div className="mb-6">
+              <h3 className="text-[17px] font-bold text-gray-900 tracking-tight">User Distribution</h3>
+              <p className="text-[12px] font-bold text-gray-400 mt-1 uppercase tracking-widest">Roles &amp; Account Status</p>
             </div>
-            <div className="h-[280px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={ACTIVITY_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorActive" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                    </linearGradient>
-                    <linearGradient id="colorTokens" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12, fontWeight: 600 }} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12, fontWeight: 600 }} />
-                  <Tooltip
-                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 4px 20px -2px rgba(0,0,0,0.1)', fontWeight: 'bold' }}
-                    itemStyle={{ fontSize: '13px' }}
-                    labelStyle={{ color: '#9ca3af', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}
-                  />
-                  <Area type="monotone" dataKey="active" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorActive)" activeDot={{ r: 6, strokeWidth: 0 }} />
-                  <Area type="monotone" dataKey="tokens" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorTokens)" activeDot={{ r: 6, strokeWidth: 0 }} />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
+
+            {loading ? (
+              <div className="flex items-center justify-center h-48 text-gray-400">
+                <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                </svg>
+              </div>
+            ) : (
+              <>
+                {/* Role progress bars */}
+                <div className="space-y-5 mb-6">
+                  {roleRows.map(row => (
+                    <div key={row.label}>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-[13px] font-semibold text-gray-700">{row.label}</span>
+                        <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${row.badge}`}>{row.count}</span>
+                      </div>
+                      <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full ${row.bar} rounded-full transition-all duration-700`}
+                          style={{ width: `${stats?.users ? Math.round((row.count / stats.users) * 100) : 0}%` }}
+                        />
+                      </div>
+                      <p className="text-[11px] text-gray-400 mt-1">
+                        {stats?.users ? Math.round((row.count / stats.users) * 100) : 0}% of total
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Summary strip */}
+                <div className="grid grid-cols-3 gap-3 pt-5 border-t border-gray-100">
+                  {[
+                    { label: 'Active',   value: stats?.activeUsers ?? 0,  color: 'text-emerald-600' },
+                    { label: 'Inactive', value: inactive,                  color: 'text-gray-500'    },
+                    { label: 'Verified', value: verified,                  color: 'text-blue-600'    },
+                  ].map(s => (
+                    <div key={s.label} className="text-center">
+                      <p className={`text-[26px] font-extrabold leading-none ${s.color}`}>{s.value}</p>
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">{s.label}</p>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
 
-          {/* Secondary Bar Chart (1/3 width) */}
+          {/* Role BarChart — real data (right 1/3) */}
           <div className="bg-white rounded-3xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-gray-100 p-6 flex flex-col">
             <div className="mb-6">
-              <h3 className="text-[17px] font-bold text-gray-900 tracking-tight">System Distribution</h3>
+              <h3 className="text-[17px] font-bold text-gray-900 tracking-tight">Role Breakdown</h3>
               <p className="text-[12px] font-bold text-gray-400 mt-1 uppercase tracking-widest">Registered Roles</p>
             </div>
             <div className="flex-1 w-full min-h-[220px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={ROLE_DATA} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+                <BarChart data={roleData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12, fontWeight: 600 }} dy={10} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12, fontWeight: 600 }} />
@@ -255,7 +261,11 @@ export default function AdminDashboardPage() {
                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px -2px rgba(0,0,0,0.1)', fontWeight: 'bold' }}
                     itemStyle={{ fontSize: '13px', color: '#111827' }}
                   />
-                  <Bar dataKey="users" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="users" radius={[6, 6, 0, 0]}>
+                    {roleData.map((entry, i) => (
+                      <Cell key={i} fill={entry.fill} />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
