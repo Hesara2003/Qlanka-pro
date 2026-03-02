@@ -46,7 +46,10 @@ public class TokenController : ControllerBase
             return Unauthorized(new { code = "INVALID_USER", message = "User ID not found in token." });
         }
 
-        var result = await _tokenService.CancelTokenAsync(tokenId, userId);
+        var roleClaim = User.FindFirst(ClaimTypes.Role)?.Value;
+        bool isAdmin = string.Equals(roleClaim, "admin", StringComparison.OrdinalIgnoreCase);
+
+        var result = await _tokenService.CancelTokenAsync(tokenId, userId, isAdmin);
 
         return result switch
         {

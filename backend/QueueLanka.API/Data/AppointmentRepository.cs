@@ -117,4 +117,39 @@ public class AppointmentRepository : IAppointmentRepository
             UpdatedAt       = reader.IsDBNull(reader.GetOrdinal("updated_at")) ? null : reader.GetDateTime(reader.GetOrdinal("updated_at"))
         };
     }
+
+    public async Task<(int AppointmentId, int TokenId, string ResultCode)> BookAtomicAsync(
+        int centerId, int userId, DateTime date, TimeSpan time, string tokenNumber, int capacity)
+    {
+        const string sql = "CALL sp_book_token(@CenterId, @UserId, @Date, @Time, @TokenNumber, @Capacity, @AppointmentId, @TokenId, @ResultCode)";
+
+        await using var conn = new MySqlConnection(_connectionString);
+        await conn.OpenAsync();
+        await using var cmd = new MySqlCommand(sql, conn);
+
+        // Input Parameters
+        cmd.Parameters.AddWithValue("@CenterId", centerId);
+        cmd.Parameters.AddWithValue("@UserId", userId);
+        cmd.Parameters.AddWithValue("@Date", date.Date);
+        cmd.Parameters.AddWithValue("@Time", time);
+        cmd.Parameters.AddWithValue("@TokenNumber", tokenNumber);
+        cmd.Parameters.AddWithValue("@Capacity", capacity);
+
+        // Output Parameters
+        var pApptId = new MySqlParameter("@AppointmentId", MySqlDbType.Int32) { Direction = System.Data.ParameterDirection.Output };
+        var pTokenId = new MySqlParameter("@TokenId", MySqlDbType.Int32) { Direction = System.Data.ParameterDirection.Output };
+        var pResultCode = new MySqlParameter("@ResultCode", MySqlDbType.VarChar, 50) { Direction = System.Data.ParameterDirection.Output };
+        
+        cmd.Parameters.Add(pApptId);
+        cmd.Parameters.Add(pTokenId);
+        cmd.Parameters.Add(pResultCode);
+
+        await cmd.ExecuteNonQueryAsync();
+
+        string resultCode = pResultCode.Value?.ToString() ?? "UNKNOWN_ERROR";
+        int apptId = pApptId.Value != DBNull.Value ? Convert.ToInt32(pApptId.Value) : 0;
+        int tokenId = pTokenId.Value != DBNull.Value ? Convert.ToInt32(pTokenId.Value) : 0;
+
+        return (apptId, tokenId, resultCode);
+    }
 }

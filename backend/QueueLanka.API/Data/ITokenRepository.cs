@@ -16,6 +16,6 @@ public interface ITokenRepository
     /// Cancels a Waiting token owned by <paramref name="userId"/> and atomically
     /// shifts all subsequent Waiting tokens in the same queue one position forward.
     /// </summary>
-    /// <returns><c>true</c> when the token was found, was in Waiting status, and belonged to the user.</returns>
-    Task<bool> CancelAndShiftQueueAsync(int tokenId, int userId);
+    /// <param name="isAdmin">If true, bypasses the user_id ownership check.</param>
+    Task<bool> CancelAndShiftQueueAsync(int tokenId, int userId, bool isAdmin = false);
 }

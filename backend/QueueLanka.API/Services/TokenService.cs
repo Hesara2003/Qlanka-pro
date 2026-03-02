@@ -92,7 +92,7 @@ public class TokenService : ITokenService
         return responseTokens;
     }
 
-    public async Task<CancellationResult> CancelTokenAsync(int tokenId, int userId)
+    public async Task<CancellationResult> CancelTokenAsync(int tokenId, int userId, bool isAdmin = false)
     {
         // Fetch the token first so we can distinguish "not found / not mine" from
         // "found but not in a cancellable state".
@@ -102,9 +102,9 @@ public class TokenService : ITokenService
         if (token == null)
             return CancellationResult.TokenNotFound;
 
-        // Token belongs to a different user — treat the same as not found
-        // to avoid leaking whether the ID is valid to the caller.
-        if (token.UserId != userId)
+        // Token belongs to a different user — if the caller is not an admin, treat 
+        // the same as not found to avoid leaking whether the ID is valid to the caller.
+        if (!isAdmin && token.UserId != userId)
             return CancellationResult.TokenNotFound;
 
         // Token is already in a terminal cancelled state.
@@ -118,7 +118,7 @@ public class TokenService : ITokenService
         // Attempt the atomic cancel + queue-shift.  A false return value here
         // means a concurrent update changed the status between our read and the
         // stored-procedure check (e.g. the officer started serving it).
-        var cancelled = await _tokenRepository.CancelAndShiftQueueAsync(tokenId, userId);
+        var cancelled = await _tokenRepository.CancelAndShiftQueueAsync(tokenId, userId, isAdmin);
         return cancelled ? CancellationResult.Success : CancellationResult.NotCancellable;
     }
 }
