@@ -113,120 +113,86 @@ export default function AdminDashboardPage() {
         {/* Top Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-6">
-            <h1 className="text-[26px] font-bold text-gray-900 tracking-tight">Analytics</h1>
-
-            {/* Toggle Switch */}
-            <div className="hidden sm:flex bg-gray-200/50 p-1 rounded-full items-center">
-              <button className="bg-white shadow-sm text-gray-900 px-5 py-2 rounded-full text-xs font-bold tracking-wide">
-                Full Statistics
-              </button>
-              <button className="text-gray-500 hover:text-gray-700 px-5 py-2 rounded-full text-xs font-semibold tracking-wide transition-colors">
-                Results Summary
-              </button>
+            <div>
+              <h1 className="text-[26px] font-bold text-gray-900 tracking-tight">Analytics</h1>
+              <p className="text-sm text-gray-400 font-medium mt-0.5">Welcome back, {user?.username}</p>
             </div>
           </div>
-
-          <div className="flex items-center gap-4">
-            <button className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 shadow-sm transition-colors">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" /></svg>
-            </button>
-            <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold overflow-hidden ring-4 ring-white shadow-sm border border-gray-100">
-              {user?.username?.[0]?.toUpperCase()}
-            </div>
+          <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold ring-4 ring-white shadow-sm border border-gray-100">
+            {user?.username?.[0]?.toUpperCase()}
           </div>
         </div>
 
-        <p className="text-sm font-medium text-gray-500 mb-6 hidden">Welcome back, {user?.username} 👋</p>
+        {/* ── 4 Stat Cards Row ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
 
-        {/* 4 Cards Row */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-
-          {/* Card 1: Service Centers (Dashed border) */}
-          <div className="bg-[#f8f9fb] border-[2px] border-dashed border-gray-200 rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden group hover:border-gray-300 transition-colors">
-            <div>
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="font-bold text-gray-900 text-[16px]">Service <br /> Centers</h3>
-                <svg className="w-5 h-5 text-gray-700" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" /></svg>
-              </div>
-              <div className="flex items-center gap-2 mb-4">
-                <span className="text-xs font-bold text-blue-700 bg-blue-100 px-2.5 py-1 rounded-md flex items-center gap-1">
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                  QueueLanka
-                </span>
-              </div>
+          {/* Card 1: Service Centers */}
+          <div className="bg-[#f8f9fb] border-[2px] border-dashed border-gray-200 rounded-3xl p-5 flex flex-col justify-between group hover:border-gray-300 transition-colors">
+            <div className="flex justify-between items-start mb-6">
+              <h3 className="font-bold text-gray-900 text-[15px] leading-snug">Service<br />Centers</h3>
+              <span className="text-xs font-bold text-blue-700 bg-blue-100 px-2.5 py-1 rounded-lg">QueueLanka</span>
             </div>
-            <div className="flex items-end justify-between mt-4">
-              <div className="flex -space-x-2">
-                <div className="w-8 h-8 rounded-full border-2 border-[#f8f9fb] bg-blue-200 flex items-center justify-center text-xs font-bold text-blue-700 z-30">SC</div>
-              </div>
-              <div className="bg-black text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
-                Total: {loading ? "..." : stats?.centers}
+            <div className="flex items-center justify-between">
+              <div className="w-9 h-9 rounded-full bg-blue-200 flex items-center justify-center text-xs font-bold text-blue-700">SC</div>
+              <div className="bg-black text-white text-xs font-bold px-3 py-1.5 rounded-full">
+                {loading ? "—" : stats?.centers}
               </div>
             </div>
           </div>
 
-          {/* Card 2: Registered Users (Dashed border, Sparkline) */}
-          <div className="bg-[#f8f9fb] border-[2px] border-dashed border-gray-200 rounded-3xl p-5 relative overflow-hidden group hover:border-gray-300 transition-colors">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shadow-sm">
+          {/* Card 2: Registered Users */}
+          <div className="bg-[#f8f9fb] border-[2px] border-dashed border-gray-200 rounded-3xl p-5 group hover:border-gray-300 transition-colors">
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 flex-shrink-0">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 20H7a4 4 0 01-4-4v-1a6 6 0 016-6h6a6 6 0 016 6v1a4 4 0 01-4 4z" /></svg>
               </div>
-              <h3 className="font-bold text-gray-900 text-[16px]">Registered Users</h3>
+              <h3 className="font-bold text-gray-900 text-[15px]">Registered Users</h3>
             </div>
-            <div className="h-12 w-full mb-3 px-2">
-              <svg viewBox="0 0 100 30" className="w-full h-full text-blue-400 drop-shadow-sm" preserveAspectRatio="none">
+            <div className="h-10 w-full mb-3">
+              <svg viewBox="0 0 100 30" className="w-full h-full text-blue-400" preserveAspectRatio="none">
                 <path d="M0 25 L10 20 L20 28 L30 15 L40 22 L50 10 L60 18 L70 5 L80 15 L90 5 L100 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-            <div className="flex items-end justify-between px-1">
-              <span className="text-[28px] font-extrabold text-gray-900 tracking-tight leading-none">
-                {loading ? "..." : stats?.users}
+            <div className="flex items-end justify-between">
+              <span className="text-[28px] font-extrabold text-gray-900 leading-none">
+                {loading ? "—" : stats?.users}
               </span>
-              <span className="flex items-center gap-1 text-[11px] font-bold bg-black text-white px-2.5 py-1 rounded-full shadow-sm">
-                System Total
-              </span>
+              <span className="text-[11px] font-bold bg-black text-white px-2.5 py-1 rounded-full">Total</span>
             </div>
           </div>
 
-          {/* Card 3: Active Users (Solid white, Bar chart) */}
+          {/* Card 3: Active Accounts */}
           <div className="bg-white shadow-sm border border-gray-100 rounded-3xl p-5 flex flex-col justify-between">
-            <div>
-              <h3 className="font-bold text-gray-900 text-[16px] mb-1">Active Accounts</h3>
-              <p className="text-blue-500 text-sm font-bold">In System</p>
+            <div className="mb-4">
+              <h3 className="font-bold text-gray-900 text-[15px] mb-0.5">Active Accounts</h3>
+              <p className="text-blue-500 text-xs font-bold uppercase tracking-wide">In System</p>
             </div>
-            <div className="flex items-center justify-center h-16 gap-3 mt-4 mb-2">
-              <span className="text-[32px] font-extrabold text-gray-900 tracking-tight leading-none text-center block">
-                {loading ? "..." : stats?.activeUsers}
-              </span>
-            </div>
-            <div className="flex justify-between items-center text-[11px] text-gray-400 font-bold uppercase tracking-wide px-1">
-              <span className="text-center w-full">Currently Active Members</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 4: System Status (blue gradient) */}
-        <div className="bg-gradient-to-br from-[#1c64b0] to-[#144886] rounded-3xl p-6 text-white relative shadow-lg shadow-blue-500/20 flex flex-col justify-between overflow-hidden">
-          <div className="absolute top-0 right-0 p-5 opacity-40 text-blue-100">
-            <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l2.4 7.4h7.6l-6 4.6 2.3 7.4-6.3-4.8-6.3 4.8 2.3-7.4-6-4.6h7.6z" /></svg>
-          </div>
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-[28px] font-extrabold tracking-tight leading-none drop-shadow-sm">Operational</span>
-            </div>
-            <p className="text-blue-100 text-xs font-semibold tracking-wide uppercase">System Status</p>
-          </div>
-          <div className="mt-4 mb-4">
-            <p className="text-[15px] font-bold leading-snug tracking-tight text-white/90">
-              All services are <br /> running normally.
+            <span className="text-[36px] font-extrabold text-gray-900 leading-none">
+              {loading ? "—" : stats?.activeUsers}
+            </span>
+            <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-wide mt-3">
+              Currently Active Members
             </p>
           </div>
-          <div className="flex items-center gap-2 mt-auto">
-            <button onClick={() => window.location.reload()} className="bg-black text-white text-xs font-bold px-4 py-2 rounded-full hover:bg-gray-900 transition-colors shadow-sm">
-              Refresh Status
-            </button>
-          </div>
 
+          {/* Card 4: System Status */}
+          <div className="bg-gradient-to-br from-[#1c64b0] to-[#144886] rounded-3xl p-5 text-white relative shadow-lg shadow-blue-500/20 flex flex-col justify-between overflow-hidden">
+            <div className="absolute top-3 right-4 opacity-20">
+              <svg className="w-16 h-16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l2.4 7.4h7.6l-6 4.6 2.3 7.4-6.3-4.8-6.3 4.8 2.3-7.4-6-4.6h7.6z" /></svg>
+            </div>
+            <div>
+              <p className="text-blue-200 text-[10px] font-bold uppercase tracking-widest mb-1">System Status</p>
+              <span className="text-[22px] font-extrabold leading-tight">Operational</span>
+            </div>
+            <div className="mt-4">
+              <p className="text-[13px] font-semibold text-white/80 leading-snug mb-4">
+                All services running normally.
+              </p>
+              <button onClick={() => window.location.reload()} className="bg-black/40 hover:bg-black/60 text-white text-xs font-bold px-4 py-2 rounded-full transition-colors">
+                Refresh
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Charts Row */}
