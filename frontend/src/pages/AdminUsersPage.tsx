@@ -521,6 +521,7 @@ export default function AdminUsersPage() {
                     <button
                       onClick={() => setPendingDelete(u)}
                       disabled={u.role === "admin"}
+                      data-testid={`delete-user-mobile-${u.userId}`}
                       className="shrink-0 p-2 rounded-lg text-red-500 hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                       aria-label={t("adminUsers.deleteUser")}
                     >
