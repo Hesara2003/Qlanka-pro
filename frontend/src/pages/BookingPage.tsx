@@ -66,25 +66,30 @@ export default function BookingPage() {
 
     if (loadingConfig) {
         return (
-            <div className="w-full h-64 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <div className="w-full flex items-center justify-center p-20">
+                <div className="flex flex-col items-center gap-4 bg-white p-12 rounded-3xl border border-gray-100 border-dashed shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
+                    <div className="w-12 h-12 border-4 border-gray-100 border-t-black rounded-full animate-spin" />
+                    <p className="text-[13px] font-bold text-gray-500 uppercase tracking-widest">Preparing Booking System...</p>
+                </div>
             </div>
         );
     }
 
     // SCRUM-68: surface center-load errors (e.g. invalid ID, network failure) before rendering form
-    if (centerError) {
+    if (centerError || !center) {
         return (
             <div className="w-full flex items-center justify-center p-4 pt-12">
-                <div className="bg-white rounded-xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-gray-100 p-8 max-w-md w-full text-center">
-                    <svg className="w-12 h-12 text-red-500 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <div className="bg-red-50 rounded-3xl border border-red-100 p-10 max-w-md w-full text-center shadow-sm">
+                    <svg className="w-12 h-12 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <p className="text-red-700 font-semibold mb-2">Service Center Unavailable</p>
-                    <p className="text-red-600 text-sm mb-4">{centerError}</p>
+                    <p className="text-red-800 font-extrabold text-lg mb-2">Service Center Unavailable</p>
+                    <p className="text-red-600 text-[14px] font-medium mb-8 leading-relaxed">
+                        {centerError || "We couldn't find the service center you were looking for."}
+                    </p>
                     <button
                         onClick={() => navigate("/service-centers")}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+                        className="px-6 py-3 bg-red-600 text-white rounded-2xl hover:bg-red-700 transition-colors font-bold shadow-md shadow-red-500/20 active:scale-95"
                     >
                         Back to Centers
                     </button>
@@ -94,115 +99,149 @@ export default function BookingPage() {
     }
 
     return (
-        <div className="w-full pt-8">
-            <div className="max-w-md mx-auto bg-white rounded-xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-gray-100 overflow-hidden p-8">
+        <div className="w-full pt-10 pb-20 px-4">
+            <div className="max-w-[480px] mx-auto bg-white rounded-[2rem] shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] border border-gray-100 overflow-hidden relative">
 
-                {/* Header */}
-                <div className="mb-6">
-                    <button onClick={() => navigate('/service-centers')} className="text-sm font-semibold text-blue-600 hover:text-blue-800 mb-4 inline-flex items-center gap-1">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                        Back to Centers
-                    </button>
-                    <h2 className="text-2xl font-bold text-gray-900">Book a Token</h2>
-                    {center && (
-                        <p className="text-gray-600 mt-1">for <span className="font-semibold text-gray-900">{center.name}</span></p>
+                {/* Decorative background for the header */}
+                <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-br from-blue-50 to-indigo-50 opacity-50" />
+
+                <div className="p-8 relative z-10">
+                    {/* Header */}
+                    <div className="mb-8">
+                        <button
+                            onClick={() => navigate('/service-centers')}
+                            className="group text-sm font-bold text-gray-500 hover:text-black mb-6 inline-flex items-center gap-1.5 transition-colors"
+                        >
+                            <svg className="w-4 h-4 transition-transform group-hover:-translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                            Back to Centers
+                        </button>
+
+                        <div className="flex items-start gap-4 mb-2">
+                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-lg font-extrabold shadow-sm shrink-0">
+                                {center.name.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                                <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight leading-none mb-1">Book a Token</h2>
+                                <p className="text-[14px] font-medium text-gray-500 line-clamp-1">Service center: <span className="text-gray-900 font-bold">{center.name}</span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Error Banner */}
+                    {error && (
+                        <div className="mb-6 bg-red-50 border border-red-100 p-4 rounded-2xl flex items-start gap-3">
+                            <svg className="h-5 w-5 text-red-500 shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                            </svg>
+                            <p className="text-[13px] font-semibold text-red-700 leading-snug">{error}</p>
+                        </div>
                     )}
-                </div>
 
-                {/* Error Banner */}
-                {error && (
-                    <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-md">
-                        <div className="flex">
-                            <div className="flex-shrink-0">
-                                <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    {/* Success View */}
+                    {successData ? (
+                        <div className="text-center py-4">
+                            <div className="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-emerald-100 mb-6 relative">
+                                <div className="absolute inset-0 rounded-full bg-emerald-100 animate-ping opacity-50" />
+                                <svg className="h-10 w-10 text-emerald-600 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
                                 </svg>
                             </div>
-                            <div className="ml-3">
-                                <p className="text-sm text-red-700">{error}</p>
-                            </div>
-                        </div>
-                    </div>
-                )}
 
-                {/* Success View */}
-                {successData ? (
-                    <div className="text-center py-6">
-                        <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
-                            <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                            </svg>
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">Booking Confirmed!</h3>
-                        <p className="text-gray-500 mb-6 mx-auto max-w-xs block">Present this token at the center to join the queue.</p>
+                            <h3 className="text-2xl font-extrabold text-gray-900 tracking-tight mb-2">Booking Confirmed!</h3>
+                            <p className="text-[14px] font-medium text-gray-500 mb-8 mx-auto max-w-xs">
+                                Present this token number at the center when you arrive to be served.
+                            </p>
 
-                        <div className="bg-gray-100 rounded-lg p-6 mb-8 border border-gray-200">
-                            <p className="text-xs text-gray-500 uppercase font-semibold tracking-wider mb-1">Your Token Number</p>
-                            <p className="text-3xl font-mono font-bold text-blue-700">{successData.tokenNumber}</p>
+                            <div className="bg-gray-50 rounded-3xl p-6 mb-8 border border-gray-100 relative overflow-hidden">
+                                {/* Diagonal cut effect for ticket feel */}
+                                <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full border-r border-gray-100" />
+                                <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full border-l border-gray-100" />
 
-                            <div className="mt-4 pt-4 border-t border-gray-200 grid grid-cols-2 gap-4 text-left">
-                                <div>
-                                    <p className="text-xs text-gray-500 font-semibold mb-0.5">Date</p>
-                                    <p className="text-sm font-medium text-gray-900">{new Date(successData.appointmentDate).toLocaleDateString()}</p>
-                                </div>
-                                <div>
-                                    <p className="text-xs text-gray-500 font-semibold mb-0.5">Time</p>
-                                    <p className="text-sm font-medium text-gray-900">{successData.appointmentTime}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <button
-                            onClick={() => navigate('/dashboard')}
-                            className="w-full bg-blue-600 text-white rounded-lg px-4 py-3 font-semibold hover:bg-blue-700 transition-colors"
-                        >
-                            Go to Dashboard
-                        </button>
-                    </div>
-                ) : (
-                    /* Booking Form */
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Select Date</label>
-                            <input
-                                type="date"
-                                required
-                                value={date}
-                                onChange={(e) => setDate(e.target.value)}
-                                min={new Date().toISOString().split('T')[0]} // Prevent past dates in UI
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-900 placeholder-gray-400"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Select Time</label>
-                            <input
-                                type="time"
-                                required
-                                value={time}
-                                onChange={(e) => setTime(e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-gray-900 placeholder-gray-400"
-                            />
-                            {center && (
-                                <p className="text-xs text-gray-500 mt-2">
-                                    Operating Hours: {center.openingTime} - {center.closingTime}
+                                <p className="text-[11px] text-gray-400 uppercase font-extrabold tracking-widest mb-1">Your Token Number</p>
+                                <p className="text-[40px] leading-none font-bold text-gray-900 tracking-tighter mb-6">
+                                    {successData.tokenNumber}
                                 </p>
-                            )}
-                        </div>
 
-                        <button
-                            type="submit"
-                            disabled={isSubmitting || !date || !time}
-                            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                        >
-                            {isSubmitting ? (
-                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                            ) : (
-                                "Confirm Booking"
-                            )}
-                        </button>
-                    </form>
-                )}
+                                <div className="border-t border-dashed border-gray-300 pt-5 grid grid-cols-2 gap-4 text-left">
+                                    <div>
+                                        <p className="text-[11px] text-gray-400 uppercase font-extrabold tracking-widest mb-1">Date</p>
+                                        <p className="text-[15px] font-bold text-gray-900">
+                                            {new Date(successData.appointmentDate).toLocaleDateString(undefined, {
+                                                month: 'short',
+                                                day: 'numeric',
+                                                year: 'numeric'
+                                            })}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[11px] text-gray-400 uppercase font-extrabold tracking-widest mb-1">Time</p>
+                                        <p className="text-[15px] font-bold text-gray-900 text-right">
+                                            {successData.appointmentTime}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={() => navigate('/dashboard')}
+                                className="w-full bg-black text-white hover:bg-gray-900 rounded-2xl px-4 py-4 font-bold tracking-wide transition-all duration-200 shadow-lg shadow-black/10 active:scale-95"
+                            >
+                                Go to My Tickets
+                            </button>
+                        </div>
+                    ) : (
+                        /* Booking Form */
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            <div>
+                                <label className="block text-[13px] font-bold text-gray-900 mb-2">Select Date</label>
+                                <div className="relative">
+                                    <input
+                                        type="date"
+                                        required
+                                        value={date}
+                                        onChange={(e) => setDate(e.target.value)}
+                                        min={new Date().toISOString().split('T')[0]}
+                                        className="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-2xl focus:ring-2 focus:ring-black focus:border-black focus:bg-white outline-none text-gray-900 font-semibold transition-all appearance-none"
+                                        style={{ WebkitAppearance: 'none' }}
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-[13px] font-bold text-gray-900 mb-2">Select Time</label>
+                                <div className="relative">
+                                    <input
+                                        type="time"
+                                        required
+                                        value={time}
+                                        onChange={(e) => setTime(e.target.value)}
+                                        className="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 hover:border-gray-300 rounded-2xl focus:ring-2 focus:ring-black focus:border-black focus:bg-white outline-none text-gray-900 font-semibold transition-all appearance-none"
+                                        style={{ WebkitAppearance: 'none' }}
+                                    />
+                                </div>
+                                <div className="flex items-center gap-2 mt-3 text-[12px] font-semibold text-blue-600 bg-blue-50 px-3 py-2 rounded-xl border border-blue-100">
+                                    <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    Center Hours: {center.openingTime} - {center.closingTime}
+                                </div>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={isSubmitting || !date || !time}
+                                className="w-full mt-8 flex justify-center py-4 px-4 rounded-2xl text-[15px] font-bold tracking-wide text-white bg-black hover:bg-gray-900 focus:outline-none focus:ring-4 focus:ring-gray-200 transition-all duration-200 shadow-lg shadow-black/10 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-black disabled:active:scale-100"
+                            >
+                                {isSubmitting ? (
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                        <span>Confirming...</span>
+                                    </div>
+                                ) : (
+                                    "Confirm Booking"
+                                )}
+                            </button>
+                        </form>
+                    )}
+                </div>
             </div>
         </div>
     );
