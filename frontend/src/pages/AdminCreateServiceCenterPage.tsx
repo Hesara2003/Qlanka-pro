@@ -4,33 +4,31 @@ import { AxiosError } from "axios";
 import { useAuth } from "../context/AuthContext";
 import { createServiceCenter } from "../api/serviceCenterApi";
 import type { CreateServiceCenterRequest } from "../types/serviceCenter";
-import AppNavbar from "../components/common/AppNavbar";
-
 // ─────────────────────────────────────────────────────────────────────────────
 //  Timezones
 // ─────────────────────────────────────────────────────────────────────────────
 const TIMEZONES = [
   { label: "Asia/Colombo (Sri Lanka, UTC+5:30)", value: "Asia/Colombo" },
-  { label: "Asia/Kolkata (India, UTC+5:30)",     value: "Asia/Kolkata" },
-  { label: "Asia/Dhaka (Bangladesh, UTC+6)",      value: "Asia/Dhaka" },
-  { label: "Asia/Karachi (Pakistan, UTC+5)",      value: "Asia/Karachi" },
-  { label: "Asia/Kathmandu (Nepal, UTC+5:45)",    value: "Asia/Kathmandu" },
-  { label: "Asia/Dubai (UAE, UTC+4)",             value: "Asia/Dubai" },
-  { label: "Asia/Singapore (UTC+8)",              value: "Asia/Singapore" },
-  { label: "Asia/Tokyo (Japan, UTC+9)",           value: "Asia/Tokyo" },
-  { label: "Europe/London (UTC+0/+1)",            value: "Europe/London" },
-  { label: "America/New_York (UTC-5/-4)",         value: "America/New_York" },
-  { label: "UTC",                                 value: "UTC" },
+  { label: "Asia/Kolkata (India, UTC+5:30)", value: "Asia/Kolkata" },
+  { label: "Asia/Dhaka (Bangladesh, UTC+6)", value: "Asia/Dhaka" },
+  { label: "Asia/Karachi (Pakistan, UTC+5)", value: "Asia/Karachi" },
+  { label: "Asia/Kathmandu (Nepal, UTC+5:45)", value: "Asia/Kathmandu" },
+  { label: "Asia/Dubai (UAE, UTC+4)", value: "Asia/Dubai" },
+  { label: "Asia/Singapore (UTC+8)", value: "Asia/Singapore" },
+  { label: "Asia/Tokyo (Japan, UTC+9)", value: "Asia/Tokyo" },
+  { label: "Europe/London (UTC+0/+1)", value: "Europe/London" },
+  { label: "America/New_York (UTC-5/-4)", value: "America/New_York" },
+  { label: "UTC", value: "UTC" },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Steps definition
 // ─────────────────────────────────────────────────────────────────────────────
 const STEPS = [
-  { label: "Basic Info"      },
-  { label: "Location"        },
+  { label: "Basic Info" },
+  { label: "Location" },
   { label: "Operating Hours" },
-  { label: "Capacity"        },
+  { label: "Capacity" },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -130,7 +128,7 @@ const inputCls = (error?: string) =>
 // ─────────────────────────────────────────────────────────────────────────────
 export default function AdminCreateServiceCenterPage() {
   const navigate = useNavigate();
-  const { user }  = useAuth();
+  const { user } = useAuth();
 
   useEffect(() => {
     if (!user) navigate("/login");
@@ -138,11 +136,11 @@ export default function AdminCreateServiceCenterPage() {
   }, [user, navigate]);
 
   // ── State ─────────────────────────────────────────────────────────────────
-  const [step,        setStep]        = useState(0);
-  const [form,        setForm]        = useState<CreateServiceCenterRequest>(INITIAL);
-  const [errors,      setErrors]      = useState<FormErrors>({});
-  const [touched,     setTouched]     = useState<Partial<Record<keyof FormErrors, boolean>>>({});
-  const [submitting,  setSubmitting]  = useState(false);
+  const [step, setStep] = useState(0);
+  const [form, setForm] = useState<CreateServiceCenterRequest>(INITIAL);
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [touched, setTouched] = useState<Partial<Record<keyof FormErrors, boolean>>>({});
+  const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [createdName, setCreatedName] = useState<string | null>(null);
 
@@ -150,7 +148,7 @@ export default function AdminCreateServiceCenterPage() {
   function change(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
     const { name, type } = e.target;
     const value = type === "checkbox" ? (e.target as HTMLInputElement).checked : e.target.value;
-    const next  = { ...form, [name]: value } as CreateServiceCenterRequest;
+    const next = { ...form, [name]: value } as CreateServiceCenterRequest;
     setForm(next);
     if (touched[name as keyof FormErrors]) setErrors(validateStep(step, next));
     setSubmitError(null);
@@ -213,10 +211,10 @@ export default function AdminCreateServiceCenterPage() {
     try {
       const payload: CreateServiceCenterRequest = {
         ...form,
-        name:        form.name.trim(),
-        address:     form.address.trim(),
-        phone:       form.phone?.trim()       || undefined,
-        email:       form.email?.trim()       || undefined,
+        name: form.name.trim(),
+        address: form.address.trim(),
+        phone: form.phone?.trim() || undefined,
+        email: form.email?.trim() || undefined,
         description: form.description?.trim() || undefined,
       };
       await createServiceCenter(payload);
@@ -240,8 +238,7 @@ export default function AdminCreateServiceCenterPage() {
   // ── Success screen ────────────────────────────────────────────────────────
   if (createdName) {
     return (
-      <div className="h-screen bg-gray-50 flex flex-col">
-        <AppNavbar />
+      <div className="flex flex-col h-full">
         <div className="flex-1 flex items-center justify-center p-6">
           <div className="bg-white rounded-2xl shadow-lg p-10 max-w-sm w-full text-center">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
@@ -273,10 +270,8 @@ export default function AdminCreateServiceCenterPage() {
     );
   }
 
-  // ── Wizard layout ─────────────────────────────────────────────────────────
   return (
-    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
-      <AppNavbar />
+    <div className="flex flex-col h-full bg-gray-50 relative">
 
       {/* ── Progress rail ─────────────────────────────────────────────────── */}
       <div className="bg-white border-b border-gray-200 px-4 sm:px-8 py-3 flex-shrink-0">
@@ -290,15 +285,15 @@ export default function AdminCreateServiceCenterPage() {
               style={{ width: `${(step / (STEPS.length - 1)) * 100}%` }}
             />
             {STEPS.map((s, i) => {
-              const done   = i < step;
+              const done = i < step;
               const active = i === step;
               return (
                 <div key={i} className="relative z-10 flex flex-col items-center gap-1">
                   <div className={[
                     "w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-colors",
-                    done   ? "bg-blue-600 border-blue-600 text-white"  :
-                    active ? "bg-white border-blue-600 text-blue-600"  :
-                             "bg-white border-gray-300 text-gray-400",
+                    done ? "bg-blue-600 border-blue-600 text-white" :
+                      active ? "bg-white border-blue-600 text-blue-600" :
+                        "bg-white border-gray-300 text-gray-400",
                   ].join(" ")}>
                     {done ? (
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -476,21 +471,21 @@ export default function AdminCreateServiceCenterPage() {
 
               {/* Live duration preview */}
               {!errors.openingTime && !errors.closingTime &&
-               form.openingTime && form.closingTime &&
-               form.closingTime > form.openingTime && (
-                <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3">
-                  <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  {(() => {
-                    const [oh, om] = form.openingTime.split(":").map(Number);
-                    const [ch, cm] = form.closingTime.split(":").map(Number);
-                    const mins  = (ch * 60 + cm) - (oh * 60 + om);
-                    const h = Math.floor(mins / 60), m = mins % 60;
-                    return `Operating ${h}h${m > 0 ? ` ${m}m` : ""} per day`;
-                  })()}
-                </div>
-              )}
+                form.openingTime && form.closingTime &&
+                form.closingTime > form.openingTime && (
+                  <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3">
+                    <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {(() => {
+                      const [oh, om] = form.openingTime.split(":").map(Number);
+                      const [ch, cm] = form.closingTime.split(":").map(Number);
+                      const mins = (ch * 60 + cm) - (oh * 60 + om);
+                      const h = Math.floor(mins / 60), m = mins % 60;
+                      return `Operating ${h}h${m > 0 ? ` ${m}m` : ""} per day`;
+                    })()}
+                  </div>
+                )}
             </div>
           )}
 
@@ -545,15 +540,13 @@ export default function AdminCreateServiceCenterPage() {
                   <button
                     type="button"
                     onClick={() => setForm(f => ({ ...f, isActive: !f.isActive }))}
-                    className={`relative w-12 h-6 rounded-full transition-colors duration-200 flex-shrink-0 ${
-                      form.isActive ? "bg-blue-600" : "bg-gray-300"
-                    }`}
+                    className={`relative w-12 h-6 rounded-full transition-colors duration-200 flex-shrink-0 ${form.isActive ? "bg-blue-600" : "bg-gray-300"
+                      }`}
                     role="switch"
                     aria-checked={form.isActive}
                   >
-                    <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
-                      form.isActive ? "translate-x-6" : "translate-x-0"
-                    }`} />
+                    <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${form.isActive ? "translate-x-6" : "translate-x-0"
+                      }`} />
                   </button>
                 </div>
               </div>
@@ -563,21 +556,20 @@ export default function AdminCreateServiceCenterPage() {
                 <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Review before submitting</p>
                 <div className="space-y-2.5">
                   {([
-                    ["Name",           form.name],
-                    ["Address",        form.address],
-                    ["Phone",          form.phone || "—"],
-                    ["Email",          form.email || "—"],
-                    ["Timezone",       form.timezone],
-                    ["Hours",          `${form.openingTime} – ${form.closingTime}`],
+                    ["Name", form.name],
+                    ["Address", form.address],
+                    ["Phone", form.phone || "—"],
+                    ["Email", form.email || "—"],
+                    ["Timezone", form.timezone],
+                    ["Hours", `${form.openingTime} – ${form.closingTime}`],
                     ["Daily capacity", `${form.capacity} tokens`],
-                    ["Avg. time",      `${form.averageServiceTimeMinutes} min`],
-                    ["Status",         form.isActive ? "Active" : "Inactive"],
+                    ["Avg. time", `${form.averageServiceTimeMinutes} min`],
+                    ["Status", form.isActive ? "Active" : "Inactive"],
                   ] as [string, string][]).map(([k, v]) => (
                     <div key={k} className="flex justify-between text-sm py-1 border-b border-gray-50 last:border-0">
                       <span className="text-gray-500 font-medium">{k}</span>
-                      <span className={`text-right ml-4 font-medium truncate max-w-[220px] ${
-                        k === "Status" ? (form.isActive ? "text-emerald-600" : "text-gray-400") : "text-gray-800"
-                      }`}>{v}</span>
+                      <span className={`text-right ml-4 font-medium truncate max-w-[220px] ${k === "Status" ? (form.isActive ? "text-emerald-600" : "text-gray-400") : "text-gray-800"
+                        }`}>{v}</span>
                     </div>
                   ))}
                 </div>

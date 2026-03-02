@@ -1,16 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { getAdminUsers, deleteAdminUser } from "../api/userApi";
-import LanguageSelector from "../components/common/LanguageSelector";
 import type { AdminUser, UserRole } from "../types/user";
 
 // ──────────────────────────────────────────────────────────────
 //  Role badge
 // ──────────────────────────────────────────────────────────────
 const ROLE_STYLES: Record<UserRole, string> = {
-  admin:   "bg-purple-100 text-purple-700 border border-purple-200",
+  admin: "bg-purple-100 text-purple-700 border border-purple-200",
   officer: "bg-blue-100   text-blue-700   border border-blue-200",
   citizen: "bg-green-100  text-green-700  border border-green-200",
 };
@@ -174,7 +173,7 @@ function EmptyState({ filtered }: { filtered: boolean }) {
 export default function AdminUsersPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   // ── auth guard ────────────────────────────────────────────
   useEffect(() => {
@@ -183,15 +182,15 @@ export default function AdminUsersPage() {
   }, [user, navigate]);
 
   // ── state ─────────────────────────────────────────────────
-  const [users, setUsers]               = useState<AdminUser[]>([]);
-  const [loading, setLoading]           = useState(true);
-  const [loadError, setLoadError]       = useState<string | null>(null);
-  const [searchQuery, setSearchQuery]   = useState("");
-  const [roleFilter, setRoleFilter]     = useState<UserRole | "all">("all");
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState<UserRole | "all">("all");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const [pendingDelete, setPendingDelete] = useState<AdminUser | null>(null);
-  const [deleting, setDeleting]         = useState(false);
-  const [toastMsg, setToastMsg]         = useState<{ text: string; type: "success" | "error" } | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [toastMsg, setToastMsg] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── load users ────────────────────────────────────────────
@@ -236,8 +235,8 @@ export default function AdminUsersPage() {
   // ── filtering ─────────────────────────────────────────────
   const filtered = users.filter((u) => {
     if (roleFilter !== "all" && u.role !== roleFilter) return false;
-    if (statusFilter === "active"   && !u.isActive) return false;
-    if (statusFilter === "inactive" &&  u.isActive) return false;
+    if (statusFilter === "active" && !u.isActive) return false;
+    if (statusFilter === "inactive" && u.isActive) return false;
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       if (
@@ -260,52 +259,8 @@ export default function AdminUsersPage() {
 
   // ── render ────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
-      {/* ── Nav ── */}
-      <nav className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center shadow-md">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M2 17L12 22L22 17" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M2 12L12 17L22 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
-              <span className="text-xl font-bold text-gray-900">{t("common.appName")}</span>
-            </div>
-            {user && (
-              <div className="flex items-center gap-4">
-                <LanguageSelector />
-                <div className="text-right hidden sm:block">
-                  <p className="text-sm font-semibold text-gray-900">{user.username}</p>
-                  <p className="text-xs text-gray-500 capitalize">{user.role}</p>
-                </div>
-                <button
-                  onClick={logout}
-                  className="px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                >
-                  {t("common.signOut")}
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </nav>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-          <Link to="/dashboard" className="hover:text-blue-600 transition-colors">
-            {t("adminUsers.breadcrumbHome")}
-          </Link>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-          <span className="text-gray-900 font-medium">{t("adminUsers.title")}</span>
-        </nav>
-
+    <>
+      <div className="px-10 py-8">
         {/* Header row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
@@ -548,7 +503,7 @@ export default function AdminUsersPage() {
             </div>
           </>
         )}
-      </main>
+      </div>
 
       {/* Confirmation dialog */}
       {pendingDelete && (
@@ -580,6 +535,6 @@ export default function AdminUsersPage() {
           {toastMsg.text}
         </div>
       )}
-    </div>
+    </>
   );
 }

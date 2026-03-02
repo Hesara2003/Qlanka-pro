@@ -8,8 +8,10 @@ import BookingPage from "./pages/BookingPage";
 import AdminCreateServiceCenterPage from "./pages/AdminCreateServiceCenterPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
+import AdminServiceCentersPage from "./pages/AdminServiceCentersPage";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import AdminRoute from "./components/common/AdminRoute";
+import AdminLayout from "./components/common/AdminLayout";
 
 function App() {
   return (
@@ -28,9 +30,12 @@ function App() {
 
       {/* ── Admin-only routes ─────────────────────────────── */}
       <Route element={<AdminRoute />}>
-        <Route path="/admin" element={<AdminDashboardPage />} />
-        <Route path="/admin/service-centers/create" element={<AdminCreateServiceCenterPage />} />
-        <Route path="/admin/users" element={<AdminUsersPage />} />
+        <Route element={<AdminLayout />}>
+          <Route path="/admin" element={<AdminDashboardPage />} />
+          <Route path="/admin/service-centers" element={<AdminServiceCentersPage />} />
+          <Route path="/admin/service-centers/create" element={<AdminCreateServiceCenterPage />} />
+          <Route path="/admin/users" element={<AdminUsersPage />} />
+        </Route>
       </Route>
 
       {/* ── Catch-all → landing ───────────────────────────── */}
