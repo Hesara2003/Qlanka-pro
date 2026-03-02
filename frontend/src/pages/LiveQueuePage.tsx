@@ -23,6 +23,9 @@ export default function LiveQueuePage() {
     // Mock timer state for "Serving Time"
     const [servingTime, setServingTime] = useState(0);
 
+    // Live clock state
+    const [currentTime, setCurrentTime] = useState(new Date());
+
     // Fetch live queue data
     useEffect(() => {
         const fetchQueue = async () => {
@@ -46,6 +49,7 @@ export default function LiveQueuePage() {
     useEffect(() => {
         const timer = setInterval(() => {
             setServingTime(prev => prev + 1);
+            setCurrentTime(new Date());
         }, 1000);
         return () => clearInterval(timer);
     }, []);
@@ -59,158 +63,167 @@ export default function LiveQueuePage() {
     };
 
     // Format current exact time and date for the header
-    const now = new Date();
-    const dateStr = now.toLocaleDateString('en-US', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
-    const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    const dateStr = currentTime.toLocaleDateString('en-US', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
+    const timeStr = currentTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 
     return (
-        <div className="min-h-screen bg-black p-4 md:p-8 flex items-center justify-center font-sans">
-            {/* Tablet Frame Wrapper */}
-            <div className="w-full max-w-[1280px] bg-[#f0f2f5] rounded-xl overflow-hidden shadow-2xl flex flex-col aspect-[4/3] max-h-[90vh]">
-
-                {/* Header Navbar */}
-                <div className="h-16 bg-[#003d7b] flex items-center justify-between px-6 text-white shrink-0">
-                    <div className="flex items-center gap-3">
-                        {/* Mock Logo placeholder */}
-                        <div className="bg-white rounded p-1">
-                            <div className="font-bold text-[#003d7b] tracking-wider text-sm flex items-center">
-                                <span className="text-orange-500 mr-1">Q</span>LANKA
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-6">
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-[#003d7b] font-bold overflow-hidden">
-                                {user?.username?.charAt(0).toUpperCase() || "U"}
-                            </div>
-                            <span className="text-sm font-medium">{user?.username || "Guest User"}</span>
-                        </div>
-                        <div className="h-8 w-px bg-[#ffffff33]"></div>
-                        <div className="text-xs text-right leading-tight opacity-90">
-                            <div>{dateStr}</div>
-                            <div>{timeStr}</div>
-                        </div>
-                        <div className="h-8 w-px bg-[#ffffff33]"></div>
-                        <button onClick={() => navigate(-1)} className="hover:opacity-80 transition-opacity">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                        </button>
+        <div className="h-screen w-full bg-[#f0f2f5] flex flex-col font-sans overflow-hidden">
+            {/* Header Navbar */}
+            <div className="h-16 lg:h-20 bg-[#003d7b] flex items-center justify-between px-6 lg:px-10 text-white shrink-0 shadow-md z-10">
+                <div className="flex items-center gap-4 border border-[#ffffff33] rounded-lg p-2 bg-[#002f5e]">
+                    <div className="font-extrabold text-white tracking-widest text-lg md:text-xl flex items-center">
+                        <span className="text-[#f58220] mr-1">Q</span>LANKA
                     </div>
                 </div>
 
-                {/* Main Content Area - 3 Columns */}
-                <div className="flex-1 flex overflow-hidden">
+                <div className="flex items-center gap-4 lg:gap-8">
+                    <div className="hidden md:flex flex-col text-right leading-tight opacity-90 border-r border-[#ffffff33] pr-6">
+                        <div className="font-medium text-[15px]">{dateStr}</div>
+                        <div className="font-bold text-lg">{timeStr}</div>
+                    </div>
 
-                    {/* Left Column: Current Monitor */}
-                    <div className="w-5/12 bg-white flex flex-col p-8 border-r border-gray-200">
-                        <div className="flex-1 flex flex-col items-center justify-center pb-8 border-b border-gray-100">
-                            <h2 className="text-[#f58220] font-bold text-xl mb-4">Current Serving</h2>
-                            <h1 className="text-[#003d7b] font-bold text-3xl mb-8">Token Number</h1>
+                    <div className="flex items-center gap-3 border-r border-[#ffffff33] pr-6">
+                        <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#003d7b] font-bold text-lg overflow-hidden shadow-inner">
+                            {user?.username?.charAt(0).toUpperCase() || "U"}
+                        </div>
+                        <span className="hidden sm:block text-[15px] font-semibold tracking-wide">
+                            {user?.username || "Guest"}
+                        </span>
+                    </div>
+
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="flex items-center gap-2 hover:bg-[#ffffff1a] px-4 py-2 rounded-lg transition-colors font-semibold"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <span className="hidden sm:block">Exit</span>
+                    </button>
+                </div>
+            </div>
+
+            {/* Main Content Area - 2 Columns */}
+            <div className="flex-1 flex overflow-hidden">
+
+                {/* Left Column: Current Monitor */}
+                <div className="w-full lg:w-3/5 xl:w-[65%] bg-white flex flex-col p-5 lg:p-8 relative shadow-[10px_0_15px_-3px_rgba(0,0,0,0.05)] z-[5]">
+                    <div className="flex-1 min-h-0 flex flex-col items-center justify-center border border-gray-100 rounded-[2rem] bg-gray-50/50 relative overflow-hidden py-6">
+
+                        {/* Decorative background circle */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-tr from-blue-50/50 to-orange-50/30 rounded-full blur-3xl opacity-60 -z-10" />
+
+                        <div className="text-center w-full max-w-xl px-4">
+                            <div className="inline-flex items-center gap-3 px-5 py-1.5 rounded-full bg-orange-100 border border-orange-200 mb-4">
+                                <div className="w-2.5 h-2.5 rounded-full bg-[#f58220] animate-pulse" />
+                                <h2 className="text-[#f58220] font-bold text-base md:text-lg uppercase tracking-widest">Now Serving</h2>
+                            </div>
+
+                            <h1 className="text-[#003d7b] font-extrabold text-2xl md:text-3xl lg:text-4xl mb-5 tracking-tight">Token Number</h1>
 
                             {/* Giant Orange Token Display Box */}
-                            <div className="border-4 border-[#f58220] rounded-2xl w-full max-w-[320px] aspect-[4/3] flex items-center justify-center shadow-sm mb-12">
-                                <span className="text-[#f58220] text-8xl md:text-[140px] font-bold tracking-tighter">
+                            <div className="mx-auto border-[5px] border-[#f58220] bg-white rounded-[2rem] w-full max-w-[420px] h-40 md:h-48 lg:h-56 flex items-center justify-center shadow-2xl mb-5 relative overflow-hidden group">
+                                <div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                                <span className="text-[#f58220] text-8xl md:text-9xl lg:text-[130px] font-black tracking-tighter leading-none relative z-10" style={{ textShadow: '0 8px 24px rgba(245, 130, 32, 0.2)' }}>
                                     {currentServing ? currentServing.tokenNumber : "---"}
                                 </span>
                             </div>
 
-                            <h3 className="text-[#003d7b] font-bold text-xl mb-2">Serving Time</h3>
-                            <div className="text-[#003d7b] font-bold text-5xl tracking-widest font-mono">
-                                {currentServing ? formatTime(servingTime) : "00:00:00"}
-                            </div>
-                        </div>
-
-                        {/* Footer Stats Row */}
-                        <div className="h-24 flex items-center justify-center gap-12 shrink-0 pt-4">
-                            <div className="text-center">
-                                <p className="text-[#003d7b] font-semibold text-sm mb-1">Total Served Tokens</p>
-                                <p className="text-[#f58220] font-bold text-3xl">{queue.length * 5 + 10} {/* Mocked multiplier for scale */}</p>
-                            </div>
-                            <div className="w-px h-12 bg-gray-200"></div>
-                            <div className="text-center">
-                                <p className="text-[#003d7b] font-semibold text-sm mb-1">Performance Status</p>
-                                <p className="text-[#f58220] font-bold text-2xl">Excellent</p>
+                            <div className="flex flex-col items-center justify-center">
+                                <h3 className="text-gray-500 font-bold text-base mb-2 tracking-widest uppercase">Serving Time</h3>
+                                <div className="text-[#003d7b] font-bold text-4xl md:text-5xl tracking-wider font-mono bg-white px-6 py-3 rounded-xl shadow-sm border border-gray-100">
+                                    {currentServing ? formatTime(servingTime) : "00:00:00"}
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Middle Column: Action Buttons */}
-                    <div className="w-3/12 bg-[#f8f9fa] p-6 flex flex-col gap-4 border-r border-gray-200">
-                        {['Next', 'Call', 'Recall', 'Transfer', 'Start', 'Close'].map((actionText) => (
-                            <button
-                                key={actionText}
-                                className="flex-1 bg-[#004a8f] hover:bg-[#003566] text-white font-bold text-lg rounded-md shadow-md transition-colors active:scale-[0.98]"
-                            >
-                                {actionText}
-                            </button>
-                        ))}
+                    {/* Footer Stats Row */}
+                    <div className="flex items-center justify-center gap-6 md:gap-16 shrink-0 py-4 mt-4 border-t border-gray-100">
+                        <div className="text-center px-4 py-2 rounded-xl hover:bg-gray-50 transition-colors">
+                            <p className="text-gray-500 font-bold text-xs tracking-widest uppercase mb-1">Tokens Served</p>
+                            <p className="text-[#003d7b] font-black text-3xl">{queue.length * 5 + 10}</p>
+                        </div>
+                        <div className="w-px h-12 bg-gray-200"></div>
+                        <div className="text-center px-4 py-2 rounded-xl hover:bg-gray-50 transition-colors">
+                            <p className="text-gray-500 font-bold text-xs tracking-widest uppercase mb-1">Wait Time (Avg)</p>
+                            <p className="text-[#003d7b] font-black text-3xl">~14 min</p>
+                        </div>
+                        <div className="w-px h-12 bg-gray-200"></div>
+                        <div className="text-center px-4 py-2 rounded-xl hover:bg-gray-50 transition-colors">
+                            <p className="text-gray-500 font-bold text-xs tracking-widest uppercase mb-1">Status</p>
+                            <p className="text-emerald-500 font-black text-3xl flex items-center justify-center gap-1.5">
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                Optimal
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right Column: Waiting List Viewer */}
+                <div className="hidden lg:flex flex-col w-2/5 xl:w-[35%] bg-[#f8f9fa] border-l border-gray-200 shadow-inner">
+                    <div className="h-20 bg-[#f58220] text-white flex flex-col items-center justify-center font-bold px-6 shrink-0 shadow-md relative z-10">
+                        <span className="text-2xl tracking-wide">{waitingList.length}</span>
+                        <span className="text-sm font-medium uppercase tracking-widest opacity-90">Visitors Waiting</span>
+                    </div>
+                    <div className="h-14 bg-[#004a8f] text-white flex items-center justify-between px-8 text-lg font-bold shrink-0 border-b border-[#003566]">
+                        <span>{center?.name || "Service Center"}</span>
+                        <div className="flex items-center gap-2 text-sm font-medium opacity-80 bg-black/20 px-3 py-1 rounded-full">
+                            <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" /> Live
+                        </div>
                     </div>
 
-                    {/* Right Column: Waiting List */}
-                    <div className="w-4/12 bg-white flex flex-col">
-                        <div className="h-10 bg-[#f58220] text-white flex items-center justify-center font-bold text-sm shrink-0">
-                            {waitingList.length} visitors are waiting
-                        </div>
-                        <div className="h-10 bg-[#004a8f] text-white flex items-center justify-center font-bold text-sm shrink-0 border-b border-[#003566]">
-                            {center?.name || "Department"}
-                        </div>
-
-                        {/* Scrollable list */}
-                        <div className="flex-1 overflow-y-auto px-1 py-2 space-y-2 custom-scrollbar">
-                            {loading ? (
-                                <div className="flex justify-center p-8"><div className="w-8 h-8 border-4 border-[#f58220] border-t-transparent rounded-full animate-spin"></div></div>
-                            ) : waitingList.length === 0 ? (
-                                <div className="text-center text-gray-400 p-8 font-medium">No one is waiting</div>
-                            ) : (
-                                waitingList.map((qPos, idx) => (
-                                    <div key={qPos.tokenId} className="flex items-center justify-between p-3 hover:bg-gray-50 border-b border-gray-100 transition-colors">
-                                        <div className="flex flex-col">
-                                            <span className="font-bold text-[#003d7b] text-lg">Visitor {idx + 1}</span>
-                                            <span className="text-gray-500 text-sm font-medium">Token: {qPos.tokenNumber}</span>
-                                            <span className="text-[#f58220] text-xs font-bold mt-1 flex items-center gap-1">
-                                                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-                                                Pos: {qPos.position}
+                    {/* Scrollable list */}
+                    <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4 custom-scrollbar bg-gray-50/50">
+                        {loading ? (
+                            <div className="flex justify-center p-12"><div className="w-12 h-12 border-4 border-[#003d7b] border-t-[#f58220] rounded-full animate-spin"></div></div>
+                        ) : waitingList.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center h-full text-gray-400 opacity-60">
+                                <svg className="w-24 h-24 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg>
+                                <span className="text-xl font-medium">Queue is empty</span>
+                            </div>
+                        ) : (
+                            waitingList.map((qPos, idx) => (
+                                <div key={qPos.tokenId} className="flex items-center bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-100 transition-all group">
+                                    <div className="w-14 h-14 rounded-full bg-blue-50 text-[#003d7b] flex items-center justify-center font-bold text-xl mr-5 group-hover:bg-[#003d7b] group-hover:text-white transition-colors">
+                                        {idx + 1}
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="flex items-center justify-between mb-1">
+                                            <span className="font-extrabold text-[#003d7b] text-xl">Token {qPos.tokenNumber}</span>
+                                            <span className="bg-orange-100 text-[#f58220] px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase">
+                                                Waiting
                                             </span>
                                         </div>
-                                        <div className="flex flex-col items-end opacity-60">
-                                            <svg className="w-5 h-5 text-gray-500 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                            <span className="text-gray-600 text-sm font-medium">{qPos.eta ? Math.ceil(new Date(qPos.eta).getTime() - Date.now() / 60000) : "--"} min</span>
+                                        <div className="flex items-center justify-between mt-2 text-gray-500 font-medium text-sm">
+                                            <span className="flex items-center gap-1.5">
+                                                <svg className="w-4 h-4 opacity-70" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                                                Position #{qPos.position}
+                                            </span>
+                                            <span className="flex items-center gap-1.5 text-gray-600 bg-gray-100 px-3 py-1 rounded-lg">
+                                                <svg className="w-4 h-4 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                                Est: {qPos.eta ? Math.ceil((new Date(qPos.eta).getTime() - Date.now()) / 60000) : "--"} min
+                                            </span>
                                         </div>
                                     </div>
-                                ))
-                            )}
-
-                            {/* Decorative bottom labels from mockup */}
-                            {!loading && waitingList.length > 0 && (
-                                <div className="flex items-center justify-center gap-2 p-4 pt-8">
-                                    <span className="px-3 py-1 bg-green-500 text-white text-[10px] rounded font-bold">Label 1</span>
-                                    <span className="px-3 py-1 bg-orange-500 text-white text-[10px] rounded font-bold">Label 2</span>
-                                    <span className="px-3 py-1 bg-blue-500 text-white text-[10px] rounded font-bold">Label 3</span>
-                                    <span className="px-3 py-1 bg-red-500 text-white text-[10px] rounded font-bold">Label 4</span>
                                 </div>
-                            )}
-                        </div>
-
-                        {/* Bottom action button */}
-                        <div className="p-4 bg-white border-t border-gray-100 shrink-0">
-                            <button className="w-full bg-[#004a8f] hover:bg-[#003566] text-white font-bold py-3.5 rounded-md shadow transition-colors text-lg">
-                                Add Visitor
-                            </button>
-                        </div>
+                            ))
+                        )}
                     </div>
                 </div>
             </div>
 
             <style>{`
                 .custom-scrollbar::-webkit-scrollbar {
-                    width: 6px;
+                    width: 8px;
                 }
                 .custom-scrollbar::-webkit-scrollbar-track {
-                    background: #f1f1f1;
+                    background: transparent;
                 }
                 .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background: #c1c1c1;
-                    border-radius: 4px;
+                    background: #cbd5e1;
+                    border-radius: 8px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                    background: #94a3b8;
                 }
             `}</style>
         </div>
