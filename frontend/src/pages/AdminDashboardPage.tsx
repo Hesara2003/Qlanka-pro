@@ -15,6 +15,11 @@ interface Stats {
   activeUsers: number;
 }
 
+// ── Module-level cache — survives re-mounts, cleared on manual refresh ──────
+let _cachedStats:    Stats | null   = null;
+let _cachedUsers:    AdminUser[]    = [];
+let _cachePopulated: boolean        = false;
+
 const ACTIONS = [
   {
     to: "/admin/users",
@@ -62,35 +67,49 @@ const ACTIONS = [
 
 export default function AdminDashboardPage() {
   const { user } = useAuth();
-  const [stats,    setStats]    = useState<Stats | null>(null);
-  const [allUsers, setAllUsers] = useState<AdminUser[]>([]);
-  const [loading,  setLoading]  = useState(true);
+
+  // Seed from cache instantly — no loading flash on re-visit
+  const [stats,    setStats]    = useState<Stats | null>(_cachedStats);
+  const [allUsers, setAllUsers] = useState<AdminUser[]>(_cachedUsers);
+  const [loading,  setLoading]  = useState(!_cachePopulated);
+
+  async function fetchData(force = false) {
+    if (_cachePopulated && !force) return;
+    setLoading(true);
+    let cancelled = false;
+    try {
+      const [centers, users] = await Promise.all([
+        getAllServiceCenters(),
+        getAdminUsers(),
+      ]);
+      const nextStats: Stats = {
+        centers: centers.length,
+        users: users.length,
+        activeUsers: users.filter((u) => u.isActive).length,
+      };
+      // Save to module cache
+      _cachedStats    = nextStats;
+      _cachedUsers    = users;
+      _cachePopulated = true;
+      if (!cancelled) {
+        setAllUsers(users);
+        setStats(nextStats);
+      }
+    } catch {
+      if (!cancelled) {
+        setAllUsers([]);
+        setStats({ centers: 0, users: 0, activeUsers: 0 });
+      }
+    } finally {
+      if (!cancelled) setLoading(false);
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
-
-    (async () => {
-      try {
-        const [centers, users] = await Promise.all([
-          getAllServiceCenters(),
-          getAdminUsers(),
-        ]);
-        if (!cancelled) {
-          setAllUsers(users);
-          setStats({
-            centers: centers.length,
-            users: users.length,
-            activeUsers: users.filter((u) => u.isActive).length,
-          });
-        }
-      } catch {
-        if (!cancelled) { setAllUsers([]); setStats({ centers: 0, users: 0, activeUsers: 0 }); }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-
+    void fetchData();
     return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── Derived — computed from real fetched users ──────────────────────────
@@ -180,7 +199,7 @@ export default function AdminDashboardPage() {
               <p className="text-[13px] font-semibold text-white/80 leading-snug mb-4">
                 All services running normally.
               </p>
-              <button onClick={() => window.location.reload()} className="bg-black/40 hover:bg-black/60 text-white text-xs font-bold px-4 py-2 rounded-full transition-colors">
+              <button onClick={() => { _cachePopulated = false; void fetchData(true); }} className="bg-black/40 hover:bg-black/60 text-white text-xs font-bold px-4 py-2 rounded-full transition-colors">
                 Refresh
               </button>
             </div>
