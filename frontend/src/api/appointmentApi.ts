@@ -1,5 +1,11 @@
 import axiosInstance from "./axiosInstance";
 
+interface ApiResponse<T> {
+    success: boolean;
+    data: T;
+    message?: string;
+}
+
 export interface BookAppointmentRequestDto {
     centerId: number;
     appointmentDate: string; // ISO string 'YYYY-MM-DDT00:00:00Z'
@@ -19,11 +25,11 @@ export interface AppointmentResponseDto {
 }
 
 export const bookToken = async (data: BookAppointmentRequestDto): Promise<AppointmentResponseDto> => {
-    const response = await axiosInstance.post<AppointmentResponseDto>('/api/Appointment/book', data);
-    return response.data;
+    const response = await axiosInstance.post<ApiResponse<AppointmentResponseDto>>('/api/Appointment/book', data);
+    return response.data.data;
 };
 
 export const getMyAppointments = async (): Promise<AppointmentResponseDto[]> => {
-    const response = await axiosInstance.get<AppointmentResponseDto[]>('/api/Appointment/my-bookings');
-    return response.data;
+    const response = await axiosInstance.get<ApiResponse<AppointmentResponseDto[]>>('/api/Appointment/my-bookings');
+    return response.data.data;
 };

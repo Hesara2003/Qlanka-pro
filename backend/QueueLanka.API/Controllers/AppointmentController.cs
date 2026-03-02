@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using QueueLanka.API.DTOs.Appointment;
 using QueueLanka.API.DTOs.Common;
+using QueueLanka.API.Exceptions;
 using QueueLanka.API.Services;
 using System.Security.Claims;
 
@@ -50,6 +51,12 @@ public class AppointmentController : ControllerBase
             );
 
             return Ok(response);
+        }
+        catch (AppException)
+        {
+            // Let the global ExceptionMiddleware handle AppException subclasses
+            // (DuplicateBookingException → 409, CenterFullException → 409, DataAccessException → 500, etc.)
+            throw;
         }
         catch (ArgumentException ex)
         {
