@@ -48,10 +48,27 @@ export interface UserToken {
     eta: string | null;
 }
 
+export interface QueuePositionDto {
+    tokenId: number;
+    tokenNumber: string;
+    status: string;
+    position: number;
+    eta: string | null;
+}
+
 export const tokenApi = {
     getMyTokens: async (): Promise<UserToken[]> => {
         try {
             const response = await axiosInstance.get(`/api/Token/my-tokens`);
+            return response.data;
+        } catch (error) {
+            throw new Error(extractErrorMessage(error));
+        }
+    },
+
+    getServiceCenterQueue: async (centerId: number): Promise<QueuePositionDto[]> => {
+        try {
+            const response = await axiosInstance.get(`/api/Token/center/${centerId}/queue`);
             return response.data;
         } catch (error) {
             throw new Error(extractErrorMessage(error));
@@ -64,9 +81,9 @@ export const tokenApi = {
         } catch (error) {
             if (error instanceof AxiosError) {
                 const status = error.response?.status;
-                const data   = error.response?.data as { code?: string; message?: string } | undefined;
-                const msg    = data?.message ?? "An unexpected error occurred.";
-                const code   = data?.code;
+                const data = error.response?.data as { code?: string; message?: string } | undefined;
+                const msg = data?.message ?? "An unexpected error occurred.";
+                const code = data?.code;
 
                 // 401 / 403 — authentication / authorisation failure
                 if (status === 401 || status === 403) {

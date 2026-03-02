@@ -5,6 +5,7 @@ import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
 import ServiceCentersPage from "./pages/ServiceCentersPage";
 import BookingPage from "./pages/BookingPage";
+import LiveQueuePage from "./pages/LiveQueuePage";
 import AdminCreateServiceCenterPage from "./pages/AdminCreateServiceCenterPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
@@ -28,6 +29,7 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/service-centers" element={<ServiceCentersPage />} />
           <Route path="/book/:centerId" element={<BookingPage />} />
+          <Route path="/queue/:centerId" element={<LiveQueuePage />} />
         </Route>
       </Route>
 

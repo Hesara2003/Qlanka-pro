@@ -67,13 +67,13 @@ export function UserTokenCard({ token, onCancel }: Props) {
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'Waiting':   return '#f59e0b'; // Amber
-            case 'Serving':   return '#3b82f6'; // Blue
+            case 'Waiting': return '#f59e0b'; // Amber
+            case 'Serving': return '#3b82f6'; // Blue
             case 'Completed': return '#10b981'; // Green
             case 'Cancelled': return '#ef4444'; // Red
-            case 'Skipped':   return '#6b7280'; // Gray
-            case 'NoShow':    return '#9333ea'; // Purple
-            default:          return '#1a1a2e';
+            case 'Skipped': return '#6b7280'; // Gray
+            case 'NoShow': return '#9333ea'; // Purple
+            default: return '#1a1a2e';
         }
     };
 
@@ -257,6 +257,49 @@ export function UserTokenCard({ token, onCancel }: Props) {
                         </p>
                     </div>
                 )}
+            </div>
+
+            {/* View Queue Button */}
+            <div style={{ marginTop: '0.5rem' }}>
+                <a
+                    href={`/queue/${token.centerId}`}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem',
+                        width: '100%',
+                        padding: '0.75rem',
+                        background: '#f58220', // Using the orange from the mockup
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontWeight: 700,
+                        fontSize: '0.95rem',
+                        textDecoration: 'none',
+                        boxShadow: '0 2px 4px rgba(245, 130, 32, 0.3)',
+                        transition: 'background 0.2s, transform 0.1s',
+                    }}
+                    onMouseEnter={e => {
+                        (e.currentTarget as HTMLAnchorElement).style.background = '#e07018';
+                    }}
+                    onMouseLeave={e => {
+                        (e.currentTarget as HTMLAnchorElement).style.background = '#f58220';
+                    }}
+                    onMouseDown={e => {
+                        (e.currentTarget as HTMLAnchorElement).style.transform = 'scale(0.98)';
+                    }}
+                    onMouseUp={e => {
+                        (e.currentTarget as HTMLAnchorElement).style.transform = 'scale(1)';
+                    }}
+                >
+                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    View Queue
+                </a>
             </div>
 
             {/* Cancel section — only for Waiting tokens */}
