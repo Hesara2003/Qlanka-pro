@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import type { ServiceCenter } from "../../types/serviceCenter";
+import { useAuth } from "../../context/AuthContext";
 
 interface ServiceCenterCardProps {
   center: ServiceCenter;
@@ -9,6 +10,8 @@ interface ServiceCenterCardProps {
 export default function ServiceCenterCard({ center }: ServiceCenterCardProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
 
   return (
     <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
@@ -169,29 +172,31 @@ export default function ServiceCenterCard({ center }: ServiceCenterCardProps) {
           </div>
         )}
 
-        {/* Action Button */}
-        <button
-          onClick={() => navigate(`/book/${center.centerId}`)}
-          disabled={!center.isAvailable || !center.isActive}
-          className={`w-full mt-4 px-4 py-2.5 font-semibold rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 ${center.isAvailable && center.isActive
-              ? 'bg-blue-600 hover:bg-blue-700 text-white cursor-pointer'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
-            }`}
-        >
-          <span>{t('serviceCenterCard.bookAppointment')}</span>
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+        {/* Action Button — citizens only */}
+        {!isAdmin && (
+          <button
+            onClick={() => navigate(`/book/${center.centerId}`)}
+            disabled={!center.isAvailable || !center.isActive}
+            className={`w-full mt-4 px-4 py-2.5 font-semibold rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 ${center.isAvailable && center.isActive
+                ? 'bg-blue-600 hover:bg-blue-700 text-white cursor-pointer'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
+              }`}
           >
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </button>
+            <span>{t('serviceCenterCard.bookAppointment')}</span>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        )}
       </div>
     </div>
   );

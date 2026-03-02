@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { loginUser } from "../../api/authApi";
 import { useAuth } from "../../context/AuthContext";
 import type { AuthUser } from "../../types/auth";
@@ -27,7 +27,11 @@ function validate(values: FormState): FormErrors {
 
 export default function LoginForm() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
+
+  // If ProtectedRoute redirected here, honour the original destination
+  const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname;
 
   const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -89,7 +93,12 @@ export default function LoginForm() {
       };
 
       login(authUser);
-      navigate("/dashboard");
+      // Admins always land on the admin dashboard.
+      // Citizens are sent back to their original destination (if any), otherwise the dashboard.
+      const destination = authUser.role === "admin"
+        ? "/admin"
+        : (from ?? "/dashboard");
+      navigate(destination, { replace: true });
     } catch (err: unknown) {
       setApiError(err instanceof Error ? err.message : "Login failed.");
     } finally {

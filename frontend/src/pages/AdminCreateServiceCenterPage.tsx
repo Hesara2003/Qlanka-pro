@@ -1,36 +1,41 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AxiosError } from "axios";
 import { useAuth } from "../context/AuthContext";
 import { createServiceCenter } from "../api/serviceCenterApi";
 import type { CreateServiceCenterRequest } from "../types/serviceCenter";
-import LanguageSelector from "../components/common/LanguageSelector";
-import { useTranslation } from "react-i18next";
+import AppNavbar from "../components/common/AppNavbar";
 
-// ──────────────────────────────────────────────
-//  IANA timezones grouped for the selector
-// ──────────────────────────────────────────────
-const TIMEZONES: { label: string; value: string }[] = [
+// ─────────────────────────────────────────────────────────────────────────────
+//  Timezones
+// ─────────────────────────────────────────────────────────────────────────────
+const TIMEZONES = [
   { label: "Asia/Colombo (Sri Lanka, UTC+5:30)", value: "Asia/Colombo" },
-  { label: "Asia/Kolkata (India, UTC+5:30)", value: "Asia/Kolkata" },
-  { label: "Asia/Dhaka (Bangladesh, UTC+6)", value: "Asia/Dhaka" },
-  { label: "Asia/Karachi (Pakistan, UTC+5)", value: "Asia/Karachi" },
-  { label: "Asia/Kathmandu (Nepal, UTC+5:45)", value: "Asia/Kathmandu" },
-  { label: "Asia/Dubai (UAE, UTC+4)", value: "Asia/Dubai" },
-  { label: "Asia/Singapore (UTC+8)", value: "Asia/Singapore" },
-  { label: "Asia/Kuala_Lumpur (Malaysia, UTC+8)", value: "Asia/Kuala_Lumpur" },
-  { label: "Asia/Bangkok (UTC+7)", value: "Asia/Bangkok" },
-  { label: "Asia/Tokyo (Japan, UTC+9)", value: "Asia/Tokyo" },
-  { label: "Europe/London (UTC+0/+1)", value: "Europe/London" },
-  { label: "Europe/Paris (UTC+1/+2)", value: "Europe/Paris" },
-  { label: "America/New_York (UTC-5/-4)", value: "America/New_York" },
-  { label: "America/Los_Angeles (UTC-8/-7)", value: "America/Los_Angeles" },
-  { label: "UTC", value: "UTC" },
+  { label: "Asia/Kolkata (India, UTC+5:30)",     value: "Asia/Kolkata" },
+  { label: "Asia/Dhaka (Bangladesh, UTC+6)",      value: "Asia/Dhaka" },
+  { label: "Asia/Karachi (Pakistan, UTC+5)",      value: "Asia/Karachi" },
+  { label: "Asia/Kathmandu (Nepal, UTC+5:45)",    value: "Asia/Kathmandu" },
+  { label: "Asia/Dubai (UAE, UTC+4)",             value: "Asia/Dubai" },
+  { label: "Asia/Singapore (UTC+8)",              value: "Asia/Singapore" },
+  { label: "Asia/Tokyo (Japan, UTC+9)",           value: "Asia/Tokyo" },
+  { label: "Europe/London (UTC+0/+1)",            value: "Europe/London" },
+  { label: "America/New_York (UTC-5/-4)",         value: "America/New_York" },
+  { label: "UTC",                                 value: "UTC" },
 ];
 
-// ──────────────────────────────────────────────
-//  Validation helpers
-// ──────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+//  Steps definition
+// ─────────────────────────────────────────────────────────────────────────────
+const STEPS = [
+  { label: "Basic Info"      },
+  { label: "Location"        },
+  { label: "Operating Hours" },
+  { label: "Capacity"        },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Types
+// ─────────────────────────────────────────────────────────────────────────────
 interface FormErrors {
   name?: string;
   address?: string;
@@ -43,64 +48,6 @@ interface FormErrors {
   closingTime?: string;
 }
 
-type TFn = (key: string, opts?: Record<string, unknown>) => string;
-
-function validate(form: CreateServiceCenterRequest, t: TFn): FormErrors {
-  const errors: FormErrors = {};
-
-  if (!form.name.trim()) {
-    errors.name = t("adminCreateCenter.errors.nameRequired");
-  } else if (form.name.trim().length < 2 || form.name.trim().length > 100) {
-    errors.name = t("adminCreateCenter.errors.nameLength");
-  }
-
-  if (!form.address.trim()) {
-    errors.address = t("adminCreateCenter.errors.addressRequired");
-  } else if (form.address.trim().length < 5 || form.address.trim().length > 255) {
-    errors.address = t("adminCreateCenter.errors.addressLength");
-  }
-
-  if (form.phone && !/^[+\d\s\-().]{0,20}$/.test(form.phone)) {
-    errors.phone = t("adminCreateCenter.errors.phoneInvalid");
-  }
-
-  if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-    errors.email = t("adminCreateCenter.errors.emailInvalid");
-  }
-
-  if (form.description && form.description.length > 1000) {
-    errors.description = t("adminCreateCenter.errors.descriptionLength");
-  }
-
-  if (isNaN(form.capacity) || form.capacity < 1 || form.capacity > 10000) {
-    errors.capacity = t("adminCreateCenter.errors.capacityRange");
-  }
-
-  if (isNaN(form.averageServiceTimeMinutes) || form.averageServiceTimeMinutes < 1 || form.averageServiceTimeMinutes > 480) {
-    errors.averageServiceTimeMinutes = t("adminCreateCenter.errors.avgTimeRange");
-  }
-
-  const timeRe = /^([01]\d|2[0-3]):[0-5]\d$/;
-  if (!form.openingTime || !timeRe.test(form.openingTime)) {
-    errors.openingTime = t("adminCreateCenter.errors.openingTimeInvalid");
-  }
-  if (!form.closingTime || !timeRe.test(form.closingTime)) {
-    errors.closingTime = t("adminCreateCenter.errors.closingTimeInvalid");
-  }
-  if (
-    !errors.openingTime &&
-    !errors.closingTime &&
-    form.closingTime <= form.openingTime
-  ) {
-    errors.closingTime = t("adminCreateCenter.errors.closingBeforeOpening");
-  }
-
-  return errors;
-}
-
-// ──────────────────────────────────────────────
-//  Initial form state
-// ──────────────────────────────────────────────
 const INITIAL: CreateServiceCenterRequest = {
   name: "",
   address: "",
@@ -115,96 +62,148 @@ const INITIAL: CreateServiceCenterRequest = {
   isActive: true,
 };
 
-// ──────────────────────────────────────────────
-//  Reusable field-level error hint
-// ──────────────────────────────────────────────
-function FieldError({ msg, id }: { msg?: string; id?: string }) {
+// ─────────────────────────────────────────────────────────────────────────────
+//  Per-step validation
+// ─────────────────────────────────────────────────────────────────────────────
+function validateStep(step: number, form: CreateServiceCenterRequest): FormErrors {
+  const e: FormErrors = {};
+  if (step === 0) {
+    if (!form.name.trim()) e.name = "Center name is required.";
+    else if (form.name.trim().length < 2 || form.name.trim().length > 100) e.name = "Name must be 2–100 characters.";
+    if (form.phone && !/^[+\d\s\-().]{0,20}$/.test(form.phone)) e.phone = "Invalid phone number format.";
+    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Invalid email address.";
+    if (form.description && form.description.length > 1000) e.description = "Description max 1000 characters.";
+  }
+  if (step === 1) {
+    if (!form.address.trim()) e.address = "Address is required.";
+    else if (form.address.trim().length < 5 || form.address.trim().length > 255) e.address = "Address must be 5–255 characters.";
+  }
+  if (step === 2) {
+    const timeRe = /^([01]\d|2[0-3]):[0-5]\d$/;
+    if (!form.openingTime || !timeRe.test(form.openingTime)) e.openingTime = "Enter a valid opening time.";
+    if (!form.closingTime || !timeRe.test(form.closingTime)) e.closingTime = "Enter a valid closing time.";
+    if (!e.openingTime && !e.closingTime && form.closingTime <= form.openingTime)
+      e.closingTime = "Closing time must be after opening time.";
+  }
+  if (step === 3) {
+    if (isNaN(form.capacity) || form.capacity < 1 || form.capacity > 10000)
+      e.capacity = "Capacity must be between 1 and 10,000.";
+    if (isNaN(form.averageServiceTimeMinutes) || form.averageServiceTimeMinutes < 1 || form.averageServiceTimeMinutes > 480)
+      e.averageServiceTimeMinutes = "Service time must be between 1 and 480 minutes.";
+  }
+  return e;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Small helpers
+// ─────────────────────────────────────────────────────────────────────────────
+function FieldError({ msg }: { msg?: string }) {
   if (!msg) return null;
   return (
-    <p id={id} role="alert" className="mt-1 text-xs text-red-600">
+    <p role="alert" className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+      <svg className="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+      </svg>
       {msg}
     </p>
   );
 }
 
-// ──────────────────────────────────────────────
-//  Page component
-// ──────────────────────────────────────────────
-export default function AdminCreateServiceCenterPage() {
-  const { t } = useTranslation();
-  const navigate = useNavigate();
-  const { user, logout } = useAuth();
+function Label({ children, required }: { children: React.ReactNode; required?: boolean }) {
+  return (
+    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+      {children}
+      {required && <span className="text-red-500 ml-0.5">*</span>}
+    </label>
+  );
+}
 
-  // Role guard — only admins may access this page
+const INPUT_BASE =
+  "block w-full px-4 py-2.5 border rounded-xl text-sm text-gray-900 placeholder-gray-400 " +
+  "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors";
+
+const inputCls = (error?: string) =>
+  `${INPUT_BASE} ${error ? "border-red-400 bg-red-50" : "border-gray-300 bg-white"}`;
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Page
+// ─────────────────────────────────────────────────────────────────────────────
+export default function AdminCreateServiceCenterPage() {
+  const navigate = useNavigate();
+  const { user }  = useAuth();
+
   useEffect(() => {
-    if (!user) {
-      navigate("/login");
-    } else if (user.role !== "admin") {
-      navigate("/service-centers");
-    }
+    if (!user) navigate("/login");
+    else if (user.role !== "admin") navigate("/service-centers");
   }, [user, navigate]);
 
-  const [form, setForm] = useState<CreateServiceCenterRequest>(INITIAL);
-  const [fieldErrors, setFieldErrors] = useState<FormErrors>({});
-  const [touched, setTouched] = useState<Partial<Record<keyof FormErrors, boolean>>>({});
-  const [submitAttempted, setSubmitAttempted] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  // ── State ─────────────────────────────────────────────────────────────────
+  const [step,        setStep]        = useState(0);
+  const [form,        setForm]        = useState<CreateServiceCenterRequest>(INITIAL);
+  const [errors,      setErrors]      = useState<FormErrors>({});
+  const [touched,     setTouched]     = useState<Partial<Record<keyof FormErrors, boolean>>>({});
+  const [submitting,  setSubmitting]  = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [createdName, setCreatedName] = useState<string | null>(null);
-  const formTopRef = useRef<HTMLDivElement>(null);
 
-  // ── Handlers ──────────────────────────────────────────
-  function handleChange(
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) {
+  // ── Handlers ──────────────────────────────────────────────────────────────
+  function change(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
     const { name, type } = e.target;
-    const value =
-      type === "checkbox"
-        ? (e.target as HTMLInputElement).checked
-        : e.target.value;
-
-    const newForm = { ...form, [name]: value } as CreateServiceCenterRequest;
-    setForm(newForm);
-    // Re-validate immediately if the field (or form) was already touched
-    if (touched[name as keyof FormErrors] || submitAttempted) {
-      setFieldErrors(validate(newForm, t));
-    }
+    const value = type === "checkbox" ? (e.target as HTMLInputElement).checked : e.target.value;
+    const next  = { ...form, [name]: value } as CreateServiceCenterRequest;
+    setForm(next);
+    if (touched[name as keyof FormErrors]) setErrors(validateStep(step, next));
     setSubmitError(null);
   }
 
-  function handleNumberChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const { name } = e.target;
-    const numeric = e.target.valueAsNumber; // NaN when input is cleared
-    const newForm = { ...form, [name]: numeric } as CreateServiceCenterRequest;
-    setForm(newForm);
-    if (touched[name as keyof FormErrors] || submitAttempted) {
-      setFieldErrors(validate(newForm, t));
-    }
+  function changeNum(e: React.ChangeEvent<HTMLInputElement>) {
+    const next = { ...form, [e.target.name]: e.target.valueAsNumber } as CreateServiceCenterRequest;
+    setForm(next);
+    if (touched[e.target.name as keyof FormErrors]) setErrors(validateStep(step, next));
     setSubmitError(null);
   }
 
-  function handleBlur(field: keyof FormErrors) {
-    setTouched((prev) => ({ ...prev, [field]: true }));
-    setFieldErrors(validate(form, t));
+  function blur(field: keyof FormErrors) {
+    setTouched(p => ({ ...p, [field]: true }));
+    setErrors(validateStep(step, form));
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  function showErr(field: keyof FormErrors) {
+    return touched[field] ? errors[field] : undefined;
+  }
 
-    const errors = validate(form, t);
-    // Mark every errored field as touched so all messages surface
-    const allTouched = (Object.keys(errors) as (keyof FormErrors)[]).reduce(
-      (acc, key) => ({ ...acc, [key]: true }),
-      {} as Partial<Record<keyof FormErrors, boolean>>
-    );
-    setTouched((prev) => ({ ...prev, ...allTouched }));
-    setSubmitAttempted(true);
-    setFieldErrors(errors);
+  // ── Step navigation ───────────────────────────────────────────────────────
+  function next() {
+    const e = validateStep(step, form);
+    if (Object.keys(e).length) {
+      const allTouched = Object.keys(e).reduce<Partial<Record<keyof FormErrors, boolean>>>(
+        (a, k) => ({ ...a, [k]: true }), {}
+      );
+      setTouched(p => ({ ...p, ...allTouched }));
+      setErrors(e);
+      return;
+    }
+    setErrors({});
+    setTouched({});
+    setStep(s => s + 1);
+  }
 
-    if (Object.keys(errors).length > 0) {
-      formTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  function back() {
+    setErrors({});
+    setTouched({});
+    setStep(s => s - 1);
+    setSubmitError(null);
+  }
+
+  // ── Submit ────────────────────────────────────────────────────────────────
+  async function submit() {
+    const e = validateStep(step, form);
+    if (Object.keys(e).length) {
+      const allTouched = Object.keys(e).reduce<Partial<Record<keyof FormErrors, boolean>>>(
+        (a, k) => ({ ...a, [k]: true }), {}
+      );
+      setTouched(p => ({ ...p, ...allTouched }));
+      setErrors(e);
       return;
     }
 
@@ -214,10 +213,10 @@ export default function AdminCreateServiceCenterPage() {
     try {
       const payload: CreateServiceCenterRequest = {
         ...form,
-        name: form.name.trim(),
-        address: form.address.trim(),
-        phone: form.phone?.trim() || undefined,
-        email: form.email?.trim() || undefined,
+        name:        form.name.trim(),
+        address:     form.address.trim(),
+        phone:       form.phone?.trim()       || undefined,
+        email:       form.email?.trim()       || undefined,
         description: form.description?.trim() || undefined,
       };
       await createServiceCenter(payload);
@@ -225,307 +224,191 @@ export default function AdminCreateServiceCenterPage() {
     } catch (err) {
       if (err instanceof AxiosError && err.response?.data) {
         const data = err.response.data;
-        const code: string = data?.code ?? "";
-        if (code === "DUPLICATE_SERVICE_CENTER") {
-          setSubmitError(t("adminCreateCenter.errors.duplicate"));
-        } else if (code === "VALIDATION_ERROR" && Array.isArray(data.validationErrors)) {
-          // Map backend field-level errors back to the form
-          const BACKEND_FIELD_MAP: Record<string, keyof FormErrors> = {
-            Name: "name",
-            Address: "address",
-            Phone: "phone",
-            Email: "email",
-            Description: "description",
-            Capacity: "capacity",
-            AverageServiceTimeMinutes: "averageServiceTimeMinutes",
-            OpeningTime: "openingTime",
-            ClosingTime: "closingTime",
-          };
-          const backendErrors: FormErrors = {};
-          for (const ve of data.validationErrors as { field: string; message: string }[]) {
-            const frontendKey = BACKEND_FIELD_MAP[ve.field];
-            if (frontendKey && !backendErrors[frontendKey]) {
-              backendErrors[frontendKey] = ve.message;
-            }
-          }
-          if (Object.keys(backendErrors).length > 0) {
-            setFieldErrors(backendErrors);
-            setSubmitAttempted(true);
-            formTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-          } else {
-            setSubmitError(data.message ?? t("adminCreateCenter.errors.serverError"));
-          }
+        if (data?.code === "DUPLICATE_SERVICE_CENTER") {
+          setSubmitError("A service center with this name and address already exists.");
         } else {
-          setSubmitError(data?.message ?? t("adminCreateCenter.errors.serverError"));
+          setSubmitError(data?.message ?? "Server error. Please try again.");
         }
       } else {
-        setSubmitError(t("adminCreateCenter.errors.networkError"));
+        setSubmitError("Network error. Please check your connection.");
       }
     } finally {
       setSubmitting(false);
     }
   }
 
-  // ── Derived helpers ───────────────────────────────────
-  /** Show a field error only if it was touched or a submit was attempted */
-  const showError = (field: keyof FormErrors) =>
-    !!(fieldErrors[field] && (touched[field] || submitAttempted));
-
-  /** Section-level error indicators (only after a submit attempt) */
-  const sec1HasError = submitAttempted &&
-    !!(fieldErrors.name || fieldErrors.description || fieldErrors.phone || fieldErrors.email);
-  const sec2HasError = submitAttempted && !!fieldErrors.address;
-  const sec3HasError = submitAttempted &&
-    !!(fieldErrors.openingTime || fieldErrors.closingTime);
-  const sec4HasError = submitAttempted &&
-    !!(fieldErrors.capacity || fieldErrors.averageServiceTimeMinutes);
-
-  const totalErrorCount = Object.values(fieldErrors).filter(Boolean).length;
-
-  // ── Success screen ─────────────────────────────────────
+  // ── Success screen ────────────────────────────────────────────────────────
   if (createdName) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-lg p-10 max-w-md w-full text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            {t("adminCreateCenter.success.title")}
-          </h2>
-          <p className="text-gray-600 mb-6">
-            {t("adminCreateCenter.success.message", { name: createdName })}
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <button
-              onClick={() => {
-                setForm(INITIAL);
-                setCreatedName(null);
-                setFieldErrors({});
-                setTouched({});
-                setSubmitAttempted(false);
-                setSubmitError(null);
-              }}
-              className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
-            >
-              {t("adminCreateCenter.success.createAnother")}
-            </button>
-            <Link
-              to="/service-centers"
-              className="px-5 py-2.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold rounded-lg transition-colors text-center"
-            >
-              {t("adminCreateCenter.success.viewAll")}
-            </Link>
+      <div className="h-screen bg-gray-50 flex flex-col">
+        <AppNavbar />
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="bg-white rounded-2xl shadow-lg p-10 max-w-sm w-full text-center">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">
+              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Center Created!</h2>
+            <p className="text-gray-500 text-sm mb-6">
+              <span className="font-semibold text-gray-700">"{createdName}"</span> has been registered successfully.
+            </p>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => { setForm(INITIAL); setCreatedName(null); setStep(0); }}
+                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors"
+              >
+                Create Another
+              </button>
+              <Link
+                to="/service-centers"
+                className="px-5 py-2.5 border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-semibold rounded-xl transition-colors text-center"
+              >
+                View All Centers
+              </Link>
+            </div>
           </div>
         </div>
       </div>
     );
   }
 
-  // ── Main form ──────────────────────────────────────────
+  // ── Wizard layout ─────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
-      {/* ── Navigation ── */}
-      <nav className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center shadow-md">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M2 17L12 22L22 17" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M2 12L12 17L22 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
-              <span className="text-xl font-bold text-gray-900">{t("common.appName")}</span>
-            </div>
-            {user && (
-              <div className="flex items-center gap-4">
-                <LanguageSelector />
-                <div className="text-right hidden sm:block">
-                  <p className="text-sm font-semibold text-gray-900">{user.username}</p>
-                  <p className="text-xs text-gray-500 capitalize">{user.role}</p>
+    <div className="h-screen bg-gray-50 flex flex-col overflow-hidden">
+      <AppNavbar />
+
+      {/* ── Progress rail ─────────────────────────────────────────────────── */}
+      <div className="bg-white border-b border-gray-200 px-4 sm:px-8 py-3 flex-shrink-0">
+        <div className="max-w-2xl mx-auto">
+          <div className="flex items-center justify-between relative">
+            {/* background connector */}
+            <div className="absolute left-0 right-0 top-[18px] h-px bg-gray-200 z-0" />
+            {/* filled connector */}
+            <div
+              className="absolute left-0 top-[18px] h-px bg-blue-500 z-0 transition-all duration-300"
+              style={{ width: `${(step / (STEPS.length - 1)) * 100}%` }}
+            />
+            {STEPS.map((s, i) => {
+              const done   = i < step;
+              const active = i === step;
+              return (
+                <div key={i} className="relative z-10 flex flex-col items-center gap-1">
+                  <div className={[
+                    "w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-colors",
+                    done   ? "bg-blue-600 border-blue-600 text-white"  :
+                    active ? "bg-white border-blue-600 text-blue-600"  :
+                             "bg-white border-gray-300 text-gray-400",
+                  ].join(" ")}>
+                    {done ? (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : String(i + 1)}
+                  </div>
+                  <span className={[
+                    "text-xs font-medium hidden sm:block",
+                    active ? "text-blue-600" : done ? "text-gray-600" : "text-gray-400",
+                  ].join(" ")}>
+                    {s.label}
+                  </span>
                 </div>
-                <button
-                  onClick={logout}
-                  className="px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                >
-                  {t("common.signOut")}
-                </button>
-              </div>
-            )}
+              );
+            })}
           </div>
         </div>
-      </nav>
+      </div>
 
-      {/* ── Content ── */}
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Scroll anchor — scrolled to when validation fails on submit */}
-        <div ref={formTopRef} />
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-          <Link to="/service-centers" className="hover:text-blue-600 transition-colors">
-            {t("serviceCenters.title")}
-          </Link>
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-          <span className="text-gray-900 font-medium">{t("adminCreateCenter.breadcrumb")}</span>
-        </nav>
+      {/* ── Scrollable step content ─────────────────────────────────────────── */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
 
-        {/* Page heading */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">
-            {t("adminCreateCenter.title")}
-          </h1>
-          <p className="text-gray-600">{t("adminCreateCenter.subtitle")}</p>
-        </div>
-
-        {/* Validation summary — shown after a failed submit attempt */}
-        {submitAttempted && totalErrorCount > 0 && (
-          <div
-            role="alert"
-            aria-live="polite"
-            className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3"
-          >
-            <svg className="w-5 h-5 text-red-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <p className="text-red-700 text-sm font-medium">
-              {t("adminCreateCenter.errors.validationSummary", { count: totalErrorCount })}
+          {/* Step heading */}
+          <div className="mb-6">
+            <p className="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-0.5">
+              Step {step + 1} of {STEPS.length}
             </p>
+            <h1 className="text-2xl font-bold text-gray-900">{STEPS[step].label}</h1>
           </div>
-        )}
 
-        {/* Server / network error banner */}
-        {submitError && (
-          <div
-            role="alert"
-            className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3"
-          >
-            <svg className="w-5 h-5 text-red-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <p className="text-red-700 text-sm font-medium">{submitError}</p>
-          </div>
-        )}
+          {/* Global error banner */}
+          {submitError && (
+            <div className="mb-5 bg-red-50 border border-red-200 rounded-xl p-3.5 flex items-start gap-2.5">
+              <svg className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-sm text-red-700">{submitError}</p>
+            </div>
+          )}
 
-        <form onSubmit={handleSubmit} noValidate className="space-y-6">
-          {/* ─── Section 1: Basic Information ─── */}
-          <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-5 flex items-center gap-2">
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${sec1HasError ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"}`}>1</div>
-              {t("adminCreateCenter.sections.basicInfo")}
-              {sec1HasError && (
-                <span className="ml-1 w-2 h-2 rounded-full bg-red-500 inline-block" aria-label={t("adminCreateCenter.errors.sectionHasErrors")} />
-              )}
-            </h2>
-            <div className="grid grid-cols-1 gap-5">
+          {/* ──────────────────────────────────────────────────────────────── */}
+          {/* Step 1 – Basic Info                                              */}
+          {/* ──────────────────────────────────────────────────────────────── */}
+          {step === 0 && (
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
               {/* Name */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  {t("adminCreateCenter.fields.name")} <span className="text-red-500">*</span>
-                </label>
+                <Label required>Center Name</Label>
                 <input
-                  type="text"
-                  name="name"
-                  value={form.name}
-                  onChange={handleChange}
-                  onBlur={() => handleBlur("name")}
-                  maxLength={100}
-                  placeholder={t("adminCreateCenter.placeholders.name")}
-                  aria-invalid={showError("name")}
-                  aria-describedby={showError("name") ? "err-name" : undefined}
-                  className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${showError("name") ? "border-red-400 bg-red-50" : "border-gray-300"}`}
+                  type="text" name="name" value={form.name}
+                  onChange={change} onBlur={() => blur("name")} maxLength={100}
+                  placeholder="e.g. Colombo Municipal Service Center"
+                  className={inputCls(showErr("name"))}
                 />
-                <FieldError msg={showError("name") ? fieldErrors.name : undefined} id="err-name" />
+                <FieldError msg={showErr("name")} />
               </div>
 
               {/* Description */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  {t("adminCreateCenter.fields.description")}
-                </label>
+                <Label>Description <span className="text-gray-400 font-normal">(optional)</span></Label>
                 <textarea
-                  name="description"
-                  value={form.description}
-                  onChange={handleChange}
-                  onBlur={() => handleBlur("description")}
-                  maxLength={1000}
-                  rows={3}
-                  placeholder={t("adminCreateCenter.placeholders.description")}
-                  aria-invalid={showError("description")}
-                  aria-describedby={showError("description") ? "err-description" : undefined}
-                  className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none ${showError("description") ? "border-red-400 bg-red-50" : "border-gray-300"}`}
+                  name="description" value={form.description} rows={3}
+                  onChange={change} onBlur={() => blur("description")} maxLength={1000}
+                  placeholder="Brief description of services offered…"
+                  className={`${inputCls(showErr("description"))} resize-none`}
                 />
                 <div className="flex justify-between mt-0.5">
-                  <FieldError msg={showError("description") ? fieldErrors.description : undefined} id="err-description" />
-                  <span className="text-xs text-gray-400 ml-auto">{(form.description ?? "").length}/1000</span>
+                  <FieldError msg={showErr("description")} />
+                  <span className="text-xs text-gray-400 ml-auto">
+                    {(form.description ?? "").length}/1000
+                  </span>
                 </div>
               </div>
 
-              {/* Phone & Email */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {/* Phone + Email */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">
-                    {t("adminCreateCenter.fields.phone")}
-                  </label>
+                  <Label>Phone <span className="text-gray-400 font-normal">(optional)</span></Label>
                   <input
-                    type="tel"
-                    name="phone"
-                    value={form.phone}
-                    onChange={handleChange}
-                    onBlur={() => handleBlur("phone")}
-                    maxLength={20}
+                    type="tel" name="phone" value={form.phone}
+                    onChange={change} onBlur={() => blur("phone")} maxLength={20}
                     placeholder="+94 11 234 5678"
-                    aria-invalid={showError("phone")}
-                    aria-describedby={showError("phone") ? "err-phone" : undefined}
-                    className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${showError("phone") ? "border-red-400 bg-red-50" : "border-gray-300"}`}
+                    className={inputCls(showErr("phone"))}
                   />
-                  <FieldError msg={showError("phone") ? fieldErrors.phone : undefined} id="err-phone" />
+                  <FieldError msg={showErr("phone")} />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">
-                    {t("adminCreateCenter.fields.email")}
-                  </label>
+                  <Label>Email <span className="text-gray-400 font-normal">(optional)</span></Label>
                   <input
-                    type="email"
-                    name="email"
-                    value={form.email}
-                    onChange={handleChange}
-                    onBlur={() => handleBlur("email")}
-                    maxLength={100}
+                    type="email" name="email" value={form.email}
+                    onChange={change} onBlur={() => blur("email")} maxLength={100}
                     placeholder="center@example.com"
-                    aria-invalid={showError("email")}
-                    aria-describedby={showError("email") ? "err-email" : undefined}
-                    className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${showError("email") ? "border-red-400 bg-red-50" : "border-gray-300"}`}
+                    className={inputCls(showErr("email"))}
                   />
-                  <FieldError msg={showError("email") ? fieldErrors.email : undefined} id="err-email" />
+                  <FieldError msg={showErr("email")} />
                 </div>
               </div>
             </div>
-          </section>
+          )}
 
-          {/* ─── Section 2: Location ─── */}
-          <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${sec2HasError ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}>2</div>
-              {t("adminCreateCenter.sections.location")}
-              {sec2HasError && (
-                <span className="ml-1 w-2 h-2 rounded-full bg-red-500 inline-block" aria-label={t("adminCreateCenter.errors.sectionHasErrors")} />
-              )}
-            </h2>
-            <p className="text-sm text-gray-500 mb-5">
-              {t("adminCreateCenter.sections.locationHint")}
-            </p>
-            <div className="grid grid-cols-1 gap-5">
+          {/* ──────────────────────────────────────────────────────────────── */}
+          {/* Step 2 – Location                                                */}
+          {/* ──────────────────────────────────────────────────────────────── */}
+          {step === 1 && (
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
               {/* Address */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  {t("adminCreateCenter.fields.address")} <span className="text-red-500">*</span>
-                </label>
+                <Label required>Full Address</Label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -534,215 +417,244 @@ export default function AdminCreateServiceCenterPage() {
                     </svg>
                   </div>
                   <input
-                    type="text"
-                    name="address"
-                    value={form.address}
-                    onChange={handleChange}
-                    onBlur={() => handleBlur("address")}
-                    maxLength={255}
-                    placeholder={t("adminCreateCenter.placeholders.address")}
-                    aria-invalid={showError("address")}
-                    aria-describedby={showError("address") ? "err-address" : undefined}
-                    className={`block w-full pl-9 pr-4 py-2.5 border rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${showError("address") ? "border-red-400 bg-red-50" : "border-gray-300"}`}
+                    type="text" name="address" value={form.address}
+                    onChange={change} onBlur={() => blur("address")} maxLength={255}
+                    placeholder="Street, City, District"
+                    className={`${inputCls(showErr("address"))} pl-10`}
                   />
                 </div>
-                <FieldError msg={showError("address") ? fieldErrors.address : undefined} id="err-address" />
+                <FieldError msg={showErr("address")} />
               </div>
 
               {/* Timezone */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  {t("adminCreateCenter.fields.timezone")} <span className="text-red-500">*</span>
-                </label>
+                <Label required>Timezone</Label>
                 <select
-                  name="timezone"
-                  value={form.timezone}
-                  onChange={handleChange}
-                  className="block w-full px-4 py-2.5 border border-gray-300 rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  name="timezone" value={form.timezone} onChange={change}
+                  className={inputCls()}
                 >
-                  {TIMEZONES.map((tz) => (
-                    <option key={tz.value} value={tz.value}>
-                      {tz.label}
-                    </option>
+                  {TIMEZONES.map(tz => (
+                    <option key={tz.value} value={tz.value}>{tz.label}</option>
                   ))}
                 </select>
-                <p className="mt-1 text-xs text-gray-400">
-                  {t("adminCreateCenter.fields.timezoneHint")}
+                <p className="mt-1.5 text-xs text-gray-400">
+                  Used to calculate service-queue ETAs correctly.
                 </p>
               </div>
             </div>
-          </section>
+          )}
 
-          {/* ─── Section 3: Operating Hours ─── */}
-          <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-5 flex items-center gap-2">
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${sec3HasError ? "bg-red-100 text-red-700" : "bg-purple-100 text-purple-700"}`}>3</div>
-              {t("adminCreateCenter.sections.hours")}
-              {sec3HasError && (
-                <span className="ml-1 w-2 h-2 rounded-full bg-red-500 inline-block" aria-label={t("adminCreateCenter.errors.sectionHasErrors")} />
-              )}
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  {t("adminCreateCenter.fields.openingTime")} <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="time"
-                  name="openingTime"
-                  value={form.openingTime}
-                  onChange={handleChange}
-                  onBlur={() => handleBlur("openingTime")}
-                  aria-invalid={showError("openingTime")}
-                  aria-describedby={showError("openingTime") ? "err-openingTime" : undefined}
-                  className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${showError("openingTime") ? "border-red-400 bg-red-50" : "border-gray-300"}`}
-                />
-                <FieldError msg={showError("openingTime") ? fieldErrors.openingTime : undefined} id="err-openingTime" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  {t("adminCreateCenter.fields.closingTime")} <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="time"
-                  name="closingTime"
-                  value={form.closingTime}
-                  onChange={handleChange}
-                  onBlur={() => handleBlur("closingTime")}
-                  aria-invalid={showError("closingTime")}
-                  aria-describedby={showError("closingTime") ? "err-closingTime" : undefined}
-                  className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${showError("closingTime") ? "border-red-400 bg-red-50" : "border-gray-300"}`}
-                />
-                <FieldError msg={showError("closingTime") ? fieldErrors.closingTime : undefined} id="err-closingTime" />
-              </div>
-            </div>
-          </section>
+          {/* ──────────────────────────────────────────────────────────────── */}
+          {/* Step 3 – Operating Hours                                         */}
+          {/* ──────────────────────────────────────────────────────────────── */}
+          {step === 2 && (
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
+              <p className="text-sm text-gray-500">
+                Set the default opening and closing times. Per-day overrides can be configured after creation.
+              </p>
 
-          {/* ─── Section 4: Capacity ─── */}
-          <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-5 flex items-center gap-2">
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${sec4HasError ? "bg-red-100 text-red-700" : "bg-orange-100 text-orange-700"}`}>4</div>
-              {t("adminCreateCenter.sections.capacity")}
-              {sec4HasError && (
-                <span className="ml-1 w-2 h-2 rounded-full bg-red-500 inline-block" aria-label={t("adminCreateCenter.errors.sectionHasErrors")} />
-              )}
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  {t("adminCreateCenter.fields.capacity")}
-                </label>
-                <input
-                  type="number"
-                  name="capacity"
-                  value={isNaN(form.capacity) ? "" : form.capacity}
-                  onChange={handleNumberChange}
-                  onBlur={() => handleBlur("capacity")}
-                  min={1}
-                  max={10000}
-                  aria-invalid={showError("capacity")}
-                  aria-describedby={showError("capacity") ? "err-capacity" : undefined}
-                  className={`block w-full px-4 py-2.5 border rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${showError("capacity") ? "border-red-400 bg-red-50" : "border-gray-300"}`}
-                />
-                <p className="mt-1 text-xs text-gray-400">{t("adminCreateCenter.fields.capacityHint")}</p>
-                <FieldError msg={showError("capacity") ? fieldErrors.capacity : undefined} id="err-capacity" />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
-                  {t("adminCreateCenter.fields.avgServiceTime")}
-                </label>
-                <div className="relative">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label required>Opening Time</Label>
                   <input
-                    type="number"
-                    name="averageServiceTimeMinutes"
-                    value={isNaN(form.averageServiceTimeMinutes) ? "" : form.averageServiceTimeMinutes}
-                    onChange={handleNumberChange}
-                    onBlur={() => handleBlur("averageServiceTimeMinutes")}
-                    min={1}
-                    max={480}
-                    aria-invalid={showError("averageServiceTimeMinutes")}
-                    aria-describedby={showError("averageServiceTimeMinutes") ? "err-avgTime" : undefined}
-                    className={`block w-full px-4 py-2.5 pr-16 border rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${showError("averageServiceTimeMinutes") ? "border-red-400 bg-red-50" : "border-gray-300"}`}
+                    type="time" name="openingTime" value={form.openingTime}
+                    onChange={change} onBlur={() => blur("openingTime")}
+                    className={inputCls(showErr("openingTime"))}
                   />
-                  <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 text-sm pointer-events-none">
-                    {t("serviceCenterCard.minutes")}
-                  </span>
+                  <FieldError msg={showErr("openingTime")} />
                 </div>
-                <p className="mt-1 text-xs text-gray-400">{t("adminCreateCenter.fields.avgServiceTimeHint")}</p>
-                <FieldError msg={showError("averageServiceTimeMinutes") ? fieldErrors.averageServiceTimeMinutes : undefined} id="err-avgTime" />
+                <div>
+                  <Label required>Closing Time</Label>
+                  <input
+                    type="time" name="closingTime" value={form.closingTime}
+                    onChange={change} onBlur={() => blur("closingTime")}
+                    className={inputCls(showErr("closingTime"))}
+                  />
+                  <FieldError msg={showErr("closingTime")} />
+                </div>
               </div>
+
+              {/* Live duration preview */}
+              {!errors.openingTime && !errors.closingTime &&
+               form.openingTime && form.closingTime &&
+               form.closingTime > form.openingTime && (
+                <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3">
+                  <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {(() => {
+                    const [oh, om] = form.openingTime.split(":").map(Number);
+                    const [ch, cm] = form.closingTime.split(":").map(Number);
+                    const mins  = (ch * 60 + cm) - (oh * 60 + om);
+                    const h = Math.floor(mins / 60), m = mins % 60;
+                    return `Operating ${h}h${m > 0 ? ` ${m}m` : ""} per day`;
+                  })()}
+                </div>
+              )}
             </div>
-          </section>
+          )}
 
-          {/* ─── Section 5: Settings ─── */}
-          <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-5 flex items-center gap-2">
-              <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 text-xs font-bold">5</div>
-              {t("adminCreateCenter.sections.settings")}
-            </h2>
-            <label className="flex items-center gap-4 cursor-pointer group">
-              <div className="relative">
-                <input
-                  type="checkbox"
-                  name="isActive"
-                  checked={form.isActive}
-                  onChange={handleChange}
-                  className="sr-only"
-                />
-                <div
-                  className={`w-12 h-6 rounded-full transition-colors duration-200 ${form.isActive ? "bg-blue-600" : "bg-gray-300"}`}
-                >
-                  <div
-                    className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${form.isActive ? "translate-x-6" : "translate-x-0"}`}
-                  />
+          {/* ──────────────────────────────────────────────────────────────── */}
+          {/* Step 4 – Capacity & Settings + Summary                           */}
+          {/* ──────────────────────────────────────────────────────────────── */}
+          {step === 3 && (
+            <div className="space-y-5">
+
+              {/* Capacity fields */}
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label required>Daily Capacity</Label>
+                    <input
+                      type="number" name="capacity"
+                      value={isNaN(form.capacity) ? "" : form.capacity}
+                      onChange={changeNum} onBlur={() => blur("capacity")} min={1} max={10000}
+                      className={inputCls(showErr("capacity"))}
+                    />
+                    <p className="mt-1.5 text-xs text-gray-400">Max tokens per day (1–10,000)</p>
+                    <FieldError msg={showErr("capacity")} />
+                  </div>
+                  <div>
+                    <Label required>Avg. Service Time</Label>
+                    <div className="relative">
+                      <input
+                        type="number" name="averageServiceTimeMinutes"
+                        value={isNaN(form.averageServiceTimeMinutes) ? "" : form.averageServiceTimeMinutes}
+                        onChange={changeNum} onBlur={() => blur("averageServiceTimeMinutes")} min={1} max={480}
+                        className={`${inputCls(showErr("averageServiceTimeMinutes"))} pr-14`}
+                      />
+                      <span className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-400 text-xs pointer-events-none">
+                        min
+                      </span>
+                    </div>
+                    <p className="mt-1.5 text-xs text-gray-400">Used for ETA calculation (1–480)</p>
+                    <FieldError msg={showErr("averageServiceTimeMinutes")} />
+                  </div>
+                </div>
+
+                {/* Active toggle */}
+                <div className="border border-gray-200 rounded-xl px-5 py-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">Activate immediately</p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {form.isActive
+                        ? "Citizens can book tokens right away."
+                        : "Center will be created but hidden from bookings."}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, isActive: !f.isActive }))}
+                    className={`relative w-12 h-6 rounded-full transition-colors duration-200 flex-shrink-0 ${
+                      form.isActive ? "bg-blue-600" : "bg-gray-300"
+                    }`}
+                    role="switch"
+                    aria-checked={form.isActive}
+                  >
+                    <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
+                      form.isActive ? "translate-x-6" : "translate-x-0"
+                    }`} />
+                  </button>
                 </div>
               </div>
-              <div>
-                <p className="text-sm font-semibold text-gray-900">
-                  {t("adminCreateCenter.fields.isActive")}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {form.isActive
-                    ? t("adminCreateCenter.fields.isActiveOn")
-                    : t("adminCreateCenter.fields.isActiveOff")}
-                </p>
-              </div>
-            </label>
-          </section>
 
-          {/* ─── Actions ─── */}
-          <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pb-8">
+              {/* Summary card */}
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Review before submitting</p>
+                <div className="space-y-2.5">
+                  {([
+                    ["Name",           form.name],
+                    ["Address",        form.address],
+                    ["Phone",          form.phone || "—"],
+                    ["Email",          form.email || "—"],
+                    ["Timezone",       form.timezone],
+                    ["Hours",          `${form.openingTime} – ${form.closingTime}`],
+                    ["Daily capacity", `${form.capacity} tokens`],
+                    ["Avg. time",      `${form.averageServiceTimeMinutes} min`],
+                    ["Status",         form.isActive ? "Active" : "Inactive"],
+                  ] as [string, string][]).map(([k, v]) => (
+                    <div key={k} className="flex justify-between text-sm py-1 border-b border-gray-50 last:border-0">
+                      <span className="text-gray-500 font-medium">{k}</span>
+                      <span className={`text-right ml-4 font-medium truncate max-w-[220px] ${
+                        k === "Status" ? (form.isActive ? "text-emerald-600" : "text-gray-400") : "text-gray-800"
+                      }`}>{v}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+          )}
+
+        </div>{/* /max-w-2xl */}
+      </div>{/* /overflow-y-auto */}
+
+      {/* ── Fixed action bar ──────────────────────────────────────────────── */}
+      <div className="flex-shrink-0 bg-white border-t border-gray-200 px-4 sm:px-8 py-4">
+        <div className="max-w-2xl mx-auto flex items-center justify-between gap-3">
+
+          {/* Left: Cancel / Back */}
+          {step === 0 ? (
             <Link
-              to="/service-centers"
-              className="w-full sm:w-auto px-6 py-3 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition-colors text-center"
+              to="/admin"
+              className="px-5 py-2.5 border border-gray-300 text-gray-600 text-sm font-semibold rounded-xl hover:bg-gray-50 transition-colors"
             >
-              {t("adminCreateCenter.actions.cancel")}
+              Cancel
             </Link>
+          ) : (
             <button
-              type="submit"
+              type="button"
+              onClick={back}
+              className="px-5 py-2.5 border border-gray-300 text-gray-600 text-sm font-semibold rounded-xl hover:bg-gray-50 transition-colors flex items-center gap-1.5"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back
+            </button>
+          )}
+
+          {/* Right: Next / Create */}
+          {step < STEPS.length - 1 ? (
+            <button
+              type="button"
+              onClick={next}
+              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors flex items-center gap-1.5"
+            >
+              Next
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={submit}
               disabled={submitting}
-              className="w-full sm:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
+              className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl transition-colors flex items-center gap-2"
             >
               {submitting ? (
                 <>
-                  <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                   </svg>
-                  {t("adminCreateCenter.actions.creating")}
+                  Creating…
                 </>
               ) : (
                 <>
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
-                  {t("adminCreateCenter.actions.create")}
+                  Create Center
                 </>
               )}
             </button>
-          </div>
-        </form>
-      </main>
+          )}
+
+        </div>
+      </div>
+
     </div>
   );
 }
