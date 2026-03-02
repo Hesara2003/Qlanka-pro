@@ -34,12 +34,12 @@ export default function AdminServiceCentersPage() {
     });
 
     return (
-        <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div className="px-10 py-8">
             {/* Page Header */}
             <div className="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('serviceCenters.title')}</h1>
-                    <p className="text-gray-600">
+                    <h1 className="text-[26px] font-bold text-gray-900 tracking-tight mb-2">{t('serviceCenters.title')}</h1>
+                    <p className="text-gray-400 text-[13px] font-bold mt-1 uppercase tracking-widest">
                         {t('serviceCenters.subtitle')}
                     </p>
                 </div>
@@ -69,7 +69,7 @@ export default function AdminServiceCentersPage() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder={t('serviceCenters.searchPlaceholder')}
-                    className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
+                    className="block w-full pl-10 pr-10 py-3 border border-gray-200 rounded-xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-transparent transition-all"
                 />
                 {searchQuery && (
                     <button
@@ -85,38 +85,38 @@ export default function AdminServiceCentersPage() {
             </div>
 
             {/* Filter Buttons */}
-            <div className="flex flex-wrap gap-3 mb-6">
+            <div className="flex flex-wrap gap-3 mb-8">
                 <button
                     onClick={() => setFilter("all")}
-                    className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 ${filter === "all"
-                            ? "bg-blue-600 text-white shadow-md"
-                            : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+                    className={`px-4 py-2 rounded-full font-bold text-[13px] transition-colors shadow-sm ${filter === "all"
+                        ? "bg-black text-white"
+                        : "bg-white text-gray-500 hover:text-gray-900 border border-gray-200 hover:bg-gray-50"
                         }`}
                 >
                     {t('serviceCenters.filters.allCenters')}
-                    <span className="ml-2 text-xs opacity-75">({centers.length})</span>
+                    <span className="ml-2 text-[11px] opacity-75">({centers.length})</span>
                 </button>
                 <button
                     onClick={() => setFilter("available")}
-                    className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 ${filter === "available"
-                            ? "bg-green-600 text-white shadow-md"
-                            : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+                    className={`px-4 py-2 rounded-full font-bold text-[13px] transition-colors shadow-sm ${filter === "available"
+                        ? "bg-emerald-100 text-emerald-700 pointer-events-none border border-emerald-200"
+                        : "bg-white text-gray-500 hover:text-gray-900 border border-gray-200 hover:bg-gray-50"
                         }`}
                 >
                     {t('serviceCenters.filters.available')}
-                    <span className="ml-2 text-xs opacity-75">
+                    <span className="ml-2 text-[11px] opacity-75">
                         ({centers.filter((c) => c.isAvailable && c.isActive).length})
                     </span>
                 </button>
                 <button
                     onClick={() => setFilter("unavailable")}
-                    className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 ${filter === "unavailable"
-                            ? "bg-red-600 text-white shadow-md"
-                            : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+                    className={`px-4 py-2 rounded-full font-bold text-[13px] transition-colors shadow-sm ${filter === "unavailable"
+                        ? "bg-red-100 text-red-700 pointer-events-none border border-red-200"
+                        : "bg-white text-gray-500 hover:text-gray-900 border border-gray-200 hover:bg-gray-50"
                         }`}
                 >
                     {t('serviceCenters.filters.unavailable')}
-                    <span className="ml-2 text-xs opacity-75">
+                    <span className="ml-2 text-[11px] opacity-75">
                         ({centers.filter((c) => !c.isAvailable || !c.isActive).length})
                     </span>
                 </button>
@@ -125,7 +125,7 @@ export default function AdminServiceCentersPage() {
             {/* Refresh controls — SCRUM-68 */}
             <div className="flex items-center justify-end gap-3 mb-4 min-h-[28px]">
                 {lastUpdated && (
-                    <span className="text-xs text-gray-400">
+                    <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">
                         {t('serviceCenters.lastUpdated', { time: lastUpdated.toLocaleTimeString() })}
                     </span>
                 )}
@@ -133,10 +133,10 @@ export default function AdminServiceCentersPage() {
                     onClick={refresh}
                     disabled={loading}
                     aria-label="Refresh service centers"
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-40"
+                    className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-gray-500 hover:text-gray-900 bg-white border border-gray-200 rounded-full transition-colors shadow-sm disabled:opacity-40"
                 >
-                    <svg className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    <svg className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>
                     {t('common.refresh')}
                 </button>
