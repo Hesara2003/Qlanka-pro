@@ -16,9 +16,11 @@ interface Stats {
 }
 
 // ── Module-level cache — survives re-mounts, cleared on manual refresh ──────
-let _cachedStats:    Stats | null   = null;
-let _cachedUsers:    AdminUser[]    = [];
-let _cachePopulated: boolean        = false;
+let _cachedStats:    Stats | null        = null;
+let _cachedUsers:    AdminUser[]         = [];
+let _cachePopulated: boolean             = false;
+// Single in-flight promise — prevents duplicate requests (React StrictMode, etc.)
+let _inflightFetch:  Promise<void> | null = null;
 
 const ACTIONS = [
   {
@@ -73,42 +75,51 @@ export default function AdminDashboardPage() {
   const [allUsers, setAllUsers] = useState<AdminUser[]>(_cachedUsers);
   const [loading,  setLoading]  = useState(!_cachePopulated);
 
-  async function fetchData(force = false) {
+  function fetchData(force = false, signal?: { cancelled: boolean }) {
     if (_cachePopulated && !force) return;
-    setLoading(true);
-    let cancelled = false;
-    try {
-      const [centers, users] = await Promise.all([
-        getAllServiceCenters(),
-        getAdminUsers(),
-      ]);
-      const nextStats: Stats = {
-        centers: centers.length,
-        users: users.length,
-        activeUsers: users.filter((u) => u.isActive).length,
-      };
-      // Save to module cache
-      _cachedStats    = nextStats;
-      _cachedUsers    = users;
-      _cachePopulated = true;
-      if (!cancelled) {
-        setAllUsers(users);
-        setStats(nextStats);
-      }
-    } catch {
-      if (!cancelled) {
-        setAllUsers([]);
-        setStats({ centers: 0, users: 0, activeUsers: 0 });
-      }
-    } finally {
-      if (!cancelled) setLoading(false);
+
+    // If a fetch is already in flight, attach to it instead of firing another
+    if (!_inflightFetch) {
+      _inflightFetch = (async () => {
+        try {
+          const [centers, users] = await Promise.all([
+            getAllServiceCenters(),
+            getAdminUsers(),
+          ]);
+          const nextStats: Stats = {
+            centers: centers.length,
+            users: users.length,
+            activeUsers: users.filter((u) => u.isActive).length,
+          };
+          _cachedStats    = nextStats;
+          _cachedUsers    = users;
+          _cachePopulated = true;
+        } catch {
+          // leave cache empty; each subscriber handles its own error state
+        } finally {
+          _inflightFetch = null;
+        }
+      })();
     }
+
+    setLoading(true);
+    _inflightFetch.then(() => {
+      if (signal?.cancelled) return;
+      if (_cachedStats) {
+        setStats(_cachedStats);
+        setAllUsers(_cachedUsers);
+      } else {
+        setStats({ centers: 0, users: 0, activeUsers: 0 });
+        setAllUsers([]);
+      }
+      setLoading(false);
+    });
   }
 
   useEffect(() => {
-    let cancelled = false;
-    void fetchData();
-    return () => { cancelled = true; };
+    const signal = { cancelled: false };
+    fetchData(false, signal);
+    return () => { signal.cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -199,7 +210,7 @@ export default function AdminDashboardPage() {
               <p className="text-[13px] font-semibold text-white/80 leading-snug mb-4">
                 All services running normally.
               </p>
-              <button onClick={() => { _cachePopulated = false; void fetchData(true); }} className="bg-black/40 hover:bg-black/60 text-white text-xs font-bold px-4 py-2 rounded-full transition-colors">
+              <button onClick={() => { _cachePopulated = false; _inflightFetch = null; fetchData(true); }} className="bg-black/40 hover:bg-black/60 text-white text-xs font-bold px-4 py-2 rounded-full transition-colors">
                 Refresh
               </button>
             </div>
