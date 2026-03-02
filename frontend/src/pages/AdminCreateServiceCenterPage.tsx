@@ -400,7 +400,7 @@ export default function AdminCreateServiceCenterPage() {
           {/* Step 2 – Location                                                */}
           {/* ──────────────────────────────────────────────────────────────── */}
           {step === 1 && (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
+            <div className="bg-white rounded-3xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-gray-100 p-8 space-y-6">
               {/* Address */}
               <div>
                 <Label required>Full Address</Label>
@@ -443,7 +443,7 @@ export default function AdminCreateServiceCenterPage() {
           {/* Step 3 – Operating Hours                                         */}
           {/* ──────────────────────────────────────────────────────────────── */}
           {step === 2 && (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
+            <div className="bg-white rounded-3xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-gray-100 p-8 space-y-6">
               <p className="text-sm text-gray-500">
                 Set the default opening and closing times. Per-day overrides can be configured after creation.
               </p>
@@ -493,10 +493,10 @@ export default function AdminCreateServiceCenterPage() {
           {/* Step 4 – Capacity & Settings + Summary                           */}
           {/* ──────────────────────────────────────────────────────────────── */}
           {step === 3 && (
-            <div className="space-y-5">
+            <div className="space-y-6">
 
               {/* Capacity fields */}
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
+              <div className="bg-white rounded-3xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-gray-100 p-8 space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label required>Daily Capacity</Label>
@@ -552,9 +552,9 @@ export default function AdminCreateServiceCenterPage() {
               </div>
 
               {/* Summary card */}
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Review before submitting</p>
-                <div className="space-y-2.5">
+              <div className="bg-white rounded-3xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-gray-100 p-8">
+                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-6">Review before submitting</p>
+                <div className="space-y-3">
                   {([
                     ["Name", form.name],
                     ["Address", form.address],
@@ -566,9 +566,9 @@ export default function AdminCreateServiceCenterPage() {
                     ["Avg. time", `${form.averageServiceTimeMinutes} min`],
                     ["Status", form.isActive ? "Active" : "Inactive"],
                   ] as [string, string][]).map(([k, v]) => (
-                    <div key={k} className="flex justify-between text-sm py-1 border-b border-gray-50 last:border-0">
-                      <span className="text-gray-500 font-medium">{k}</span>
-                      <span className={`text-right ml-4 font-medium truncate max-w-[220px] ${k === "Status" ? (form.isActive ? "text-emerald-600" : "text-gray-400") : "text-gray-800"
+                    <div key={k} className="flex justify-between text-[13px] py-1.5 border-b border-gray-50 last:border-0">
+                      <span className="text-gray-500 font-bold">{k}</span>
+                      <span className={`text-right ml-4 font-bold truncate max-w-[220px] ${k === "Status" ? (form.isActive ? "text-emerald-600" : "text-gray-400") : "text-gray-900"
                         }`}>{v}</span>
                     </div>
                   ))}
@@ -589,7 +589,7 @@ export default function AdminCreateServiceCenterPage() {
           {step === 0 ? (
             <Link
               to="/admin"
-              className="px-5 py-2.5 border border-gray-300 text-gray-600 text-sm font-semibold rounded-xl hover:bg-gray-50 transition-colors"
+              className="px-6 py-2.5 border border-gray-200 text-gray-500 text-[13px] font-bold rounded-full hover:text-gray-900 hover:bg-gray-50 transition-colors shadow-sm"
             >
               Cancel
             </Link>
@@ -597,10 +597,10 @@ export default function AdminCreateServiceCenterPage() {
             <button
               type="button"
               onClick={back}
-              className="px-5 py-2.5 border border-gray-300 text-gray-600 text-sm font-semibold rounded-xl hover:bg-gray-50 transition-colors flex items-center gap-1.5"
+              className="px-6 py-2.5 border border-gray-200 text-gray-500 text-[13px] font-bold rounded-full hover:text-gray-900 hover:bg-gray-50 transition-colors flex items-center gap-2 shadow-sm"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
               </svg>
               Back
             </button>
@@ -611,11 +611,11 @@ export default function AdminCreateServiceCenterPage() {
             <button
               type="button"
               onClick={next}
-              className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-colors flex items-center gap-1.5"
+              className="px-6 py-2.5 bg-black hover:bg-gray-900 text-white text-[13px] font-bold rounded-full transition-colors flex items-center gap-2 shadow-sm"
             >
               Next
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
               </svg>
             </button>
           ) : (
@@ -623,7 +623,7 @@ export default function AdminCreateServiceCenterPage() {
               type="button"
               onClick={submit}
               disabled={submitting}
-              className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-xl transition-colors flex items-center gap-2"
+              className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 disabled:cursor-not-allowed text-white text-[13px] font-bold rounded-full transition-colors flex items-center gap-2 shadow-sm"
             >
               {submitting ? (
                 <>
@@ -636,7 +636,7 @@ export default function AdminCreateServiceCenterPage() {
               ) : (
                 <>
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                   </svg>
                   Create Center
                 </>
