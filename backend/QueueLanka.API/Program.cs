@@ -107,13 +107,14 @@ builder.Services.AddScoped<IServiceCenterService, ServiceCenterService>();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddScoped<IUserManagementService, UserManagementService>();
 
 // ── CORS (development) ────────────────────────────────────────
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
-        policy.SetIsOriginAllowed(origin => true) // Allow any localhost/127.0.0.1 port for local dev
+        policy.WithOrigins(
+                  "http://localhost:3000",
+                  "http://localhost:5173")
               .AllowAnyHeader()
               .AllowAnyMethod());
 });

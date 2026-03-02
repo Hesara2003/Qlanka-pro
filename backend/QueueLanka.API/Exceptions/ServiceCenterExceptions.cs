@@ -40,18 +40,6 @@ public class InvalidServiceCenterDataException : AppException
 }
 
 /// <summary>
-/// Exception thrown when a service center with the same name and address already exists — SCRUM-65.
-/// </summary>
-public class DuplicateServiceCenterException : AppException
-{
-    public DuplicateServiceCenterException(string name, string address)
-        : base(409, "DUPLICATE_SERVICE_CENTER",
-               $"A service center named \"{name}\" already exists at \"{address}\".")
-    {
-    }
-}
-
-/// <summary>
 /// Exception for database or data access errors - SCRUM-29
 /// </summary>
 public class DataAccessException : AppException
@@ -59,17 +47,10 @@ public class DataAccessException : AppException
     public DataAccessException(string message, Exception? innerException = null)
         : base(500, "DATA_ACCESS_ERROR", message)
     {
-    }
-}
-
-/// <summary>
-/// Exception thrown when a center_locations row is requested but does not exist — SCRUM-74.
-/// </summary>
-public class LocationNotFoundException : AppException
-{
-    public LocationNotFoundException(int centerId)
-        : base(404, "LOCATION_NOT_FOUND",
-               $"No location record found for service center {centerId}.")
-    {
+        if (innerException != null)
+        {
+            // Store inner exception for logging purposes
+            Data["InnerException"] = innerException.Message;
+        }
     }
 }

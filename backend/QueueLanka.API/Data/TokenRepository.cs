@@ -172,16 +172,15 @@ public class TokenRepository : ITokenRepository
         return affected > 0;
     }
 
-    public async Task<bool> CancelAndShiftQueueAsync(int tokenId, int userId, bool isAdmin = false)
+    public async Task<bool> CancelAndShiftQueueAsync(int tokenId, int userId)
     {
-        const string sql = "CALL sp_cancel_token_shift_queue(@TokenId, @UserId, @IsAdmin, @Success)";
+        const string sql = "CALL sp_cancel_token_shift_queue(@TokenId, @UserId, @Success)";
 
         await using var conn = new MySqlConnection(_connectionString);
         await conn.OpenAsync();
         await using var cmd = new MySqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@TokenId", tokenId);
         cmd.Parameters.AddWithValue("@UserId", userId);
-        cmd.Parameters.AddWithValue("@IsAdmin", isAdmin ? (byte)1 : (byte)0);
 
         // OUT parameter — MySQL sends it back as a result-set row.
         var successParam = new MySqlParameter("@Success", MySqlDbType.Byte)

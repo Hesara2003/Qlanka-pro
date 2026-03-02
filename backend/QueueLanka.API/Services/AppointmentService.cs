@@ -1,9 +1,9 @@
 using QueueLanka.API.Data;
 using QueueLanka.API.DTOs.Appointment;
-using QueueLanka.API.Exceptions;
 using QueueLanka.API.Models;
 
 namespace QueueLanka.API.Services;
+
 public class AppointmentService : IAppointmentService
 {
     private readonly IAppointmentRepository _appointmentRepository;
@@ -80,36 +80,49 @@ public class AppointmentService : IAppointmentService
                 throw new InvalidOperationException($"Requested time is outside operating hours ({openTime} to {closeTime}).");
         }
 
-        // 4, 5, 6, 7. Atomic Booking (Conflict / Duplicate / Capacity / Insert)
+        // 4. Conflict Resolution: Double Booking
+        bool hasConflict = await _appointmentRepository.HasConflictAsync(center.CenterId, requestedDate, requestedTime);
+        if (hasConflict)
+        {
+            throw new InvalidOperationException("This time slot is already booked. Please select another time.");
+        }
+
+        // 5. Capacity Check: Is the center full for this day?
+        int currentTokenCount = await _tokenRepository.CountByCenterAndDateAsync(center.CenterId, requestedDate);
+        if (center.Capacity > 0 && currentTokenCount >= center.Capacity)
+        {
+            throw new InvalidOperationException("This center is fully booked for the selected date. Please choose another date.");
+        }
+
+        // 6. Save the Appointment FIRST
+        var appointment = new Appointment
+        {
+            CenterId = center.CenterId,
+            UserId = userId,
+            AppointmentDate = requestedDate,
+            AppointmentTime = requestedTime,
+            Status = "Scheduled"
+        };
+        var createdAppointment = await _appointmentRepository.CreateAsync(appointment);
+
+        // 6. Generate Unique Token
+        // Format: TKN-[CenterId]-[Short Date]-[Random Hex]
         string shortDate = requestedDate.ToString("yyMMdd");
         string randomHex = Guid.NewGuid().ToString("N").Substring(0, 4).ToUpper();
         string tokenNumber = $"TKN-{center.CenterId}-{shortDate}-{randomHex}";
 
-        var (apptId, tokenId, resultCode) = await _appointmentRepository.BookAtomicAsync(
-            center.CenterId, userId, requestedDate, requestedTime, tokenNumber, center.Capacity);
-
-        switch (resultCode)
+        // 7. Save the Token linked to the Appointment
+        var token = new Token
         {
-            case "CENTER_NOT_FOUND":
-                throw new ArgumentException("Service center not found or is currently inactive.");
-            case "DUPLICATE_BOOKING":
-                throw new DuplicateBookingException();
-            case "TIME_CONFLICT":
-                throw new InvalidOperationException("This time slot is already booked. Please select another time.");
-            case "CENTER_FULL":
-                throw new CenterFullException();
-            case "SUCCESS":
-                break;
-            default:
-                throw new Exception($"Unexpected error during atomic booking: {resultCode}");
-        }
-
-        // We need the instances for the notification service
-        var createdAppointment = await _appointmentRepository.GetByIdAsync(apptId);
-        var createdToken = await _tokenRepository.GetByIdAsync(tokenId);
-
-        if (createdAppointment == null || createdToken == null)
-            throw new Exception("Booking succeeded but records could not be retrieved.");
+            CenterId = center.CenterId,
+            UserId = userId,
+            AppointmentId = createdAppointment.AppointmentId,
+            TokenNumber = tokenNumber,
+            IssuedDate = requestedDate,
+            Status = "Waiting",
+            IssuedTime = DateTime.UtcNow // Exact time the token was issued
+        };
+        var createdToken = await _tokenRepository.CreateAsync(token);
 
         // 8. Dispatch Async Notifications (Fire-And-Forget so we don't block the HTTP Response)
         _ = Task.Run(async () =>

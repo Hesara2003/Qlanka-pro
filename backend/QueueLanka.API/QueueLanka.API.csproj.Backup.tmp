@@ -8,10 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Exclude the test sub-project so its .cs files are not compiled into the API -->
-    <Compile Remove="QueueLanka.API.Tests\**" />
-    <None Remove="QueueLanka.API.Tests\**" />
-    <EmbeddedResource Remove="QueueLanka.API.Tests\**" />
+    <None Include="QueueLanka.API.Tests\QueueLanka.API.Tests.csproj" />
   </ItemGroup>
 
   <ItemGroup>

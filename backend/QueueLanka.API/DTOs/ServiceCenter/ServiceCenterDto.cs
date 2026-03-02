@@ -16,9 +16,4 @@ public class ServiceCenterDto
     public bool IsAvailable { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
-
-    /// <summary>
-    /// Structured location detail. Null when no location row exists for the center yet.
-    /// </summary>
-    public CenterLocationDto? Location { get; set; }
 }
