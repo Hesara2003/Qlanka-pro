@@ -58,10 +58,10 @@ public class UserManagementService : IUserManagementService
         // Append audit log entry
         await _userRepository.AddAuditLogAsync(new UserAuditLog
         {
-            UserId    = userId,
-            ChangedBy = requestingAdminId,
-            ChangeType = "DELETE",
-            Notes     = "Soft-deleted by admin via Admin Users panel (SCRUM-78)"
+            UserId      = userId,
+            PerformedBy = requestingAdminId,
+            Action      = AuditAction.Deleted,
+            Notes       = "Soft-deleted by admin via Admin Users panel (SCRUM-78)"
         });
     }
 
