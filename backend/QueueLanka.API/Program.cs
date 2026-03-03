@@ -109,6 +109,9 @@ builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IUserManagementService, UserManagementService>();
 
+// ── Health checks ─────────────────────────────────────────────
+builder.Services.AddHealthChecks();
+
 // ── CORS (development) ────────────────────────────────────────
 builder.Services.AddCors(options =>
 {
@@ -123,12 +126,13 @@ var app = builder.Build();
 // ── Middleware pipeline ────────────────────────────────────────
 app.UseMiddleware<ExceptionMiddleware>();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-else
+// Health check endpoint (used by CI/CD deployment verification)
+app.MapHealthChecks("/health");
+
+app.UseSwagger();
+app.UseSwaggerUI();
+
+if (app.Environment.IsProduction())
 {
     app.UseHttpsRedirection();
 }

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
 import { getAllServiceCenters } from "../api/serviceCenterApi";
 import { getAdminUsers } from "../api/userApi";
 import type { AdminUser } from "../types/user";
@@ -68,7 +67,6 @@ const ACTIONS = [
 ];
 
 export default function AdminDashboardPage() {
-  const { user } = useAuth();
 
   // Seed from cache instantly — no loading flash on re-visit
   const [stats,    setStats]    = useState<Stats | null>(_cachedStats);
