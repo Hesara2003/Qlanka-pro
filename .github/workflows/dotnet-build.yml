@@ -1,14 +1,20 @@
-name: .NET Build CI
+name: CI / CD Pipeline
 
 on:
   push:
-    branches: [ "develop", "production" ]
   pull_request:
-    branches: [ "develop", "production" ]
+
+env:
+  AZURE_WEBAPP_URL: https://queuelanka-api-fwhthqd4g9e0aee2.centralindia-01.azurewebsites.net
 
 jobs:
-  build:
+  # ─────────────────────────────────────────────
+  # JOB 1 – Build & test (runs on every push/PR)
+  # ─────────────────────────────────────────────
+  build-and-test:
+    name: Build & Test
     runs-on: windows-latest
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -23,3 +29,128 @@ jobs:
 
     - name: Build solution
       run: dotnet build Qlanka-pro.sln --configuration Release --no-restore
+
+    - name: Verify build succeeded
+      run: |
+        if ($LASTEXITCODE -ne 0) {
+          Write-Error "Build failed with exit code $LASTEXITCODE"
+          exit 1
+        }
+        Write-Host "Build completed successfully."
+
+    - name: Run tests
+      run: dotnet test Qlanka-pro.sln --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --logger "trx;LogFileName=test-results.trx"
+
+    - name: Verify tests succeeded
+      run: |
+        if ($LASTEXITCODE -ne 0) {
+          Write-Error "Tests failed with exit code $LASTEXITCODE"
+          exit 1
+        }
+        Write-Host "All tests passed successfully."
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: "**/*.trx"
+
+    - name: Upload coverage reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-reports
+        path: "**/coverage.cobertura.xml"
+
+    # Publish the API and stash the artefact for the deploy job
+    - name: Publish backend
+      if: github.event_name == 'push' && github.ref == 'refs/heads/prod'
+      run: dotnet publish backend/QueueLanka.API/QueueLanka.API.csproj --configuration Release --no-build --output ./publish/backend
+
+    - name: Upload backend artefact
+      if: github.event_name == 'push' && github.ref == 'refs/heads/prod'
+      uses: actions/upload-artifact@v4
+      with:
+        name: backend-publish
+        path: ./publish/backend
+
+  # ─────────────────────────────────────────────
+  # JOB 2 – Deploy backend to Azure App Service
+  #         (push to prod branch only)
+  # ─────────────────────────────────────────────
+  deploy-backend:
+    name: Deploy Backend → Azure App Service
+    runs-on: windows-latest
+    needs: build-and-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/prod'
+    environment:
+      name: prod
+      url: ${{ env.AZURE_WEBAPP_URL }}
+
+    steps:
+    - name: Download backend artefact
+      uses: actions/download-artifact@v4
+      with:
+        name: backend-publish
+        path: ./publish/backend
+
+    - name: Deploy to Azure App Service
+      uses: azure/webapps-deploy@v3
+      with:
+        app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        package: ./publish/backend
+
+    - name: Verify backend deployment
+      run: |
+        $url = "${{ env.AZURE_WEBAPP_URL }}/health"
+        Write-Host "Checking $url ..."
+        $response = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 30
+        if ($response.StatusCode -ne 200) {
+          Write-Error "Health check failed – HTTP $($response.StatusCode)"
+          exit 1
+        }
+        Write-Host "Backend deployment verified – HTTP $($response.StatusCode)"
+
+  # ─────────────────────────────────────────────
+  # JOB 3 – Build & deploy frontend to Azure Static Web Apps
+  #         (push to prod branch only)
+  # ─────────────────────────────────────────────
+  deploy-frontend:
+    name: Deploy Frontend → Azure Static Web Apps
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/prod'
+    environment:
+      name: prod
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install frontend dependencies
+      working-directory: frontend
+      run: npm ci
+
+    - name: Build frontend
+      working-directory: frontend
+      run: npm run build
+      env:
+        VITE_API_BASE_URL: ${{ env.AZURE_WEBAPP_URL }}
+
+    - name: Deploy to Azure Static Web Apps
+      uses: Azure/static-web-apps-deploy@v1
+      with:
+        azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        action: upload
+        app_location: frontend
+        output_location: dist
