@@ -6,7 +6,7 @@ on:
 
 env:
   AZURE_WEBAPP_URL: https://queuelanka-api-fwhthqd4g9e0aee2.centralindia-01.azurewebsites.net
-  AZURE_FRONTEND_URL: https://${{ secrets.AZURE_FRONTEND_WEBAPP_NAME }}.azurewebsites.net
+  AZURE_FRONTEND_URL: https://queuelanka-frontend-hrcvdec5dnach0aj.centralindia-01.azurewebsites.net
 
 jobs:
   # ─────────────────────────────────────────────
