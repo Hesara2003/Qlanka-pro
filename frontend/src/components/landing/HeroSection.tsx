@@ -17,19 +17,6 @@ export default function HeroSection() {
         visible: { opacity: 1, y: 0 }
     };
 
-    const floatAnimation = (delay: number) => ({
-        initial: { y: 0 },
-        animate: {
-            y: [-10, 10, -10],
-            transition: {
-                duration: 5,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: delay
-            }
-        }
-    });
-
     return (
         <section className="relative w-full bg-[#fcfcfc] overflow-hidden pt-28 lg:pt-32 pb-12 font-sans flex flex-col justify-center min-h-[calc(100vh-80px)] border-b border-gray-100">
             
