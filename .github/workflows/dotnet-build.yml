@@ -13,7 +13,7 @@ jobs:
   # ─────────────────────────────────────────────
   build-and-test:
     name: Build & Test
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout repository
@@ -50,7 +50,7 @@ jobs:
     # Publish the API and stash the artefact for the deploy job
     - name: Publish backend
       if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
-      run: dotnet publish backend/QueueLanka.API/QueueLanka.API.csproj --configuration Release --no-build --output ./publish/backend
+      run: dotnet publish backend/QueueLanka.API/QueueLanka.API.csproj --configuration Release --no-build --runtime linux-x64 --self-contained false --output ./publish/backend
 
     - name: Upload backend artefact
       if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
@@ -65,7 +65,7 @@ jobs:
   # ─────────────────────────────────────────────
   deploy-backend:
     name: Deploy Backend → Azure App Service
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     needs: build-and-test
     if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     environment:
@@ -87,28 +87,20 @@ jobs:
         package: ./publish/backend
 
     - name: Wait for App Service to be ready
-      run: Start-Sleep -Seconds 30
+      run: sleep 60
 
     - name: Verify backend deployment
       run: |
-        $url = "${{ env.AZURE_WEBAPP_URL }}/health"
-        $maxAttempts = 10
-        $delaySeconds = 15
-        Write-Host "Checking $url ..."
-        for ($i = 1; $i -le $maxAttempts; $i++) {
-          try {
-            $response = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 30
-            if ($response.StatusCode -eq 200) {
-              Write-Host "Backend deployment verified – HTTP $($response.StatusCode) (attempt $i)"
-              exit 0
-            }
-          } catch {
-            Write-Host "Attempt $i/$maxAttempts failed: $($_.Exception.Message)"
-          }
-          if ($i -lt $maxAttempts) {
-            Write-Host "Retrying in $delaySeconds seconds..."
-            Start-Sleep -Seconds $delaySeconds
-          }
-        }
-        Write-Error "Health check failed after $maxAttempts attempts."
+        url="${{ env.AZURE_WEBAPP_URL }}/health"
+        echo "Checking $url ..."
+        for i in $(seq 1 15); do
+          status=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "$url" || echo "000")
+          if [ "$status" = "200" ]; then
+            echo "Backend deployment verified – HTTP $status (attempt $i)"
+            exit 0
+          fi
+          echo "Attempt $i/15 – HTTP $status. Retrying in 20 seconds..."
+          sleep 20
+        done
+        echo "Health check failed after 15 attempts."
         exit 1
