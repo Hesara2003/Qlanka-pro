@@ -86,13 +86,29 @@ jobs:
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
         package: ./publish/backend
 
+    - name: Wait for App Service to be ready
+      run: Start-Sleep -Seconds 30
+
     - name: Verify backend deployment
       run: |
         $url = "${{ env.AZURE_WEBAPP_URL }}/health"
+        $maxAttempts = 10
+        $delaySeconds = 15
         Write-Host "Checking $url ..."
-        $response = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 30
-        if ($response.StatusCode -ne 200) {
-          Write-Error "Health check failed – HTTP $($response.StatusCode)"
-          exit 1
+        for ($i = 1; $i -le $maxAttempts; $i++) {
+          try {
+            $response = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 30
+            if ($response.StatusCode -eq 200) {
+              Write-Host "Backend deployment verified – HTTP $($response.StatusCode) (attempt $i)"
+              exit 0
+            }
+          } catch {
+            Write-Host "Attempt $i/$maxAttempts failed: $($_.Exception.Message)"
+          }
+          if ($i -lt $maxAttempts) {
+            Write-Host "Retrying in $delaySeconds seconds..."
+            Start-Sleep -Seconds $delaySeconds
+          }
         }
-        Write-Host "Backend deployment verified – HTTP $($response.StatusCode)"
+        Write-Error "Health check failed after $maxAttempts attempts."
+        exit 1
