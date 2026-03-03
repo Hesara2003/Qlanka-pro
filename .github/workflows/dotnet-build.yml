@@ -31,21 +31,21 @@ jobs:
       run: dotnet build Qlanka-pro.sln --configuration Release --no-restore
 
     - name: Run tests
-      run: dotnet test Qlanka-pro.sln --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --logger "trx;LogFileName=test-results.trx"
+      run: dotnet test Qlanka-pro.sln --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --logger "trx;LogFileName=test-results.trx" --results-directory ./TestResults
 
     - name: Upload test results
       if: always()
       uses: actions/upload-artifact@v4
       with:
         name: test-results
-        path: "**/*.trx"
+        path: ./TestResults/**/*.trx
 
     - name: Upload coverage reports
       if: always()
       uses: actions/upload-artifact@v4
       with:
         name: coverage-reports
-        path: "**/coverage.cobertura.xml"
+        path: ./TestResults/**/coverage.cobertura.xml
 
     # Publish the API and stash the artefact for the deploy job
     - name: Publish backend
