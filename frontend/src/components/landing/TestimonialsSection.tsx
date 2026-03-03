@@ -1,97 +1,153 @@
+import { motion } from "framer-motion";
+
 export default function TestimonialsSection() {
-    const testimonials = [
-        {
-            text: "This task manager has completely transformed the way my team works. We now collaborate in real-time and always meet deadlines.",
-            name: "John D.",
-            role: "Marketing Lead",
-            avatar: "bg-blue-100 text-blue-600",
-            height: "h-[220px]"
-        },
-        {
-            text: "An essential tool for anyone looking to manage their tasks better.",
-            name: "Sarah W.",
-            role: "Freelance Designer",
-            avatar: "bg-purple-100 text-purple-600",
-            height: "h-[160px]"
-        },
-        {
-            text: "The built-in analytics give me a complete overview of our team's productivity.",
-            name: "Sam J.",
-            role: "Project Coordinator",
-            avatar: "bg-orange-100 text-orange-600",
-            height: "h-[180px]"
-        },
-        {
-            text: "I love how easy it is to create and assign tasks. The platform's interface makes work feel less overwhelming.",
-            name: "Daniela T.",
-            role: "Operations Manager",
-            avatar: "bg-green-100 text-green-600",
-            height: "h-[200px]"
-        },
-        {
-            text: "The time-tracking feature has been a game-changer for my freelance projects. It helps me stay organized and productive.",
-            name: "Alex M.",
-            role: "Freelance Developer",
-            avatar: "bg-red-100 text-red-600",
-            height: "h-[260px]"
-        }
-    ];
+    const fadeUp = {
+        hidden: { opacity: 0, y: 30 },
+        visible: { opacity: 1, y: 0 }
+    };
 
     return (
-        <section className="py-24 bg-[#fafafa] relative overflow-hidden">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center">
+        <section className="py-20 lg:py-28 bg-[#fcfcfc] overflow-hidden font-sans border-t border-gray-100">
+            <div className="max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-12">
 
-                {/* Header Section */}
-                <div className="text-center mb-16 max-w-2xl">
-                    <span className="inline-block py-1.5 px-4 rounded-full border border-gray-200 text-xs font-semibold text-gray-500 mb-6 bg-white shadow-sm">
-                        Testimonials
-                    </span>
-                    <h2 className="text-4xl md:text-5xl font-bold text-gray-900 tracking-tight leading-tight">
-                        People just like you <br /> are already using QueueLanka
-                    </h2>
+                {/* Header */}
+                <div className="text-center mb-16">
+                    <motion.div 
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true }}
+                        variants={fadeUp}
+                        transition={{ duration: 0.6 }}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-gray-200 text-[#0a5c4e] font-semibold text-xs tracking-wider uppercase mb-6 shadow-sm"
+                    >
+                        <span className="w-2 h-2 rounded-full bg-[#78d64b]"></span> Our Pricing
+                    </motion.div>
+                    <motion.h2 
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true }}
+                        variants={fadeUp}
+                        transition={{ duration: 0.6, delay: 0.1 }}
+                        className="text-[2.5rem] md:text-[4rem] font-bold text-[#1a1c23] leading-[1.05] tracking-tight"
+                    >
+                        Flexible Plans That Scale <br />
+                        With <span className="text-gray-400 font-normal">Your Goals</span>
+                    </motion.h2>
                 </div>
 
-                {/* Masonry Grid Simulation */}
-                <div className="w-full max-w-5xl mx-auto columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
+                {/* Pricing Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 mb-20 max-w-5xl mx-auto">
 
-                    {testimonials.map((t, idx) => (
-                        <div key={idx} className={`bg-white rounded-3xl p-8 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100 flex flex-col justify-between break-inside-avoid relative hover:-translate-y-1 transition-transform duration-300 ${t.height}`}>
-                            <p className="text-gray-700 font-medium leading-relaxed text-sm">"{t.text}"</p>
-                            <div className="flex items-center gap-3 mt-6">
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${t.avatar}`}>
-                                    {t.name.charAt(0)}
-                                </div>
-                                <div>
-                                    <p className="text-sm font-bold text-gray-900 leading-none">{t.name}</p>
-                                    <p className="text-xs text-gray-500 mt-1">{t.role}</p>
-                                </div>
-                            </div>
+                    {/* Starting Plan */}
+                    <motion.div 
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6, delay: 0.2 }}
+                        className="bg-white rounded-[2rem] p-10 lg:p-12 border border-gray-200 shadow-sm flex flex-col hover:shadow-md transition-shadow relative overflow-hidden"
+                    >
+                        <div className="inline-flex items-center gap-2 bg-gray-100 text-[#1a1c23] text-sm font-bold px-4 py-2 rounded-full mb-8 w-max">
+                            Starting Plan
+                        </div>
+                        <div className="flex items-end gap-1 mb-4">
+                            <span className="text-5xl lg:text-6xl font-black text-[#1a1c23] tracking-tighter">$50</span>
+                            <span className="text-[#6b7280] pb-2 font-semibold">/Month</span>
+                        </div>
+                        <p className="text-[#6b7280] text-[17px] mb-10 leading-relaxed max-w-sm">
+                            For small branches who want to streamline their queuing with essential tools & simple automation.
+                        </p>
+                        
+                        <button className="w-full bg-white border-2 border-[#1a1c23] text-[#1a1c23] font-bold py-4 rounded-full hover:bg-[#1a1c23] hover:text-white transition-colors mb-10">
+                            Get Started
+                        </button>
 
-                            {/* Random floating elements for style */}
-                            {idx === 0 && (
-                                <div className="absolute -left-6 top-1/2 w-12 h-12 bg-white rounded-2xl shadow-lg border border-gray-100 flex items-center justify-center -rotate-12">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path><path d="M8 10h.01"></path><path d="M12 10h.01"></path><path d="M16 10h.01"></path></svg>
-                                </div>
-                            )}
-                        </div>
-                    ))}
+                        <ul className="space-y-4 text-[15px] text-[#4b5563] font-medium">
+                            {[
+                                "Unlimited token issuing",
+                                "Basic queue tracking",
+                                "Single branch sync",
+                                "In-app notifications",
+                                "Email support"
+                            ].map((feature, i) => (
+                                <li key={i} className="flex items-center gap-4">
+                                    <div className="w-6 h-6 rounded-full bg-[#f4f4f5] flex items-center justify-center text-[#1a1c23] shrink-0">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                    </div>
+                                    {feature}
+                                </li>
+                            ))}
+                        </ul>
+                    </motion.div>
 
-                    {/* Fake Video Testimonial Card */}
-                    <div className="bg-white rounded-3xl p-2 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100 flex flex-col justify-between break-inside-avoid h-[300px] relative group overflow-hidden">
-                        <div className="w-full h-full bg-gray-200 rounded-2xl relative overflow-hidden bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=600&auto=format&fit=crop')" }}>
-                            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
-                            <div className="absolute bottom-4 left-4">
-                                <span className="bg-white/90 backdrop-blur-sm text-gray-900 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
-                                    Watch video review
-                                </span>
-                            </div>
+                    {/* Enterprise Plan */}
+                    <motion.div 
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6, delay: 0.3 }}
+                        className="bg-[#1a1c23] rounded-[2rem] p-10 lg:p-12 shadow-2xl flex flex-col text-white relative overflow-hidden"
+                    >
+                        <div className="inline-flex items-center gap-2 bg-[#272a35] text-white text-sm font-bold px-4 py-2 rounded-full mb-8 w-max">
+                            <span className="w-2 h-2 rounded-full bg-[#78d64b] animate-pulse"></span> Enterprise
                         </div>
-                        <div className="absolute -right-4 bottom-10 w-14 h-14 bg-red-600 rounded-2xl shadow-xl flex items-center justify-center rotate-12 group-hover:rotate-0 transition-transform duration-300">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                        <div className="flex items-end gap-1 mb-4 relative z-10">
+                            <span className="text-5xl lg:text-6xl font-black tracking-tighter text-white">$200</span>
+                            <span className="text-gray-400 pb-2 font-semibold">/Month</span>
                         </div>
+                        <p className="text-gray-400 text-[17px] mb-10 leading-relaxed max-w-sm relative z-10">
+                            Growing organizations needing full control, advanced analytics, and powerful cross-branch features.
+                        </p>
+                        
+                        <button className="w-full bg-[#78d64b] text-[#074b42] font-bold py-4 rounded-full hover:bg-[#68c63b] transition-colors mb-10 relative z-10">
+                            Upgrade to Enterprise
+                        </button>
+
+                        <ul className="space-y-4 text-[15px] text-gray-300 font-medium relative z-10">
+                            {[
+                                "Everything in Starting Plan",
+                                "Custom counter builder",
+                                "Advanced multi-branch dashboard",
+                                "Priority support & onboarding",
+                                "Integration with CRM & SMS"
+                            ].map((feature, i) => (
+                                <li key={i} className="flex items-center gap-4">
+                                    <div className="w-6 h-6 rounded-full bg-[#373b47] flex items-center justify-center text-[#78d64b] shrink-0">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                    </div>
+                                    {feature}
+                                </li>
+                            ))}
+                        </ul>
+                    </motion.div>
+
+                </div>
+
+                {/* Bottom Banner Image / Final CTA */}
+                <motion.div 
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true }}
+                    variants={fadeUp}
+                    transition={{ duration: 0.6, delay: 0.4 }}
+                    className="w-full bg-[#0a5c4e] rounded-[2rem] p-8 lg:p-14 flex flex-col md:flex-row items-center justify-between gap-10 shadow-xl relative overflow-hidden"
+                >
+                    <div className="absolute inset-0 z-0">
+                        <img src="https://images.unsplash.com/photo-1552581234-26160f608093?auto=format&fit=crop&w=1200&q=80" alt="Team meeting" className="w-full h-full object-cover opacity-20 mix-blend-overlay" />
                     </div>
 
-                </div>
+                    <div className="flex-1 max-w-xl relative z-10">
+                        <h3 className="text-[2.5rem] font-bold text-white mb-6 leading-tight tracking-tight">
+                            Simplify Management <br />
+                            <span className="text-[#a0ccbc]">Maximize Your Results</span>
+                        </h3>
+                        <p className="text-[17px] text-[#a0ccbc] mb-8 leading-relaxed max-w-md border-l-2 border-[#78d64b] pl-5">
+                            Streamline your entire queue process with intelligent tools designed to help you make better decisions.
+                        </p>
+                        <button className="bg-[#78d64b] hover:bg-[#68c63b] text-[#074b42] font-bold px-8 py-4 rounded-full transition-colors shadow-sm">
+                            Start Managing Now
+                        </button>
+                    </div>
+                </motion.div>
 
             </div>
         </section>

@@ -1,147 +1,169 @@
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+
+const trusted = [
+    "RCK",
+    "miro",
+    "stripe",
+    "Google",
+    "Adobe",
+    "Spotify",
+];
 
 export default function HeroSection() {
+    // Animation variants
+    const fadeUp = {
+        hidden: { opacity: 0, y: 30 },
+        visible: { opacity: 1, y: 0 }
+    };
+
+    const floatAnimation = (delay: number) => ({
+        initial: { y: 0 },
+        animate: {
+            y: [-10, 10, -10],
+            transition: {
+                duration: 5,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: delay
+            }
+        }
+    });
+
     return (
-        <section className="relative w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-24 overflow-hidden flex flex-col items-center justify-center text-center">
+        <section className="relative w-full bg-[#fcfcfc] overflow-hidden pt-28 lg:pt-32 pb-12 font-sans flex flex-col justify-center min-h-[calc(100vh-80px)] border-b border-gray-100">
+            
+            <div className="relative z-10 w-full max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-12 flex-1 flex flex-col justify-center">
+                <div className="flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-8">
+                    
+                    {/* Left Column: Text & CTAs */}
+                    <div className="flex flex-col items-start text-left lg:w-[45%] xl:w-[42%] shrink-0">
+                        <motion.h1
+                            initial="hidden"
+                            animate="visible"
+                            variants={fadeUp}
+                            transition={{ duration: 0.6, ease: "easeOut" }}
+                            className="font-bold text-[#1a1c23] leading-[1.05] tracking-tight"
+                            style={{ fontSize: "clamp(3rem, 5vw, 4.5rem)" }}
+                        >
+                            Turn Your Chaos <br />
+                            into Streamlined <br />
+                            Queues with Ease
+                        </motion.h1>
 
-            {/* Background Dot Pattern */}
-            <div className="absolute inset-0 bg-dot-pattern [mask-image:radial-gradient(ellipse_at_center,white,transparent_80%)] opacity-60 pointer-events-none" />
+                        <motion.p
+                            initial="hidden"
+                            animate="visible"
+                            variants={fadeUp}
+                            transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
+                            className="mt-6 text-[17px] text-[#6b7280] leading-relaxed font-normal max-w-md"
+                        >
+                            Set up your branches in minutes, and let our platform manage your customer wait times with breathtaking, high-efficiency workflows.
+                        </motion.p>
 
-            {/* Center Main Content */}
-            <div className="relative z-20 flex flex-col items-center max-w-3xl mt-12">
-                {/* Core Icon / Logo above title */}
-                <div className="mb-8 w-16 h-16 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex items-center justify-center border border-gray-100">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#2563EB" />
-                        <path d="M2 17L12 22L22 17" fill="#60A5FA" />
-                        <path d="M2 12L12 17L22 12" fill="#3B82F6" />
-                    </svg>
+                        <motion.div
+                            initial="hidden"
+                            animate="visible"
+                            variants={fadeUp}
+                            transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
+                            className="mt-8 flex flex-wrap items-center gap-4"
+                        >
+                            <Link
+                                to="/register"
+                                className="inline-flex items-center justify-center bg-[#1a1c23] hover:bg-black text-white text-[15px] font-semibold px-8 py-3.5 rounded-full transition-all duration-200 shadow-sm"
+                            >
+                                Start Managing
+                            </Link>
+                            <Link
+                                to="/features"
+                                className="inline-flex items-center justify-center bg-white text-[#1a1c23] border border-gray-200 text-[15px] font-semibold px-8 py-3.5 rounded-full hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-sm"
+                            >
+                                Explore Features
+                            </Link>
+                        </motion.div>
+
+                        <motion.div
+                            initial="hidden"
+                            animate="visible"
+                            variants={fadeUp}
+                            transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
+                            className="mt-10 flex items-center gap-4 text-sm text-[#6b7280] font-medium"
+                        >
+                            <div className="flex -space-x-2 shrink-0">
+                                <div className="w-10 h-10 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center overflow-hidden"><img src="https://i.pravatar.cc/100?img=33" alt="user" className="w-full h-full object-cover" /></div>
+                                <div className="w-10 h-10 rounded-full bg-gray-300 border-2 border-white flex items-center justify-center overflow-hidden"><img src="https://i.pravatar.cc/100?img=47" alt="user" className="w-full h-full object-cover" /></div>
+                                <div className="w-10 h-10 rounded-full bg-gray-400 border-2 border-white flex items-center justify-center overflow-hidden"><img src="https://i.pravatar.cc/100?img=12" alt="user" className="w-full h-full object-cover" /></div>
+                                <div className="w-10 h-10 rounded-full bg-gray-500 border-2 border-white flex items-center justify-center overflow-hidden"><img src="https://i.pravatar.cc/100?img=68" alt="user" className="w-full h-full object-cover" /></div>
+                            </div>
+                            <span className="max-w-[200px] leading-snug">Join with <strong>2100+ Users</strong> and start managing queues now</span>
+                        </motion.div>
+                    </div>
+
+                    {/* Right Column: Visual Masonry Grid w/ Real Images */}
+                    <div className="w-full lg:w-[55%] h-[480px] lg:h-[550px] relative overflow-hidden hidden md:block rounded-l-3xl">
+                         <div className="absolute right-0 top-0 h-full w-[110%] flex gap-4 lg:gap-5 px-4 transform -rotate-1 scale-105 origin-center">
+                             
+                             {/* Column 1 */}
+                             <div className="flex flex-col gap-4 lg:gap-5 w-1/3 h-[120%] translate-y-4">
+                                  <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }} className="w-full rounded-2xl h-[45%] overflow-hidden relative shadow-sm border border-gray-100">
+                                        <img src="https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&w=500&q=80" alt="Customer Service" className="w-full h-full object-cover" />
+                                  </motion.div>
+                                  <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }} className="w-full bg-[#1a1c23] rounded-2xl h-[55%] overflow-hidden relative p-5 shadow-xl flex flex-col justify-end">
+                                      <div className="mb-auto">
+                                          <div className="w-10 h-10 rounded-full bg-[#0a5c4e] text-[#78d64b] flex items-center justify-center mb-4">
+                                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                                          </div>
+                                      </div>
+                                      <h3 className="text-white font-bold text-lg leading-tight mb-2">Automated Tokens</h3>
+                                      <p className="text-gray-400 text-xs">Seamless self-service kiosk workflows.</p>
+                                  </motion.div>
+                             </div>
+
+                             {/* Column 2 */}
+                             <div className="flex flex-col gap-4 lg:gap-5 w-1/3 h-[120%] -translate-y-8">
+                                  <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }} className="w-full rounded-2xl h-[60%] overflow-hidden relative shadow-md">
+                                        <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=500&q=80" alt="Modern Waiting Area" className="w-full h-full object-cover" />
+                                  </motion.div>
+                                  <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.6 }} className="w-full rounded-2xl h-[40%] overflow-hidden relative shadow-sm border border-gray-100">
+                                        <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=500&q=80" alt="Happy Customer" className="w-full h-full object-cover" />
+                                  </motion.div>
+                             </div>
+
+                             {/* Column 3 */}
+                             <div className="flex flex-col gap-4 lg:gap-5 w-1/3 h-[120%] translate-y-12">
+                                  <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.7 }} className="w-full bg-[#78d64b] rounded-2xl h-[35%] overflow-hidden relative shadow-sm flex items-center justify-center p-6 text-center">
+                                       <div>
+                                            <span className="block text-4xl lg:text-5xl font-black text-[#074b42] tracking-tighter">98%</span>
+                                            <span className="block text-[10px] font-bold text-[#0a5c4e] mt-2 uppercase tracking-widest">Efficiency</span>
+                                       </div>
+                                  </motion.div>
+                                  <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.8 }} className="w-full rounded-2xl h-[65%] overflow-hidden relative shadow-lg bg-gray-100">
+                                        <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=500&q=80" alt="Dashboard Analytics" className="w-full h-full object-cover" />
+                                  </motion.div>
+                             </div>
+
+                         </div>
+                    </div>
+
                 </div>
 
-                <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-gray-900 leading-[1.1]">
-                    Issue, manage, and track <br className="hidden md:block" />
-                    <span className="text-gray-400">queues in one place</span>
-                </h1>
-
-                <p className="mt-6 text-lg md:text-xl text-gray-600 font-medium">
-                    Efficiently manage your service centers and boost customer satisfaction.
-                </p>
-
-                <div className="mt-10">
-                    <Link to="/register" className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3.5 px-8 rounded-xl shadow-[0_8px_20px_rgb(37,99,235,0.3)] transition-all hover:-translate-y-0.5">
-                        Get free demo
-                    </Link>
-                </div>
+                {/* Brand logos strip */}
+                <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.8, delay: 0.8 }}
+                    className="mt-12 lg:mt-16 w-full pt-8 border-t border-gray-200 flex flex-col items-center justify-center gap-4 hidden sm:flex"
+                >
+                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Trusted by industry leaders</p>
+                    <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12">
+                        {trusted.map((name, i) => (
+                            <span key={i} className="text-lg md:text-xl font-bold tracking-tight text-[#d1d5db] select-none opacity-80">
+                                {name}
+                            </span>
+                        ))}
+                    </div>
+                </motion.div>
             </div>
-
-            {/* Floating Widgets Mockups */}
-
-            {/* Top Left: Sticky Note & Checkbox */}
-            <div className="absolute top-10 left-[5%] md:left-[10%] xl:left-[15%] hidden md:block w-72 h-64 rotate-[-6deg] transition-transform hover:rotate-0 duration-500 z-10">
-                <div className="absolute top-0 right-10 w-48 h-56 bg-[#FFF8CC] rounded-sm shadow-xl p-5 border border-yellow-200/50">
-                    {/* Pin */}
-                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-4 h-4 rounded-full bg-red-500 shadow-sm z-20" />
-                    <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-1 h-3 bg-gray-400 z-10" />
-                    <p className="font-writing text-gray-800 text-lg leading-snug font-medium handwritten-font">
-                        Issue tokens quickly to keep track of waiting customers, and serve more people with ease.
-                    </p>
-                </div>
-
-                {/* Floating Checkbox over sticky note */}
-                <div className="absolute bottom-10 left-0 w-20 h-20 bg-white rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] flex items-center justify-center border border-gray-50 transform rotate-12">
-                    <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                    </div>
-                </div>
-            </div>
-
-            {/* Top Right: Reminders Calendar */}
-            <div className="absolute top-20 right-[5%] md:right-[8%] xl:right-[15%] hidden md:block w-64 h-56 rotate-[4deg] transition-transform hover:rotate-0 duration-500 z-10">
-                <div className="w-full h-full bg-white rounded-2xl shadow-[0_15px_50px_rgba(0,0,0,0.06)] border border-gray-100 p-5 flex flex-col">
-                    <div className="flex justify-between items-center mb-4">
-                        <h3 className="font-bold text-gray-900">Next in Line</h3>
-                        <span className="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded-md">Token</span>
-                    </div>
-                    <div className="flex-1 bg-gray-50 rounded-xl p-4 border border-gray-100">
-                        <h4 className="font-semibold text-gray-900 text-sm">Token #A102</h4>
-                        <p className="text-xs text-gray-500 mt-1">Counter 3 - General</p>
-                        <div className="mt-4 inline-flex items-center gap-1 bg-blue-50 text-blue-600 text-xs font-semibold px-2.5 py-1 rounded-md">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                            Est. Wait: 5 mins
-                        </div>
-                    </div>
-                </div>
-                {/* Floating Clock Icon */}
-                <div className="absolute -top-6 -left-8 w-16 h-16 bg-white rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.08)] flex items-center justify-center border border-gray-50 transform -rotate-12">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                </div>
-            </div>
-
-            {/* Bottom Left: Tasks List */}
-            <div className="absolute bottom-[-20px] left-[5%] md:left-[10%] xl:left-[15%] hidden md:block w-72 bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.06)] border border-gray-100 p-5 rotate-[-2deg] transition-transform hover:rotate-0 duration-500 z-10">
-                <h3 className="font-bold text-gray-900 mb-4">Active Queues</h3>
-                <div className="space-y-4">
-
-                    <div className="flex flex-col gap-2">
-                        <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-2">
-                                <div className="w-5 h-5 bg-orange-100 text-orange-600 rounded flex items-center justify-center text-[10px] font-bold">15</div>
-                                <span className="text-sm font-semibold text-gray-800">General Inquiries</span>
-                            </div>
-                            <div className="flex -space-x-2">
-                                <div className="w-5 h-5 rounded-full bg-gray-200 border border-white"></div>
-                                <div className="w-5 h-5 rounded-full bg-gray-300 border border-white"></div>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <span className="text-xs text-gray-400 w-12">Waiting</span>
-                            <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                <div className="w-[80%] h-full bg-orange-500 rounded-full"></div>
-                            </div>
-                            <span className="text-[10px] font-bold text-gray-500">80%</span>
-                        </div>
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                        <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-2">
-                                <div className="w-5 h-5 bg-green-100 text-green-600 rounded flex items-center justify-center text-[10px] font-bold">3</div>
-                                <span className="text-sm font-semibold text-gray-800">Premium Service</span>
-                            </div>
-                            <div className="flex -space-x-2">
-                                <div className="w-5 h-5 rounded-full bg-gray-200 border border-white"></div>
-                                <div className="w-5 h-5 rounded-full bg-gray-300 border border-white"></div>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <span className="text-xs text-gray-400 w-12">Waiting</span>
-                            <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                <div className="w-[20%] h-full bg-green-500 rounded-full"></div>
-                            </div>
-                            <span className="text-[10px] font-bold text-gray-500">20%</span>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            {/* Bottom Right: Integrations */}
-            <div className="absolute bottom-[20px] right-[5%] md:right-[10%] xl:right-[15%] hidden md:block w-64 bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.06)] border border-gray-100 p-5 rotate-[3deg] transition-transform hover:rotate-0 duration-500 z-10">
-                <h3 className="font-bold text-gray-900 mb-4">100+ Integrations</h3>
-                <div className="flex items-center gap-3 justify-center">
-                    {/* Mocked integration icons visually */}
-                    <div className="w-14 h-14 bg-white shadow-md rounded-xl flex items-center justify-center transform -rotate-6">
-                        <span className="font-bold text-red-500 text-xl">M</span> {/* Gmail mock */}
-                    </div>
-                    <div className="w-16 h-16 bg-white shadow-lg rounded-2xl flex items-center justify-center z-10">
-                        <span className="font-bold text-green-500 text-2xl">S</span> {/* Slack mock */}
-                    </div>
-                    <div className="w-14 h-14 bg-white shadow-md rounded-xl flex items-center justify-center transform rotate-6">
-                        <span className="font-bold text-blue-500 text-xl">31</span> {/* Calendar mock */}
-                    </div>
-                </div>
-            </div>
-
         </section>
     );
 }
