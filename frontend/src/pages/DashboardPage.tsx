@@ -65,14 +65,16 @@ export default function DashboardPage() {
       )}
 
       {/* Book a Token Action Bar */}
-      <div className="w-full bg-white rounded-3xl p-6 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-gray-100 flex items-center justify-between mb-8">
-        <div>
-          <h2 className="text-xl font-extrabold text-gray-900 tracking-tight">Need to visit a center?</h2>
-          <p className="text-sm text-gray-500 mt-1">Find a center near you and join the queue virtually.</p>
+      <div className="w-full bg-[#1a1c23] rounded-[2rem] p-8 shadow-xl flex flex-col md:flex-row md:items-center justify-between mb-8 text-white relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-[#78d64b] opacity-10 rounded-full blur-[80px]" />
+        
+        <div className="relative z-10 mb-6 md:mb-0">
+          <h2 className="text-2xl font-bold tracking-tight">Need to visit a center?</h2>
+          <p className="text-[15px] text-gray-300 mt-2 font-medium">Find a center near you and join the queue virtually.</p>
         </div>
         <Link
           to="/service-centers"
-          className="px-6 py-3 bg-black hover:bg-gray-900 text-white text-sm font-bold rounded-full transition-colors shadow-sm whitespace-nowrap"
+          className="relative z-10 px-8 py-4 bg-[#78d64b] hover:bg-[#68c63b] text-[#1a1c23] text-sm font-bold rounded-full transition-colors shadow-lg whitespace-nowrap active:scale-95"
         >
           Book a Token
         </Link>
@@ -80,9 +82,9 @@ export default function DashboardPage() {
 
       {/* Charts / Insights Row */}
       <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="md:col-span-2 bg-white rounded-3xl p-8 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-gray-100 flex flex-col">
+        <div className="md:col-span-2 bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100 flex flex-col">
           <div className="mb-6">
-            <h3 className="text-[17px] font-bold text-gray-900 tracking-tight">Your Weekly Activity</h3>
+            <h3 className="text-xl font-bold text-[#1a1c23] tracking-tight">Your Weekly Activity</h3>
             <p className="text-[12px] font-bold text-gray-400 uppercase tracking-widest mt-1">Tokens Booked</p>
           </div>
           <div className="w-full flex-1 min-h-[200px]">
@@ -93,39 +95,39 @@ export default function DashboardPage() {
                 <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12, fontWeight: 600 }} />
                 <Tooltip
                   cursor={{ fill: '#f9fafb' }}
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px -2px rgba(0,0,0,0.1)', fontWeight: 'bold' }}
-                  itemStyle={{ fontSize: '13px', color: '#111827' }}
+                  contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 4px 20px -2px rgba(0,0,0,0.1)', fontWeight: 'bold' }}
+                  itemStyle={{ fontSize: '13px', color: '#1a1c23' }}
                 />
-                <Bar dataKey="tokens" fill="#3b82f6" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="tokens" fill="#1a1c23" radius={[8, 8, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl p-8 text-white shadow-lg shadow-blue-500/20 flex flex-col justify-between relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-6 opacity-20">
+        <div className="bg-[#78d64b] rounded-[2rem] p-8 text-[#1a1c23] shadow-lg flex flex-col justify-between relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-6 opacity-20 text-[#0a5c4e]">
             <svg className="w-24 h-24" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" /></svg>
           </div>
           <div className="relative z-10">
-            <h3 className="text-lg font-bold">Quick Tip</h3>
-            <p className="text-sm text-blue-100 font-medium mt-2 leading-relaxed">
+            <h3 className="text-xl font-bold tracking-tight">Quick Tip</h3>
+            <p className="text-sm font-semibold opacity-90 mt-2 leading-relaxed">
               Arrive at the service center 15 minutes before your token's expected time to ensure you don't miss your turn.
             </p>
           </div>
-          <div className="mt-6 relative z-10">
-            <div className="text-5xl font-extrabold tracking-tighter">{tokens.length}</div>
-            <div className="text-xs font-bold text-blue-200 uppercase tracking-widest mt-1">Active Tokens</div>
+          <div className="mt-8 relative z-10">
+            <div className="text-6xl font-extrabold tracking-tighter">{tokens.length}</div>
+            <div className="text-xs font-bold uppercase tracking-widest mt-1 opacity-80">Active Tokens</div>
           </div>
         </div>
       </div>
 
       {/* Main Tokens Content */}
       <div className="w-full">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 pb-4 border-b border-gray-200/60 gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 pb-6 border-b border-gray-200/60 gap-4">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl font-extrabold text-gray-900 tracking-tight">Active Queue Positions</h2>
+            <h2 className="text-2xl font-bold text-[#1a1c23] tracking-tight">Active Queue Positions</h2>
             {!error && (
-              <span className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-100 rounded-full">
+              <span className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-full">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest">Live</span>
               </span>
@@ -133,14 +135,14 @@ export default function DashboardPage() {
           </div>
           <div className="flex items-center gap-4">
             {lastUpdatedLabel && (
-              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest hidden sm:block">
+              <span className="text-xs font-bold text-gray-500 uppercase tracking-widest hidden sm:block">
                 Updated {lastUpdatedLabel}
               </span>
             )}
             <button
               onClick={refresh}
               disabled={loadingTokens}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-600 text-[12px] font-bold rounded-full hover:bg-gray-50 hover:text-gray-900 transition-colors shadow-sm disabled:opacity-50"
+              className="flex items-center gap-2 px-5 py-2.5 bg-gray-800 border-none text-white text-xs font-bold rounded-full hover:bg-gray-700 transition-colors shadow-sm disabled:opacity-50"
             >
               <svg className={`w-3.5 h-3.5 ${loadingTokens ? "animate-spin" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -151,23 +153,23 @@ export default function DashboardPage() {
         </div>
 
         {error ? (
-          <div className="bg-red-50 border border-red-100 text-red-700 p-6 rounded-3xl text-center shadow-sm">
+          <div className="bg-[#1a1c23] border border-red-500/20 text-red-500 p-6 rounded-[2rem] text-center shadow-lg">
             <h3 className="font-bold text-[17px] mb-2">Failed to Load Tokens</h3>
             <p className="text-[13px] font-bold">{error}</p>
           </div>
         ) : loadingTokens ? (
-          <div className="flex flex-col items-center justify-center p-12 bg-white rounded-3xl border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border-dashed">
-            <div className="w-10 h-10 border-4 border-gray-100 border-t-blue-600 rounded-full animate-spin mb-4" />
+          <div className="flex flex-col items-center justify-center p-12 bg-[#1a1c23] rounded-[2rem] border border-gray-800 shadow-xl border-dashed">
+            <div className="w-10 h-10 border-4 border-gray-800 border-t-[#78d64b] rounded-full animate-spin mb-4" />
             <p className="text-[12px] font-bold text-gray-500 uppercase tracking-widest">Fetching your queue positions...</p>
           </div>
         ) : tokens.length === 0 ? (
-          <div className="bg-white p-12 rounded-3xl border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border-dashed text-center">
-            <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="bg-[#1a1c23] p-12 rounded-[2rem] border border-gray-800 shadow-xl border-dashed text-center">
+            <svg className="w-16 h-16 text-gray-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
             </svg>
-            <h3 className="font-bold text-[18px] text-gray-900 tracking-tight mb-2">No Active Tokens</h3>
-            <p className="text-[13px] text-gray-500 font-bold mb-6">You aren't queued up for any services right now.</p>
-            <Link to="/service-centers" className="inline-block px-6 py-2.5 bg-black text-white text-[13px] font-bold rounded-full hover:bg-gray-900 transition-colors shadow-sm">
+            <h3 className="font-bold text-[18px] text-white tracking-tight mb-2">No Active Tokens</h3>
+            <p className="text-[13px] text-gray-400 font-bold mb-6">You aren't queued up for any services right now.</p>
+            <Link to="/service-centers" className="inline-block px-8 py-3 bg-[#78d64b] text-black text-[14px] font-bold rounded-full hover:bg-[#65b83f] transition-colors shadow-sm">
               Find a Service Center
             </Link>
           </div>

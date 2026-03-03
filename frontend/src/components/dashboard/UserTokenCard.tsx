@@ -1,6 +1,7 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { CancelTokenError } from '../../api/tokenApi';
 import type { UserToken } from '../../api/tokenApi';
+import { Loader2, Calendar, Clock, MapPin, XCircle } from 'lucide-react';
 
 interface Props {
     token: UserToken;
@@ -12,68 +13,45 @@ export function UserTokenCard({ token, onCancel }: Props) {
     const [cancelling, setCancelling] = useState(false);
     const [cancelError, setCancelError] = useState<{ message: string; isNetwork: boolean } | null>(null);
 
-    /** Maps a thrown error to a user-friendly message string. */
     function getCancelErrorDetails(err: unknown): { message: string; isNetwork: boolean } {
         if (err instanceof CancelTokenError) {
             switch (err.code) {
                 case 'TOKEN_ALREADY_CANCELLED':
-                    return {
-                        message: 'This token was already cancelled (possibly from another session). Refreshing your list…',
-                        isNetwork: false,
-                    };
+                    return { message: 'This token was already cancelled (possibly from another session). Refreshing your list...', isNetwork: false };
                 case 'TOKEN_NOT_CANCELLABLE':
-                    return {
-                        message: 'This token can no longer be cancelled — it is currently being served, completed, or marked as a no-show.',
-                        isNetwork: false,
-                    };
+                    return { message: 'This token can no longer be cancelled — it is currently being served, completed, or marked as a no-show.', isNetwork: false };
                 case 'TOKEN_NOT_FOUND':
-                    return {
-                        message: 'We could not find this token on your account. Please refresh your tokens list.',
-                        isNetwork: false,
-                    };
+                    return { message: 'We could not find this token on your account. Please refresh your tokens list.', isNetwork: false };
                 case 'AUTH_ERROR':
-                    return {
-                        message: 'Your session has expired. Please sign out and sign in again to continue.',
-                        isNetwork: false,
-                    };
+                    return { message: 'Your session has expired. Please sign out and sign in again to continue.', isNetwork: false };
                 case 'NETWORK_ERROR':
-                    return {
-                        message: "Couldn't reach the server. Please check your connection and try again.",
-                        isNetwork: true,
-                    };
+                    return { message: "Couldn't reach the server. Please check your connection and try again.", isNetwork: true };
                 default:
                     return { message: err.message, isNetwork: false };
             }
         }
-        return {
-            message: err instanceof Error ? err.message : 'An unexpected error occurred.',
-            isNetwork: false,
-        };
+        return { message: err instanceof Error ? err.message : 'An unexpected error occurred.', isNetwork: false };
     }
 
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString(undefined, {
-            weekday: 'short',
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
+    const formatDate = (dateString: string) =>
+        new Date(dateString).toLocaleDateString(undefined, {
+            weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
         });
-    };
 
     const formatTime = (dateString: string | null) => {
         if (!dateString) return 'N/A';
         return new Date(dateString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
-    const getStatusColor = (status: string) => {
+    const getStatusColorClass = (status: string) => {
         switch (status) {
-            case 'Waiting': return '#f59e0b'; // Amber
-            case 'Serving': return '#3b82f6'; // Blue
-            case 'Completed': return '#10b981'; // Green
-            case 'Cancelled': return '#ef4444'; // Red
-            case 'Skipped': return '#6b7280'; // Gray
-            case 'NoShow': return '#9333ea'; // Purple
-            default: return '#1a1a2e';
+            case 'Waiting': return 'bg-amber-400 text-black';
+            case 'Serving': return 'bg-blue-500 text-white';
+            case 'Completed': return 'bg-emerald-500 text-white';
+            case 'Cancelled': return 'bg-red-500 text-white';
+            case 'Skipped': return 'bg-gray-500 text-white';
+            case 'NoShow': return 'bg-purple-600 text-white';
+            default: return 'bg-gray-800 text-white';
         }
     };
 
@@ -93,104 +71,52 @@ export function UserTokenCard({ token, onCancel }: Props) {
     const isCancellable = token.status === 'Waiting' && !!onCancel;
 
     return (
-        <div
-            style={{
-                background: '#ffffff',
-                border: '1px solid #e5e7eb',
-                borderRadius: '12px',
-                padding: '1.5rem',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '1rem',
-                width: '100%',
-                maxWidth: '400px',
-                position: 'relative',
-                overflow: 'hidden',
-                opacity: cancelling ? 0.7 : 1,
-                transition: 'opacity 0.2s',
-            }}
-        >
-            {/* Decorative top border based on status */}
-            <div
-                style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: '6px',
-                    background: getStatusColor(token.status),
-                }}
-            />
+        <div className="bg-[#1a1c23] border border-gray-800 rounded-[2rem] p-6 flex flex-col gap-4 w-full relative overflow-hidden transition-opacity">
 
-            {/* Header: Center Name & Date */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3 style={{ margin: 0, color: '#111827', fontSize: '1.1rem', fontWeight: 600 }}>
+            {/* Top accent bar based on status */}
+            <div className={`absolute top-0 left-0 right-0 h-[5px] rounded-t-[2rem] ${getStatusColorClass(token.status)}`} />
+
+            {/* Header row */}
+            <div className="flex justify-between items-start pt-1">
+                <h3 className="text-white text-base font-bold flex items-center gap-2 leading-snug">
+                    <MapPin className="w-4 h-4 text-[#78d64b] shrink-0" />
                     {token.centerName}
                 </h3>
-                <span style={{ color: '#6b7280', fontSize: '0.85rem' }}>
+                <span className="text-gray-500 text-xs flex items-center gap-1 shrink-0 ml-2">
+                    <Calendar className="w-3.5 h-3.5" />
                     {formatDate(token.issuedDate)}
                 </span>
             </div>
 
-            {/* Big Token Number */}
-            <div style={{ textAlign: 'center', margin: '1rem 0' }}>
-                <p style={{ margin: 0, color: '#6b7280', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    Token Number
-                </p>
-                <h2
-                    style={{
-                        margin: '0.25rem 0 0 0',
-                        fontSize: '2.5rem',
-                        color: '#111827',
-                        fontWeight: 800,
-                        fontFamily: 'monospace',
-                    }}
-                >
+            {/* Token number + status */}
+            <div className="text-center my-2">
+                <p className="text-[#78d64b] text-xs uppercase tracking-widest font-bold mb-1">Token Number</p>
+                <h2 className="text-5xl text-white font-extrabold font-mono tracking-tight">
                     {token.tokenNumber}
                 </h2>
-                <div style={{ marginTop: '0.5rem' }}>
-                    <span
-                        style={{
-                            display: 'inline-block',
-                            background: `${getStatusColor(token.status)}20`,
-                            color: getStatusColor(token.status),
-                            padding: '0.25rem 0.75rem',
-                            borderRadius: '9999px',
-                            fontSize: '0.85rem',
-                            fontWeight: 600,
-                        }}
-                    >
-                        • {token.status}
+                <div className="mt-3">
+                    <span className={`inline-block px-4 py-1.5 rounded-full text-xs font-bold ${getStatusColorClass(token.status)}`}>
+                        {token.status}
                     </span>
                 </div>
             </div>
 
-            {/* Queue Info (only when Waiting or Serving) */}
+            {/* Queue position + ETA (only for active tokens) */}
             {(token.queuePosition !== null || token.eta) && token.status !== 'Cancelled' && (
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: '1fr 1fr',
-                        gap: '1rem',
-                        background: '#f9fafb',
-                        padding: '1rem',
-                        borderRadius: '8px',
-                        border: '1px solid #f3f4f6',
-                    }}
-                >
+                <div className="grid grid-cols-2 gap-4 bg-black/40 p-4 rounded-2xl border border-gray-800">
                     {token.queuePosition !== null && (
                         <div>
-                            <p style={{ margin: 0, color: '#6b7280', fontSize: '0.8rem' }}>Queue Position</p>
-                            <p style={{ margin: '0.25rem 0 0 0', color: '#111827', fontSize: '1.25rem', fontWeight: 700 }}>
+                            <p className="text-gray-400 text-xs font-semibold">Queue Position</p>
+                            <p className="mt-1 text-[#78d64b] text-2xl font-bold">
                                 {token.queuePosition === 0 ? "It's your turn!" : `#${token.queuePosition}`}
                             </p>
                         </div>
                     )}
                     {token.eta && (
                         <div>
-                            <p style={{ margin: 0, color: '#6b7280', fontSize: '0.8rem' }}>Estimated Time</p>
-                            <p style={{ margin: '0.25rem 0 0 0', color: '#111827', fontSize: '1.25rem', fontWeight: 700 }}>
+                            <p className="text-gray-400 text-xs font-semibold">Estimated Time</p>
+                            <p className="mt-1 text-white text-2xl font-bold flex items-center gap-2">
+                                <Clock className="w-5 h-5 text-[#78d64b]" />
                                 {formatTime(token.eta)}
                             </p>
                         </div>
@@ -200,24 +126,12 @@ export function UserTokenCard({ token, onCancel }: Props) {
 
             {/* Cancelled notice */}
             {token.status === 'Cancelled' && (
-                <div
-                    style={{
-                        background: '#fef2f2',
-                        border: '1px solid #fecaca',
-                        borderRadius: '8px',
-                        padding: '0.75rem 1rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                    }}
-                >
-                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#ef4444" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                <div className="bg-red-900/20 border border-red-500/30 rounded-2xl p-4 flex items-center gap-3">
+                    <XCircle className="w-5 h-5 text-red-500 shrink-0" />
                     <div>
-                        <p style={{ margin: 0, color: '#b91c1c', fontSize: '0.85rem', fontWeight: 600 }}>Token Cancelled</p>
+                        <p className="text-red-400 text-sm font-bold">Token Cancelled</p>
                         {token.cancelledAt && (
-                            <p style={{ margin: '0.15rem 0 0 0', color: '#ef4444', fontSize: '0.78rem' }}>
+                            <p className="mt-0.5 text-red-500/70 text-xs">
                                 at {formatTime(token.cancelledAt)} on {formatDate(token.cancelledAt)}
                             </p>
                         )}
@@ -225,117 +139,50 @@ export function UserTokenCard({ token, onCancel }: Props) {
                 </div>
             )}
 
-            {/* Footer Details */}
-            <div
-                style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    marginTop: '0.5rem',
-                    borderTop: '1px dashed #e5e7eb',
-                    paddingTop: '1rem',
-                }}
-            >
-                <div style={{ textAlign: 'center', flex: 1 }}>
-                    <p style={{ margin: 0, color: '#9ca3af', fontSize: '0.75rem' }}>Issued at</p>
-                    <p style={{ margin: '0.1rem 0 0 0', color: '#4b5563', fontSize: '0.85rem', fontWeight: 500 }}>
-                        {formatTime(token.issuedTime)}
-                    </p>
+            {/* Time footer */}
+            <div className="flex justify-between border-t border-gray-800 pt-4">
+                <div className="text-center flex-1">
+                    <p className="text-gray-500 text-xs font-semibold">Issued</p>
+                    <p className="mt-1 text-gray-300 text-sm font-medium">{formatTime(token.issuedTime)}</p>
                 </div>
                 {token.servedTime && (
-                    <div style={{ textAlign: 'center', flex: 1, borderLeft: '1px solid #e5e7eb' }}>
-                        <p style={{ margin: 0, color: '#9ca3af', fontSize: '0.75rem' }}>Served at</p>
-                        <p style={{ margin: '0.1rem 0 0 0', color: '#4b5563', fontSize: '0.85rem', fontWeight: 500 }}>
-                            {formatTime(token.servedTime)}
-                        </p>
+                    <div className="text-center flex-1 border-l border-gray-800">
+                        <p className="text-gray-500 text-xs font-semibold">Served</p>
+                        <p className="mt-1 text-gray-300 text-sm font-medium">{formatTime(token.servedTime)}</p>
                     </div>
                 )}
                 {token.completedTime && (
-                    <div style={{ textAlign: 'center', flex: 1, borderLeft: '1px solid #e5e7eb' }}>
-                        <p style={{ margin: 0, color: '#9ca3af', fontSize: '0.75rem' }}>Completed at</p>
-                        <p style={{ margin: '0.1rem 0 0 0', color: '#4b5563', fontSize: '0.85rem', fontWeight: 500 }}>
-                            {formatTime(token.completedTime)}
-                        </p>
+                    <div className="text-center flex-1 border-l border-gray-800">
+                        <p className="text-gray-500 text-xs font-semibold">Completed</p>
+                        <p className="mt-1 text-gray-300 text-sm font-medium">{formatTime(token.completedTime)}</p>
                     </div>
                 )}
             </div>
 
-            {/* View Queue Button */}
-            <div style={{ marginTop: '0.5rem' }}>
+            {/* Live Queue button */}
+            <div>
                 <a
                     href={`/queue/${token.centerId}`}
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '0.5rem',
-                        width: '100%',
-                        padding: '0.75rem',
-                        background: '#f58220', // Using the orange from the mockup
-                        color: '#ffffff',
-                        border: 'none',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        fontWeight: 700,
-                        fontSize: '0.95rem',
-                        textDecoration: 'none',
-                        boxShadow: '0 2px 4px rgba(245, 130, 32, 0.3)',
-                        transition: 'background 0.2s, transform 0.1s',
-                    }}
-                    onMouseEnter={e => {
-                        (e.currentTarget as HTMLAnchorElement).style.background = '#e07018';
-                    }}
-                    onMouseLeave={e => {
-                        (e.currentTarget as HTMLAnchorElement).style.background = '#f58220';
-                    }}
-                    onMouseDown={e => {
-                        (e.currentTarget as HTMLAnchorElement).style.transform = 'scale(0.98)';
-                    }}
-                    onMouseUp={e => {
-                        (e.currentTarget as HTMLAnchorElement).style.transform = 'scale(1)';
-                    }}
+                    className="flex flex-row items-center justify-center gap-2 w-full py-3.5 bg-[#78d64b] text-black rounded-full font-bold text-sm no-underline transition-all hover:bg-[#65b83f] hover:scale-[0.98] active:scale-95"
                 >
-                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                     </svg>
-                    View Queue
+                    Live Queue
                 </a>
             </div>
 
-            {/* Cancel section — only for Waiting tokens */}
+            {/* Cancel section (Waiting tokens only) */}
             {isCancellable && (
-                <div style={{ marginTop: '0.25rem' }}>
-                    {/* Inline cancel error */}
+                <div>
                     {cancelError && (
-                        <div
-                            style={{
-                                background: cancelError.isNetwork ? '#eff6ff' : '#fef2f2',
-                                border: `1px solid ${cancelError.isNetwork ? '#bfdbfe' : '#fecaca'}`,
-                                borderRadius: '8px',
-                                padding: '0.6rem 0.75rem',
-                                color: cancelError.isNetwork ? '#1e40af' : '#b91c1c',
-                                fontSize: '0.82rem',
-                                marginBottom: '0.75rem',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '0.4rem',
-                            }}
-                        >
+                        <div className={`rounded-2xl p-4 text-sm mb-3 flex flex-col gap-2 ${cancelError.isNetwork ? 'bg-blue-900/20 border border-blue-500/30 text-blue-300' : 'bg-red-900/20 border border-red-500/30 text-red-300'}`}>
                             <span>{cancelError.message}</span>
                             {cancelError.isNetwork && (
                                 <button
                                     onClick={() => { setCancelError(null); setConfirming(true); }}
-                                    style={{
-                                        alignSelf: 'flex-start',
-                                        padding: '0.25rem 0.65rem',
-                                        background: '#1e40af',
-                                        color: '#fff',
-                                        border: 'none',
-                                        borderRadius: '4px',
-                                        cursor: 'pointer',
-                                        fontSize: '0.78rem',
-                                        fontWeight: 600,
-                                    }}
+                                    className="self-start px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition-colors"
                                 >
                                     Try again
                                 </button>
@@ -344,111 +191,37 @@ export function UserTokenCard({ token, onCancel }: Props) {
                     )}
 
                     {confirming ? (
-                        /* Confirmation row */
-                        <div
-                            style={{
-                                background: '#fff7ed',
-                                border: '1px solid #fed7aa',
-                                borderRadius: '8px',
-                                padding: '0.75rem 1rem',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '0.5rem',
-                            }}
-                        >
-                            <p style={{ margin: 0, color: '#92400e', fontSize: '0.88rem', fontWeight: 600 }}>
-                                Cancel this token?
-                            </p>
-                            <p style={{ margin: 0, color: '#b45309', fontSize: '0.8rem' }}>
-                                This action cannot be undone. Your queue spot will be released.
-                            </p>
-                            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem' }}>
+                        <div className="border border-red-500/30 bg-red-900/10 rounded-2xl p-4 flex flex-col gap-2">
+                            <p className="text-red-400 text-sm font-bold">Cancel this token?</p>
+                            <p className="text-red-500/70 text-xs">This action cannot be undone. Your queue spot will be released.</p>
+                            <div className="flex gap-2 mt-2">
                                 <button
                                     onClick={handleCancelConfirm}
                                     disabled={cancelling}
-                                    style={{
-                                        flex: 1,
-                                        padding: '0.5rem',
-                                        background: cancelling ? '#fca5a5' : '#ef4444',
-                                        color: '#fff',
-                                        border: 'none',
-                                        borderRadius: '6px',
-                                        cursor: cancelling ? 'not-allowed' : 'pointer',
-                                        fontWeight: 600,
-                                        fontSize: '0.85rem',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: '0.4rem',
-                                    }}
+                                    className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-full font-bold text-sm flex items-center justify-center gap-2 transition-colors disabled:opacity-60"
                                 >
-                                    {cancelling && (
-                                        <span
-                                            style={{
-                                                display: 'inline-block',
-                                                width: '12px',
-                                                height: '12px',
-                                                border: '2px solid rgba(255,255,255,0.4)',
-                                                borderTopColor: '#fff',
-                                                borderRadius: '50%',
-                                                animation: 'spin 0.7s linear infinite',
-                                            }}
-                                        />
-                                    )}
-                                    {cancelling ? 'Cancelling…' : 'Yes, Cancel'}
+                                    {cancelling && <Loader2 className="w-4 h-4 animate-spin" />}
+                                    {cancelling ? 'Cancelling...' : 'Yes, Cancel'}
                                 </button>
                                 <button
                                     onClick={() => { setConfirming(false); setCancelError(null); }}
                                     disabled={cancelling}
-                                    style={{
-                                        flex: 1,
-                                        padding: '0.5rem',
-                                        background: '#f3f4f6',
-                                        color: '#374151',
-                                        border: '1px solid #d1d5db',
-                                        borderRadius: '6px',
-                                        cursor: cancelling ? 'not-allowed' : 'pointer',
-                                        fontWeight: 600,
-                                        fontSize: '0.85rem',
-                                    }}
+                                    className="flex-1 py-2.5 bg-transparent border border-gray-700 text-gray-300 hover:bg-gray-800 rounded-full font-bold text-sm transition-colors"
                                 >
                                     Keep Token
                                 </button>
                             </div>
                         </div>
                     ) : (
-                        /* Initial cancel trigger */
                         <button
                             onClick={() => setConfirming(true)}
-                            style={{
-                                width: '100%',
-                                padding: '0.55rem',
-                                background: 'transparent',
-                                color: '#ef4444',
-                                border: '1px solid #fecaca',
-                                borderRadius: '8px',
-                                cursor: 'pointer',
-                                fontWeight: 600,
-                                fontSize: '0.88rem',
-                                transition: 'background 0.15s, border-color 0.15s',
-                            }}
-                            onMouseEnter={e => {
-                                (e.currentTarget as HTMLButtonElement).style.background = '#fef2f2';
-                                (e.currentTarget as HTMLButtonElement).style.borderColor = '#ef4444';
-                            }}
-                            onMouseLeave={e => {
-                                (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
-                                (e.currentTarget as HTMLButtonElement).style.borderColor = '#fecaca';
-                            }}
+                            className="w-full py-2.5 bg-transparent text-gray-500 border border-gray-800 hover:border-red-500/50 hover:text-red-400 rounded-full font-bold text-sm transition-all"
                         >
                             Cancel Token
                         </button>
                     )}
                 </div>
             )}
-
-            {/* Spin keyframe — injected once per card; harmless duplication */}
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
     );
 }

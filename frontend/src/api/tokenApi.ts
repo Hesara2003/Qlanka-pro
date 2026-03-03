@@ -24,11 +24,24 @@ export class CancelTokenError extends Error {
 }
 
 function extractErrorMessage(error: unknown): string {
-    if (error instanceof AxiosError && error.response?.data) {
-        const data = error.response.data as ApiError | { message?: string; error?: string };
-        return data.message ?? (data as { error?: string }).error ?? "An unexpected error occurred.";
+    if (error instanceof AxiosError) {
+        // Server responded with an error status
+        if (error.response) {
+            const status = error.response.status;
+            const data = error.response.data as ApiError | { message?: string; error?: string } | undefined;
+            if (data?.message) return data.message;
+            if ((data as { error?: string })?.error) return (data as { error?: string }).error!;
+            // Fallback to HTTP status text
+            if (status === 401) return "Your session has expired. Please sign in again.";
+            if (status === 403) return "You don't have permission to access this resource.";
+            if (status === 404) return "Resource not found.";
+            if (status >= 500) return "Server error. Please try again later.";
+            return `Request failed (${status}).`;
+        }
+        // No response — true network/connectivity error
+        return "Unable to reach the server. Please check your connection.";
     }
-    return "Network error. Please try again.";
+    return "An unexpected error occurred.";
 }
 
 // ── Interfaces ───────────────────────────────────────────────────────────────
@@ -60,7 +73,8 @@ export const tokenApi = {
     getMyTokens: async (): Promise<UserToken[]> => {
         try {
             const response = await axiosInstance.get(`/api/Token/my-tokens`);
-            return response.data;
+            // Unwrap API envelope { data: [...] } — same pattern as appointmentApi
+            return response.data?.data ?? response.data;
         } catch (error) {
             throw new Error(extractErrorMessage(error));
         }
@@ -69,7 +83,8 @@ export const tokenApi = {
     getServiceCenterQueue: async (centerId: number): Promise<QueuePositionDto[]> => {
         try {
             const response = await axiosInstance.get(`/api/Token/center/${centerId}/queue`);
-            return response.data;
+            // Unwrap API envelope { data: [...] }
+            return response.data?.data ?? response.data;
         } catch (error) {
             throw new Error(extractErrorMessage(error));
         }

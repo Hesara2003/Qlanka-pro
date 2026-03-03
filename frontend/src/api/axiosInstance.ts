@@ -17,4 +17,25 @@ axiosInstance.interceptors.request.use((config) => {
   return config;
 });
 
+// Response interceptor: convert HTTP errors into readable messages
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (axios.isAxiosError(error)) {
+      const status = error.response?.status;
+
+      // 401: Session expired — clear stored credentials
+      if (status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("auth_user");
+        // Redirect to login if not already there
+        if (!window.location.pathname.startsWith("/login")) {
+          window.location.href = "/login";
+        }
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default axiosInstance;
