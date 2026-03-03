@@ -30,24 +30,8 @@ jobs:
     - name: Build solution
       run: dotnet build Qlanka-pro.sln --configuration Release --no-restore
 
-    - name: Verify build succeeded
-      run: |
-        if ($LASTEXITCODE -ne 0) {
-          Write-Error "Build failed with exit code $LASTEXITCODE"
-          exit 1
-        }
-        Write-Host "Build completed successfully."
-
     - name: Run tests
       run: dotnet test Qlanka-pro.sln --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --logger "trx;LogFileName=test-results.trx"
-
-    - name: Verify tests succeeded
-      run: |
-        if ($LASTEXITCODE -ne 0) {
-          Write-Error "Tests failed with exit code $LASTEXITCODE"
-          exit 1
-        }
-        Write-Host "All tests passed successfully."
 
     - name: Upload test results
       if: always()
