@@ -50,7 +50,7 @@ jobs:
     # Publish the API and stash the artefact for the deploy job
     - name: Publish backend
       if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
-      run: dotnet publish backend/QueueLanka.API/QueueLanka.API.csproj --configuration Release --no-build --runtime linux-x64 --self-contained false --output ./publish/backend
+      run: dotnet publish backend/QueueLanka.API/QueueLanka.API.csproj --configuration Release --no-build --output ./publish/backend
 
     - name: Upload backend artefact
       if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
