@@ -1,0 +1,25 @@
+name: .NET Build CI
+
+on:
+  push:
+    branches: [ "develop", "production" ]
+  pull_request:
+    branches: [ "develop", "production" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore Qlanka-pro.sln
+
+    - name: Build solution
+      run: dotnet build Qlanka-pro.sln --configuration Release --no-restore
