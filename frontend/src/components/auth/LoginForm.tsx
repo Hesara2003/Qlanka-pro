@@ -33,15 +33,6 @@ export default function LoginForm() {
   // If ProtectedRoute redirected here, honour the original destination
   const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname;
 
-  const [currentSlide, setCurrentSlide] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % 3);
-    }, 4000);
-    return () => clearInterval(timer);
-  }, []);
-
   const [form, setForm] = useState<FormState>({ username: "", password: "" });
   const [errors, setErrors] = useState<FormErrors>({});
   const [touched, setTouched] = useState<Partial<Record<FormField, boolean>>>({});
