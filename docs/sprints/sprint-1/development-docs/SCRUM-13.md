@@ -1,162 +1,214 @@
-**SCRUM-13 — Auth API contract**
+﻿# SCRUM-13  Authentication API Contract
 
-**Summary**
-This document defines the API contract for the authentication endpoints implemented under `POST /api/auth/register` and `POST /api/auth/login`. It includes request/response shapes, example payloads, error handling rules, and security recommendations consistent with the current backend implementation.
+## Summary
 
-**Scope**
-- Endpoints: `POST /api/auth/register`, `POST /api/auth/login` (base route: `/api/auth`)
-- Implementation references: `AuthController`, `AuthService`, DTOs in `DTOs/Auth`.
+Defines the full API contract for the authentication endpoints in `QueueLanka.API`. Content is derived directly from reading `AuthController.cs`, `AuthService.cs`, and all DTOs under `DTOs/Auth/`.
 
-**Register — `POST /api/auth/register`**
+---
 
-- Purpose: Create a new user (roles: `citizen`, `officer`, `admin`).
+## Base Route
 
-- Request JSON (RegisterRequestDto):
+`/api/auth`
 
-	- `username` (string, required): 3–50 chars; regex ^[a-zA-Z0-9_]+$ (letters, digits, underscores).
-	- `password` (string, required): 8–100 chars; must contain uppercase, lowercase, digit, and special character.
-	**SCRUM-13 — Auth API contract**
+---
 
-	**Summary**
-	This document is about the API contract for authentication endpoints `POST /api/auth/register` and `POST /api/auth/login`.
-	It shows request and response shapes, example payloads, error handling rules, and simple security advice. The content is from reading code in the project.
+## Endpoints
 
-	**Scope**
-	- Endpoints: `POST /api/auth/register`, `POST /api/auth/login` (base route: `/api/auth`)
-	- Implementation references: `AuthController`, `AuthService`, DTOs in `DTOs/Auth`.
+### 1. Register  `POST /api/auth/register`
 
-	**Register — `POST /api/auth/register`**
+**Purpose:** Create a new user account. Valid roles: `citizen`, `officer`, `admin`.
 
-	- Purpose: Create new user. Roles allowed: `citizen`, `officer`, `admin`.
+**Request body (`RegisterRequestDto`):**
 
-	- Request JSON (RegisterRequestDto):
+| Field | Type | Required | Validation |
+|-------|------|----------|------------|
+| `username` | string | Yes | 350 chars; regex `^[a-zA-Z0-9_]+$` |
+| `password` | string | Yes | 8100 chars; must have uppercase, lowercase, digit, special char |
+| `email` | string | Yes | Valid email; max 100 chars |
+| `role` | string | Yes | One of `citizen`, `officer`, `admin` |
+| `centerId` | int? | No | Required when `role` = `officer`; ignored otherwise |
 
-		- `username` (string, required): 3–50 chars; regex ^[a-zA-Z0-9_]+$ (letters, digits, underscore).
-		- `password` (string, required): 8–100 chars; must contain uppercase, lowercase, digit, and special character.
-		- `email` (string, required): valid email, max 100 chars.
-		- `role` (string, required): one of `citizen`, `officer`, `admin` (not case sensitive).
-		- `centerId` (int, optional): needed when `role` is `officer`; ignored for others.
+**Example request:**
+```json
+{
+  "username": "jdoe_01",
+  "password": "Str0ng!Pass",
+  "email": "j.doe@example.com",
+  "role": "citizen"
+}
+```
 
-	- Example request:
+**Success response (`201 Created`)  `RegisterResponseDto`:**
+```json
+{
+  "userId": 123,
+  "username": "jdoe_01",
+  "role": "citizen"
+}
+```
 
-		{
-			"username": "jdoe_01",
-			"password": "Str0ng!Passw0rd",
-			"email": "j.doe@example.com",
-			"role": "citizen"
-		}
+**Error responses:**
 
-	- Successful response (201 Created) — RegisterResponseDto:
+| Status | Code | Condition |
+|--------|------|-----------|
+| 400 | `VALIDATION_ERROR` | Missing or invalid fields (returned with `validationErrors` array) |
+| 409 | `DUPLICATE_USERNAME` | Username already taken |
+| 409 | `DUPLICATE_EMAIL` | Email already registered |
+| 422 | `INVALID_ROLE` | Role is not `citizen`, `officer`, or `admin` |
+| 422 | `CENTER_REQUIRED` | Role is `officer` but `centerId` was not supplied |
+| 500 | `INTERNAL_ERROR` | Unexpected server error |
 
-		{
-			"userId": 123,
-			"username": "jdoe_01",
-			"role": "citizen"
-		}
+---
 
-	- Error responses:
-		- 400 Bad Request — validation or model errors. Response uses `ErrorResponse` with `validationErrors` (field, message, rejectedValue).
-		- 409 Conflict — `USERNAME_TAKEN` or `EMAIL_TAKEN` when username or email already used.
-		- 422 Unprocessable Entity — `INVALID_ROLE` or `CENTER_REQUIRED` (officer must give `centerId`).
-		- 500 Internal Server Error — `INTERNAL_ERROR` for unexpected problems.
+### 2. Login  `POST /api/auth/login`
 
-	**Login — `POST /api/auth/login`**
+**Purpose:** Authenticate and receive a JWT access token plus a refresh token.
 
-	- Purpose: Authenticate user and return JWT access token and a refresh token.
+**Request body (`LoginRequestDto`):**
 
-	- Request JSON (LoginRequestDto):
+| Field | Type | Required |
+|-------|------|----------|
+| `username` | string | Yes |
+| `password` | string | Yes |
 
-		- `username` (string, required)
-		- `password` (string, required)
+**Example request:**
+```json
+{
+  "username": "jdoe_01",
+  "password": "Str0ng!Pass"
+}
+```
 
-	- Example request:
+**Success response (`200 OK`)  `LoginResponseDto`:**
+```json
+{
+  "token": "<jwt-access-token>",
+  "refreshToken": "<64-byte-base64-string>",
+  "expiresIn": 3600,
+  "role": "citizen"
+}
+```
 
-		{
-			"username": "jdoe_01",
-			"password": "Str0ng!Passw0rd"
-		}
+> `expiresIn` is in **seconds** (`AccessTokenExpiryMinutes  60`). Default from `appsettings.json`: 60 minutes  3600 s.
 
-	- Successful response (200 OK) — LoginResponseDto:
+**Error responses:**
 
-		{
-			"token": "<jwt-access-token>",
-			"refreshToken": "<base64-random-string>",
-			"expiresIn": 3600,
-			"role": "citizen"
-		}
+| Status | Code | Condition |
+|--------|------|-----------|
+| 400 | `VALIDATION_ERROR` | Missing fields |
+| 401 | `INVALID_CREDENTIALS` | Username not found or password mismatch (generic  no hint which field) |
+| 403 | `ACCOUNT_DISABLED` | User account is deactivated (`IsActive = false`) |
+| 500 | `INTERNAL_ERROR` | Unexpected server error |
 
-	- Error responses:
-		- 400 Bad Request — validation errors (missing or invalid fields).
-		- 401 Unauthorized — `INVALID_CREDENTIALS` (generic message; does not say which field failed).
-		- 403 Forbidden — `ACCOUNT_DISABLED` when account is deactivated.
-		- 500 Internal Server Error — `INTERNAL_ERROR`.
+---
 
-	**Error response format**
+### 3. Verify Email  `GET /api/auth/verify-email?token=<token>`
 
-	API uses a standard error wrapper `ErrorResponse` for most errors. Fields:
+**Purpose:** Verify a user's email address via a one-time token sent by email.
 
-	- `success`: false
-	- `code`: machine name for error (e.g., `INVALID_CREDENTIALS`, `EMAIL_TAKEN`)
-	- `message`: message for user
-	- `details`: optional debug info (only in development)
-	- `validationErrors`: optional list of `{ field, message, rejectedValue }`
-	- `timestamp`, `path`, `correlationId`
+> **Note:** Email sending is currently **disabled** (commented out in `AuthService.RegisterAsync`). Users are auto-verified on registration (`IsEmailVerified` defaults to the database row value; the verification email call is skipped). This endpoint exists but will not be reached in normal flow during Sprint 1.
 
-	Example validation error (400):
+**Query parameter:** `token` (string, required)
 
-	{
-		"success": false,
-		"code": "VALIDATION_ERROR",
-		"message": "One or more validation errors occurred",
-		"validationErrors": [
-			{ "field": "password", "message": "Password must contain...", "rejectedValue": "short" }
-		],
-		"timestamp": "2026-03-01T12:00:00Z",
-		"path": "/api/auth/register",
-		"correlationId": "..."
-	}
+**Success response (`200 OK`)  `VerifyEmailResponseDto`:**
+```json
+{ "message": "Email verified successfully." }
+```
 
-	Example auth error (401):
+**Error responses:** 400 `INVALID_VERIFICATION_TOKEN`, 500 `INTERNAL_ERROR`.
 
-	{
-		"success": false,
-		"code": "INVALID_CREDENTIALS",
-		"message": "Invalid username or password.",
-		"timestamp": "2026-03-01T12:05:00Z",
-		"path": "/api/auth/login",
-		"correlationId": "..."
-	}
+---
 
-	**Implementation notes (observed in code)**
+## JWT Token Details
 
-	- Passwords hashed with BCrypt (`BCrypt.Net.BCrypt.HashPassword`) using work factor 12.
-	- Roles: `citizen`, `officer`, `admin`. Role check is case-insensitive; `officer` needs `centerId`.
-	- Login uses `BCrypt.Net.BCrypt.Verify` and returns generic `INVALID_CREDENTIALS` if fail.
-	- Access tokens are JWT signed with HMAC-SHA256. Claims: `sub` (user id), `unique_name` (username), `role`, `jti`.
-	- Refresh tokens are random 64 bytes and Base64-encoded. It is recommended to store or hash them server-side for rotation.
-	- Email verification endpoint `/api/auth/verify-email` exists but registration currently does not send verification.
+- **Algorithm:** HMAC-SHA256
+- **Issuer:** `queuelanka-api`
+- **Audience:** `queuelanka-client`
+- **Clock skew:** `TimeSpan.Zero` (no tolerance on expiry)
+- **Default expiry:** 60 minutes (`Jwt:AccessTokenExpiryMinutes` in `appsettings.json`)
+- **Claims:**
 
-	**Security best practices & recommendations**
+| Claim | Value |
+|-------|-------|
+| `sub` | `userId` (int, as string) |
+| `unique_name` | `username` |
+| `role` | user role string |
+| `jti` | random GUID per token |
+| `centerId` | officer/admin center id (only present when user has a centerId) |
 
-	- Transport: Use HTTPS for all requests in production.
-	- Passwords: Keep using BCrypt with good work factor (12 here). Do not log plain passwords.
-	- Error messages: Keep login errors generic to avoid user enumeration.
-	- Tokens:
-		- Keep access tokens short lived (`Jwt:AccessTokenExpiryMinutes`).
-		- Use refresh tokens and rotate them; store hashed copy to allow revoke.
-		- If using cookies, set `HttpOnly`, `Secure`, `SameSite`; otherwise use `Authorization: Bearer`.
-	- Rate limiting & lockout: Add throttling and account lockout for many failed logins.
-	- Validation: Server-side validation is present. Also sanitize inputs.
-	- Logging: Log auth events with correlation id, but never log secrets.
-	- Least privilege: Check roles and permissions properly.
-	- CSRF: If cookie auth used, add CSRF protection.
-	- Secrets: Put JWT secret and other secrets to environment or secret store, not in source control.
+- **Usage:** `Authorization: Bearer <token>` header on all protected routes.
+- **Missing/invalid token responses from middleware:**
 
-	**Testing & QA checklist**
+| Condition | Code |
+|-----------|------|
+| No `Authorization` header | `TOKEN_MISSING` |
+| Header present but token invalid/expired | `TOKEN_INVALID` |
+| Valid token, insufficient role | `FORBIDDEN` |
 
-	- Unit tests for `AuthService.RegisterAsync` and `LoginAsync` for success and error cases.
-	- Integration tests for `POST /api/auth/register` and `POST /api/auth/login` checking status and response.
-	- Security tests for brute-force, token tampering and replay.
+---
 
+## Refresh Token Details
 
-	Document made after reading `AuthController`, `AuthService`, and DTO files in `backend/QueueLanka.API`.
+- Generated with `RandomNumberGenerator.GetBytes(64)`  Base64-encoded string.
+- Expiry configured via `Jwt:RefreshTokenExpiryDays` (default: 7 days).
+- Client must store securely and send when requesting a new access token.
+
+---
+
+## Standard Error Response Format (`ErrorResponse`)
+
+All error responses follow this envelope:
+
+```json
+{
+  "success": false,
+  "code": "INVALID_CREDENTIALS",
+  "message": "Invalid username or password.",
+  "details": null,
+  "validationErrors": null,
+  "timestamp": "2026-03-01T12:05:00Z",
+  "path": "/api/auth/login",
+  "correlationId": "abc-123"
+}
+```
+
+For validation errors (`400`), `validationErrors` is populated:
+```json
+{
+  "success": false,
+  "code": "VALIDATION_ERROR",
+  "message": "One or more validation errors occurred.",
+  "validationErrors": [
+    { "field": "password", "message": "Password must contain uppercase...", "rejectedValue": "short" }
+  ],
+  "timestamp": "...",
+  "path": "/api/auth/register",
+  "correlationId": "..."
+}
+```
+
+> In **Development** environment only: errors include a `details` object with `ExceptionType`, `StackTrace`, and `InnerException` for debugging.
+
+---
+
+## Implementation Notes (from code)
+
+- Passwords hashed with `BCrypt.Net.BCrypt.HashPassword(password, workFactor: 12)`.
+- Password verification uses `BCrypt.Net.BCrypt.Verify`.
+- Roles are validated case-insensitively in `AuthService`; invalid role throws `AppException` (422).
+- Login returns `INVALID_CREDENTIALS` for both "user not found" and "wrong password"  intentionally generic to prevent user enumeration.
+- Email verification flow exists but is disabled in Sprint 1; `IsEmailVerified` check in `LoginAsync` is also commented out.
+
+---
+
+## Security Notes
+
+- **Production:** Replace `Jwt:Secret` placeholder with a secret manager / environment variable (min 32 chars, high entropy).
+- Use HTTPS for all transport.
+- Keep access token expiry short; rotate refresh tokens on use.
+- Rate-limit login attempts to prevent brute-force.
+- Never log raw passwords or JWT secrets.
+
+---
+
+*Document generated from source code: `AuthController.cs`, `AuthService.cs`, `DTOs/Auth/`.*

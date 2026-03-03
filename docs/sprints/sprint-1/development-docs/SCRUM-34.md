@@ -1,98 +1,162 @@
-**SCRUM-34 — Accessibility Review: Service Centers Listing UI**
+﻿# SCRUM-34  Accessibility Review: Service Centers Listing UI
 
-**Summary**
-This document contains an accessibility review of the Service Centers listing UI. I inspected the frontend code (main files listed below) and identified issues against common accessibility guidelines (WCAG). I also propose fixes and testing steps.
+## Summary
 
-**Scope / Files inspected**
-- `frontend/src/pages/ServiceCentersPage.tsx`
-- `frontend/src/components/serviceCenter/ServiceCenterCard.tsx`
-- `frontend/src/hooks/useServiceCenters.ts` (usage)
+Accessibility review of the Service Centers listing UI in QueueLanka Pro. This document was created by inspecting the frontend source files listed below against WCAG 2.1 AA guidelines. Issues are categorised by priority, each with a concrete code fix.
 
-**High priority issues (fix soon)**
+---
 
-- Search input has only placeholder text. Screen readers need a label.
-	- Fix: add visible or sr-only `<label>` and `id`, or add `aria-label` attribute.
+## Scope  Files Inspected
 
-- Filter buttons lack `aria-pressed` so assistive tech cannot tell which is selected.
-	- Fix: add `aria-pressed={filter === '...'}` and ensure keyboard operable.
+| File | Purpose |
+|------|---------|
+| `frontend/src/pages/ServiceCentersPage.tsx` | Main page  renders list, search bar, filter controls, auto-refresh |
+| `frontend/src/components/serviceCenter/ServiceCenterCard.tsx` | Individual center card component |
+| `frontend/src/hooks/useServiceCenters.ts` | Data-fetching hook used by the page |
 
-- Auto-refresh updates are not announced to screen readers (visual `lastUpdated` only).
-	- Fix: add a polite `aria-live` region for update messages (visually-hidden if needed).
+---
 
-- Many decorative SVG icons do not have `aria-hidden="true"` and may be read aloud.
-	- Fix: add `aria-hidden="true" focusable="false"` on decorative SVGs.
+## High Priority Issues
 
-**Medium priority issues (improve UX)**
+### 1. Search input has no accessible label
 
-- Cards use `<div>` wrapper (no semantic role). Make them `article` with `aria-labelledby` and make entire card keyboard-focusable and activate on Enter.
+**Problem:** The search input only has a placeholder. Screen readers announce placeholder text as a hint, not a label; it disappears when the user types.
 
-- Disabled booking button: native `disabled` prevents focus and screen readers may miss why disabled. Provide `aria-describedby` with reason or use `aria-disabled` with focusable element.
-
-- Status badge relies on color. It has text, but verify color contrast and add `role="status"` for dynamic changes.
-
-**Low priority / polish (optional)**
-
-- Verify color contrast for light gray text and placeholders at small sizes.
-- Ensure consistent focus styles for interactive elements (filters, cards, buttons).
-
-**Concrete code fix snippets**
-
-1) Search input (add label + id):
-
+**Fix:**
 ```tsx
 <label className="sr-only" htmlFor="centers-search">Search service centers</label>
-<input id="centers-search" aria-label="Search service centers" ... />
+<input
+  id="centers-search"
+  type="text"
+  aria-label="Search service centers"
+  placeholder="Search centers..."
+  ...
+/>
 ```
 
-2) Filter buttons (aria-pressed):
+---
 
+### 2. Filter buttons do not announce selected state
+
+**Problem:** Filter buttons (e.g. All / Available / Unavailable) have no `aria-pressed` attribute. Keyboard and screen reader users cannot tell which filter is active.
+
+**Fix:**
 ```tsx
-<button aria-pressed={filter === 'all'} onClick={() => setFilter('all')}>All</button>
+<button
+  aria-pressed={activeFilter === 'all'}
+  onClick={() => setActiveFilter('all')}
+>
+  All
+</button>
 ```
 
-3) Announce refresh (aria-live):
+---
 
+### 3. Auto-refresh updates are silent for screen reader users
+
+**Problem:** The page auto-refreshes the center list every N seconds. The visual `lastUpdated` timestamp updates, but there is no accessible live announcement.
+
+**Fix:** Add a visually hidden `aria-live` region that announces updates:
 ```tsx
-<div aria-live="polite" className="sr-only">{lastUpdated ? `List updated at ${lastUpdated.toLocaleTimeString()}` : ''}</div>
+<div aria-live="polite" className="sr-only">
+  {lastUpdated ? `Service center list updated at ${lastUpdated.toLocaleTimeString()}` : ''}
+</div>
 ```
 
-4) Decorative SVGs:
+---
 
+### 4. Decorative icons are read aloud by screen readers
+
+**Problem:** SVG icons used purely for decoration do not have `aria-hidden="true"`. Screen readers attempt to read them, creating noise.
+
+**Fix:** Add to every decorative SVG:
 ```tsx
-<svg aria-hidden="true" focusable="false" ...>...</svg>
+<svg aria-hidden="true" focusable="false" ...>
+  ...
+</svg>
 ```
 
-5) Card semantics + keyboard activation:
+---
 
+## Medium Priority Issues
+
+### 5. Center cards use `<div>` wrapper with no semantics
+
+**Problem:** Cards are `<div>` elements. There is no landmark, heading, or focusable wrapper. Keyboard-only users cannot navigate to or activate them.
+
+**Fix:** Use `<article>` with `tabIndex` and keyboard handler:
 ```tsx
 <article
-	tabIndex={0}
-	role="group"
-	aria-labelledby={`center-${center.centerId}-title`}
-	onKeyDown={(e) => { if (e.key === 'Enter') navigate(`/book/${center.centerId}`) }}
+  tabIndex={0}
+  aria-labelledby={`center-${center.centerId}-title`}
+  onKeyDown={(e) => {
+    if (e.key === 'Enter' || e.key === ' ') navigate(`/book/${center.centerId}`)
+  }}
 >
-	<h3 id={`center-${center.centerId}-title`}>{center.name}</h3>
+  <h3 id={`center-${center.centerId}-title`}>{center.name}</h3>
 </article>
 ```
 
-6) Disabled book button explanation:
+---
 
+### 6. Disabled booking button gives no explanation
+
+**Problem:** When a center is full or unavailable, the Book button is set to `disabled`. Native `disabled` removes focus and screen readers may not say why.
+
+**Fix:** Use `aria-disabled` with visible/hidden explanation text:
 ```tsx
 <button
-	disabled={!available}
-	aria-describedby={`book-desc-${center.centerId}`}
+  aria-disabled={!center.isAvailable}
+  aria-describedby={`center-${center.centerId}-status`}
+  onClick={() => center.isAvailable && navigate(`/book/${center.centerId}`)}
 >
-	Book
+  Book
 </button>
-<span id={`book-desc-${center.centerId}`} className="sr-only">Booking unavailable because center is closed</span>
+<span id={`center-${center.centerId}-status`} className="sr-only">
+  {center.isAvailable ? '' : 'This center is currently unavailable for booking.'}
+</span>
 ```
 
-**Testing & verification checklist**
+---
 
-- Run automated scans (axe-core, Pa11y) against the Service Centers page.
-- Manual keyboard test: Tab order, Enter/Space activation for card and controls, clear search button.
-- Screen reader smoke test (NVDA/VoiceOver): check labels, live region announcements, and ARIA pressed states.
-- Contrast check for all text colors (WCAG AA: 4.5:1 normal text, 3:1 large text).
+### 7. Status badge relies on colour only
 
+**Problem:** Available / Unavailable status is shown with a coloured dot. Users with colour blindness may not distinguish states.
 
-Document produced by reviewing the UI code of Service Centers page and card components.
+**Fix:**
+- Ensure the badge has a text label (not just a dot), e.g. "Available" or "Unavailable".
+- Add `role="status"` if the badge changes dynamically.
+- Verify colour contrast ratio is at least 4.5:1 for text and 3:1 for UI components.
+
+---
+
+## Low Priority / Polish
+
+| Issue | Recommendation |
+|-------|---------------|
+| Placeholder text contrast | Placeholder text is often light grey. Verify contrast ratio meets 4.5:1. |
+| Focus ring visibility | Ensure all interactive elements (filter buttons, cards, Book button) have a visible focus indicator (not just the default outline). |
+| Skip navigation link | Add a "Skip to main content" link at the top of the page for keyboard users who want to bypass the nav bar. |
+| Loading state | Announce loading state to screen readers with `aria-busy="true"` on the list container while fetching. |
+
+---
+
+## Availability Data Accessibility Note
+
+The `isAvailable` field returned by `GET /api/service-centers/{id}/availability` reflects real-time status. If the status badge is updated dynamically (e.g. via polling), the `aria-live` region must announce the change to screen reader users.
+
+---
+
+## Testing Checklist
+
+- [ ] Navigate the page using keyboard only (Tab, Enter, Space, arrow keys).
+- [ ] Test with NVDA (Windows) or JAWS screen reader.
+- [ ] Test with macOS VoiceOver.
+- [ ] Run axe DevTools browser extension and resolve all critical and serious violations.
+- [ ] Verify all form inputs have visible or sr-only labels.
+- [ ] Verify all interactive elements are keyboard-focusable.
+- [ ] Verify colour contrast with Colour Contrast Analyser (WCAG AA minimum).
+
+---
+
+*Document generated from inspecting: `ServiceCentersPage.tsx`, `ServiceCenterCard.tsx`, `useServiceCenters.ts` (Sprint 1 build  March 2026).*

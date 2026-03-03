@@ -1,62 +1,111 @@
-**SCRUM-19 — How to register and login (User Guide)**
+﻿# SCRUM-19  User Registration and Login Guide
 
-**Summary**
-This guide is for new users who want to use the booking system. It shows simple steps to register account and login. Also it has troubleshooting tips and where to put screenshots.
+## Summary
 
-**Scope**
-- This document covers creating account (register) and login steps for normal users.
-- Screenshots should be added in `docs/sprints/sprint-1/development-docs/assets/screenshots/` (see image placeholders below).
+Step-by-step guide for end users registering and logging in to QueueLanka Pro. Content reflects the actual behaviour observed in `AuthService.cs` and `AuthController.cs` as implemented in Sprint 1.
 
-**Register — step by step**
+---
 
-1. Open website and go to `Register` or visit `/auth/register` page.
-2. Fill fields:
-   - Username: only letters, numbers, underscore, 3–50 characters.
-   - Email: a valid email address.
-   - Password: at least 8 characters and include uppercase, lowercase, number and special char.
-   - Role: choose `citizen` if you are normal user. If you are `officer` you must enter `centerId` (ask admin for correct id).
-3. Click `Submit` or `Register` button.
-4. If registration success you will see message and your user id. Now you can login.
+## Before You Start
 
-**Login — step by step**
+- You need a web browser and internet access.
+- The frontend runs at `http://localhost:5173` (local dev) or the deployed URL.
+- API base: `http://localhost:5000/api` (local dev).
 
-1. Go to `Login` or `/auth/login` page.
-2. Enter your `username` and `password`.
-3. Click `Login`.
-4. If success, you receive access token and refresh token and go to dashboard.
+---
 
-**Screenshots**
+## Registration
 
-- `docs/sprints/sprint-1/development-docs/assets/screenshots/register.png` — registration form filled example
-- `docs/sprints/sprint-1/development-docs/assets/screenshots/register-success.png` — registration success message
-- `docs/sprints/sprint-1/development-docs/assets/screenshots/login.png` — login form
-- `docs/sprints/sprint-1/development-docs/assets/screenshots/login-success.png` — logged in dashboard
+### Step-by-step
 
-**Common problems and troubleshooting**
+1. Navigate to `/register` (or click **Register** on the landing page).
+2. Fill in the form:
 
-- Problem: "I get validation error for password"
-  - Cause: password missing required characters or too short.
-  - Fix: use at least 8 characters and include uppercase, lowercase, number and special symbol.
+   | Field | Rules |
+   |-------|-------|
+   | **Username** | 3 to 50 characters; letters, digits, and underscores only. |
+   | **Email** | Valid email address; max 100 characters. |
+   | **Password** | 8 to 100 characters; must include uppercase, lowercase, digit, and special character. |
+   | **Role** | Choose `citizen` (regular user) or `officer` (service center staff). |
+   | **Center ID** | Required only for `officer` role. Ask your admin for the correct ID. |
 
-- Problem: "Username or email already registered"
-  - Cause: account exists with same username or email.
-  - Fix: try login or use different email/username. If you forgot password contact support.
+3. Click **Submit / Register**.
+4. On success you receive `201 Created` with:
+   ```json
+   { "userId": 42, "username": "jdoe_01", "role": "citizen" }
+   ```
+5. You can log in immediately. No email verification step is required in the current build (email verification is disabled in Sprint 1).
 
-- Problem: "Invalid credentials" on login
-  - Cause: wrong username or password.
-  - Fix: check spelling, caps lock, and try password reset if still not working.
+### What the system does on registration
 
-- Problem: "Account is deactivated"
-  - Cause: admin disabled your account.
-  - Fix: contact support or admin to reactivate account.
+- Hashes your password with BCrypt (work factor 12) before storing. Plain passwords are never saved.
+- Checks for duplicate username and email; returns an error if either exists.
+- Sets your account to active and email-verified by default.
 
-- Problem: "Cannot register as officer — centerId required"
-  - Cause: officer role needs center id.
-  - Fix: ask service center admin for the correct `centerId` and enter it.
+---
 
-**Security tips for users**
+## Login
 
-- Use strong password and do not share it.
-- If you are on public computer, logout and close browser.
-- Use secure network (avoid public Wi-Fi) when possible.
+### Step-by-step
 
+1. Navigate to `/login` (or click **Login** on the landing page).
+2. Enter your **username** and **password**.
+3. Click **Login**.
+4. On success (`200 OK`) you receive:
+
+   ```json
+   {
+     "token": "<jwt-access-token>",
+     "refreshToken": "<base64-string>",
+     "expiresIn": 3600,
+     "role": "citizen"
+   }
+   ```
+
+   - `token` is the JWT access token, valid for 60 minutes.
+   - `refreshToken` is the long-lived token (7 days) used to renew the access token.
+   - `expiresIn` is seconds until access token expires (3600 = 60 min).
+
+5. The frontend attaches `Authorization: Bearer <token>` to all subsequent API requests automatically.
+
+---
+
+## Common Problems and Fixes
+
+| Problem | Likely Cause | Fix |
+|---------|-------------|-----|
+| Validation error on password | Password too short or missing required char types. | Use at least 8 chars with uppercase, lowercase, digit, and special char. |
+| `DUPLICATE_USERNAME` | Username already taken. | Choose a different username. |
+| `DUPLICATE_EMAIL` | Email already registered. | Log in with that email or use a different one. |
+| `INVALID_ROLE` | Role submitted is not citizen, officer, or admin. | Select from the listed roles. |
+| `CENTER_REQUIRED` | Chose officer role but left Center ID empty. | Enter the Center ID provided by your admin. |
+| `INVALID_CREDENTIALS` on login | Wrong username or password. | Check spelling, turn off Caps Lock, try again. Error is intentionally generic. |
+| `ACCOUNT_DISABLED` | Admin has disabled your account. | Contact your system administrator. |
+| Token expired on next request | Access token valid for 60 min only. | Log in again or wait for the frontend to auto-refresh via the refresh token. |
+
+---
+
+## Security Tips
+
+- Use a strong, unique password.
+- Never share your password or access token.
+- On a shared computer, log out before closing the browser.
+- Access tokens expire in 60 minutes; refresh tokens expire in 7 days.
+- The system never says which field caused a login failure to prevent user enumeration attacks.
+
+---
+
+## Screenshots
+
+Place screenshots in `docs/sprints/sprint-1/development-docs/assets/screenshots/`:
+
+| Filename | Description |
+|----------|-------------|
+| `register-form.png` | Registration form with fields filled |
+| `register-success.png` | Success message after registration |
+| `login-form.png` | Login page |
+| `login-success.png` | Dashboard after successful login |
+
+---
+
+*Document generated from source code: `AuthController.cs`, `AuthService.cs`, `RegisterPage.tsx`, `LoginPage.tsx`.*

@@ -1,116 +1,240 @@
-**SCRUM-30 — Service Center Listing API Contract**
+﻿# SCRUM-30  Service Center Listing API Contract
 
-**Summary**
-This document defines the API contract for service center listing and related endpoints. It describes available endpoints, request and response formats, and the data models returned to clients. The contract is based on the server implementation in `backend/QueueLanka.API` (controller: `ServiceCenterController`, service: `ServiceCenterService`, DTOs under `DTOs/ServiceCenter`).
+## Summary
 
-**Endpoints**
+Full API contract for service center endpoints. Derived from `ServiceCenterController.cs`, `ServiceCenterService.cs`, and all DTOs under `DTOs/ServiceCenter/`.
 
-- `GET /api/service-centers`
-	- Description: Returns all service centers with availability information and metadata (total count, correlation id).
-	- Response: `200 OK` with `ApiResponse<IEnumerable<ServiceCenterDto>>`.
+---
 
-- `GET /api/service-centers/{id}`
-	- Description: Returns a single service center by id with detailed fields.
-	- Parameters: `id` (int, path)
-	- Responses:
-		- `200 OK` -> `ApiResponse<ServiceCenterDto>`
-		- `400 Bad Request` -> `ErrorResponse` (invalid id)
-		- `404 Not Found` -> `ErrorResponse` (center not found)
+## Base Route
 
-- `GET /api/service-centers/{id}/availability`
-	- Description: Returns boolean availability for the specified center (considers active flag and today's availability schedule).
-	- Responses:
-		- `200 OK` -> `ApiResponse<bool>`
-		- `400/404` -> `ErrorResponse`
+`/api/service-centers`
 
-- `GET /api/service-centers/{id}/location`
-	- Description: Returns structured location record for center (may be null if not set).
-	- Responses: `ApiResponse<CenterLocationDto>` or errors.
+---
 
-- `POST /api/service-centers` (admin only)
-	- Description: Create a new service center. Request body: `CreateServiceCenterRequestDto`.
-	- Responses: `201 Created` -> `ApiResponse<ServiceCenterDto>`; errors for validation, conflict, auth.
+## Endpoints
 
-- `PUT /api/service-centers/{id}/location` (admin only)
-	- Description: Upsert structured location for center. Request body: `UpsertLocationRequestDto`.
+### 1. List All Centers  `GET /api/service-centers`
 
-**Request / Response wrappers**
+**Auth:** None required.
 
-- Successful responses use `ApiResponse<T>` with fields: `success` (true), `data` (T), optional `metadata` with `timestamp`, `totalCount`, and `correlationId`, and `message`.
-- Errors use standardized `ErrorResponse` with `success` (false), `code`, `message`, optional `details`, `validationErrors`, `timestamp`, `path`, and `correlationId`.
+**Response `200 OK`:**
+```json
+{
+  "success": true,
+  "data": [ /* array of ServiceCenterDto */ ],
+  "metadata": { "timestamp": "...", "totalCount": 5, "correlationId": "..." },
+  "message": null
+}
+```
 
-**Data models (DTOs)**
+**Notes:**
+- Returns all centers regardless of `isActive` status (filtering is UI-side).
+- `metadata.totalCount` contains the count of items in `data`.
 
-- `ServiceCenterDto` (returned by list and single endpoints)
-	- `centerId` (int)
-	- `name` (string)
-	- `address` (string)
-	- `phone` (string | null)
-	- `email` (string | null)
-	- `description` (string | null)
-	- `timezone` (string) — IANA timezone identifier
-	- `capacity` (int) — max tokens per day
-	- `averageServiceTimeMinutes` (int)
-	- `openingTime` (string, "HH:mm") — local opening time (from availability or center defaults)
-	- `closingTime` (string, "HH:mm") — local closing time
-	- `isAvailable` (bool) — computed: center.IsActive && (availability?.IsAvailable ?? true)
-	- `isActive` (bool)
-	- `createdAt` (DateTime)
-	- `location` (`CenterLocationDto` | null)
+---
 
-- `CenterLocationDto` (embedded in `ServiceCenterDto` or returned separately)
-	- `locationId` (int)
-	- `streetAddress`, `city`, `district`, `province`, `postalCode`, `country` (strings)
-	- `latitude`, `longitude` (decimal? — optional)
-	- `googleMapsUrl` (string? — optional)
-	- `landmark` (string? — optional)
+### 2. Get Center by ID  `GET /api/service-centers/{id}`
 
-- `CreateServiceCenterRequestDto` (request body for POST)
-	- Required: `name`, `address`, `timezone`, `openingTime` (HH:mm), `closingTime` (HH:mm)
-	- Optional: `phone`, `email`, `description`, `capacity`, `averageServiceTimeMinutes`, location fields (`streetAddress`, `city`, `latitude`, `longitude`, etc.)
+**Auth:** None required.
 
-**Availability semantics**
+**Path parameter:** `id` (int, required)
 
-- The service calculates availability per center for today via repository `GetAvailabilityForDateAsync`. When an availability record exists for today, `openingTime`/`closingTime` may be overridden and `IsAvailable` reflects that availability. If no availability record exists, center defaults are used.
-- `isAvailable` returned in DTO is a boolean representing whether the center is both active (`IsActive`) and available according to today's schedule.
+**Responses:**
 
-**Validation and errors**
+| Status | Condition |
+|--------|-----------|
+| 200 OK | Center found; returns `ApiResponse<ServiceCenterDto>` |
+| 400 | `id <= 0`  `INVALID_SERVICE_CENTER_DATA` |
+| 404 | Center not found  `SERVICE_CENTER_NOT_FOUND` |
 
-- Input validation errors return `ErrorResponse` with code `VALIDATION_ERROR` and list of `validationErrors`.
-- If the requested center id <= 0, controller throws `InvalidServiceCenterDataException` which yields 400 with a descriptive code.
-- Not found results in `ServiceCenterNotFoundException` which yields 404 and an error code.
+---
 
-**Usage examples**
+### 3. Check Availability  `GET /api/service-centers/{id}/availability`
 
-- Get all centers (fetch and read metadata):
+**Auth:** None required.
 
-	GET /api/service-centers
+**Computed value:**
+```
+isAvailable = center.IsActive && (dateSpecificAvailability?.IsAvailable ?? true)
+```
 
-	Response: 200
-	{
-		"success": true,
-		"data": [ { /* ServiceCenterDto */ } ],
-		"metadata": { "totalCount": 5, "correlationId": "..." },
-		"message": "Retrieved 5 service center(s)"
-	}
+Lookup order:
+1. Check `CenterAvailability` table for a row matching `centerId` + today's date  use that record's `IsAvailable` (and optionally overridden `openingTime`/`closingTime` and `reason`).
+2. If no date-specific record, fall back to the center's `CenterOperatingDay` weekly schedule.
 
-- Check availability for center 12:
+**Response `200 OK`:**
+```json
+{ "success": true, "data": true, "metadata": { ... } }
+```
 
-	GET /api/service-centers/12/availability
+**Error responses:** 400 `INVALID_SERVICE_CENTER_DATA`, 404 `SERVICE_CENTER_NOT_FOUND`.
 
-	Response: 200
-	{
-		"success": true,
-		"data": true,
-		"metadata": { "correlationId": "..." },
-		"message": "Service center is currently available"
-	}
+---
 
-**Implementation notes (from code)**
+### 4. Get Location  `GET /api/service-centers/{id}/location`
 
-- `ServiceCenterService.GetAllServiceCentersAsync` maps domain model to `ServiceCenterDto` and queries today's availability for each center.
-- `OpeningTime` and `ClosingTime` in DTO are strings in `HH:mm` format produced from availability (if present) or the center defaults.
-- Creation (`POST`) validates opening/closing times and location pairing (latitude with longitude).
+**Auth:** None required.
 
+**Response `200 OK`:**
+```json
+{
+  "success": true,
+  "data": {
+    "locationId": 1,
+    "streetAddress": "No. 1, Main Street",
+    "city": "Colombo",
+    "district": "Colombo",
+    "province": "Western Province",
+    "postalCode": "00100",
+    "country": "Sri Lanka",
+    "latitude": 6.927079,
+    "longitude": 79.861244,
+    "googleMapsUrl": "https://maps.google.com/...",
+    "landmark": "Opposite Keells supermarket"
+  }
+}
+```
 
-Document created by inspecting `ServiceCenterController`, `ServiceCenterService`, and DTOs under `backend/QueueLanka.API/DTOs/ServiceCenter`.
+**Error responses:** 400 `INVALID_SERVICE_CENTER_DATA`, 404 `LOCATION_NOT_FOUND`.
+
+---
+
+### 5. Create Center  `POST /api/service-centers`
+
+**Auth:** `[Authorize(Roles = "admin")]`
+
+**Request body (`CreateServiceCenterRequestDto`):**
+
+| Field | Type | Required | Validation |
+|-------|------|----------|------------|
+| `name` | string | Yes | 2100 chars |
+| `address` | string | Yes | 5255 chars |
+| `timezone` | string | Yes | IANA timezone (e.g. `Asia/Colombo`); max 50 chars |
+| `openingTime` | string | Yes | `HH:mm` format (e.g. `08:00`) |
+| `closingTime` | string | Yes | `HH:mm` format |
+| `phone` | string? | No | Valid phone; max 20 chars |
+| `email` | string? | No | Valid email; max 100 chars |
+| `description` | string? | No | Max 1000 chars |
+| `capacity` | int | No | 110000; default `50` |
+| `averageServiceTimeMinutes` | int | No | 1480; default `15` |
+| `isActive` | bool | No | default `true` |
+| `streetAddress`, `city`, `district`, `province`, `postalCode`, `country` | string? | No | Optional location fields; create a `center_locations` row atomically |
+| `latitude` | decimal? | No | -90 to +90 (must be paired with `longitude`) |
+| `longitude` | decimal? | No | -180 to +180 (must be paired with `latitude`) |
+| `googleMapsUrl` | string? | No | Valid URL; max 500 chars |
+| `landmark` | string? | No | Max 255 chars |
+
+**Behaviour on creation:**
+- Seeds a default MondayFriday operating schedule (`CenterOperatingDay` rows).
+- If any location field is provided, creates a `center_locations` row atomically.
+
+**Response `201 Created`:**
+```json
+{ "success": true, "data": { /* ServiceCenterDto */ } }
+```
+
+**Error responses:**
+
+| Status | Code | Condition |
+|--------|------|-----------|
+| 400 | `VALIDATION_ERROR` | Missing required fields or format errors |
+| 401 | `TOKEN_MISSING` / `TOKEN_INVALID` | No or invalid JWT |
+| 403 | `FORBIDDEN` | Not an admin |
+| 409 | `DUPLICATE_SERVICE_CENTER` | Center with same name already exists |
+| 500 | `INTERNAL_ERROR` | Unexpected error |
+
+---
+
+### 6. Upsert Location  `PUT /api/service-centers/{id}/location`
+
+**Auth:** `[Authorize(Roles = "admin")]`
+
+**Request body (`UpsertLocationRequestDto`):** All fields optional, same structure as the location fields in the create request. `latitude` and `longitude` must be supplied together.
+
+**Response `200 OK`:** Updated `ApiResponse<ServiceCenterDto>` including new location.
+
+**Error responses:** 400, 401, 403, 404.
+
+---
+
+## Data Model: `ServiceCenterDto`
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `centerId` | int | Primary key |
+| `name` | string | Display name |
+| `address` | string | Physical address |
+| `phone` | string? | Optional |
+| `email` | string? | Optional |
+| `description` | string? | Optional |
+| `timezone` | string | IANA timezone identifier |
+| `capacity` | int | Max tokens per day |
+| `averageServiceTimeMinutes` | int | Default 15 |
+| `openingTime` | string | `HH:mm`  may be overridden by `CenterAvailability` |
+| `closingTime` | string | `HH:mm`  may be overridden by `CenterAvailability` |
+| `isAvailable` | bool | Computed: `IsActive && availability?.IsAvailable` |
+| `isActive` | bool | Admin-controlled on/off switch |
+| `createdAt` | DateTime | UTC creation timestamp |
+| `location` | CenterLocationDto? | Null if no location row exists |
+
+## Data Model: `CenterLocationDto`
+
+| Field | Type |
+|-------|------|
+| `locationId` | int |
+| `streetAddress` | string? |
+| `city` | string? |
+| `district` | string? |
+| `province` | string? |
+| `postalCode` | string? |
+| `country` | string (default `Sri Lanka`) |
+| `latitude` | decimal? |
+| `longitude` | decimal? |
+| `googleMapsUrl` | string? |
+| `landmark` | string? |
+
+---
+
+## Availability Schedule Logic
+
+Two tables control when a center is open:
+
+| Table | Purpose |
+|-------|---------|
+| `CenterOperatingDay` | Default weekly schedule (day of week, `isOpen`, `openingTime`, `closingTime`) |
+| `CenterAvailability` | Per-date override (a specific date can be marked unavailable with a `reason`, or have different hours) |
+
+The service checks `CenterAvailability` first. If a matching row exists for today, it takes precedence over the weekly schedule.
+
+---
+
+## Response Wrappers
+
+**Success (`ApiResponse<T>`):**
+```json
+{
+  "success": true,
+  "data": { ... },
+  "metadata": { "timestamp": "2026-03-01T10:00:00Z", "totalCount": null, "correlationId": "abc-123" },
+  "message": null
+}
+```
+
+**Error (`ErrorResponse`):**
+```json
+{
+  "success": false,
+  "code": "SERVICE_CENTER_NOT_FOUND",
+  "message": "Service center with id 99 was not found.",
+  "details": null,
+  "validationErrors": null,
+  "timestamp": "2026-03-01T10:01:00Z",
+  "path": "/api/service-centers/99",
+  "correlationId": "abc-123"
+}
+```
+
+---
+
+*Document generated from source code: `ServiceCenterController.cs`, `ServiceCenterService.cs`, `DTOs/ServiceCenter/`.*
