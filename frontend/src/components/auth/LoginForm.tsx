@@ -109,34 +109,32 @@ export default function LoginForm() {
   return (
     <div
       className="h-screen flex items-center justify-center p-4 sm:p-6 font-sans text-gray-900 overflow-hidden bg-cover bg-center relative"
-      style={{ backgroundImage: "url('https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?q=80&w=2000&auto=format&fit=crop')" }}
+      style={{ backgroundImage: "url('https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=2000&q=80')" }}
     >
-      <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" />
-      <div className="relative z-10 flex w-full max-w-[1000px] bg-white rounded-2xl shadow-2xl overflow-hidden h-full max-h-[850px]">
+      <div className="absolute inset-0 bg-[#1a1c23]/80 backdrop-blur-sm" />
+      <div className="relative z-10 flex w-full max-w-[1000px] bg-white rounded-[2rem] shadow-2xl overflow-hidden h-[600px] max-h-screen">
         {/* Left Side: Form */}
-        <div className="w-full lg:w-[50%] p-6 sm:p-10 lg:pl-12 lg:pr-10 flex flex-col justify-start overflow-y-auto custom-scrollbar">
+        <div className="w-full lg:w-[50%] p-8 sm:p-12 flex flex-col justify-center overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
 
           {/* Logo */}
-          <div className="flex items-center gap-2 mb-8">
-            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shadow-sm">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M2 17L12 22L22 17" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M2 12L12 17L22 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <Link to="/" className="flex items-center gap-2 mb-8 w-max">
+            <div className="w-8 h-8 rounded-full bg-[#78d64b] flex items-center justify-center shadow-sm">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                  <path d="M12 2L2 22h20L12 2z" fill="white" stroke="none" />
               </svg>
             </div>
-            <span className="text-xl font-bold text-[#142646] tracking-tight">QueueLanka</span>
-          </div>
+            <span className="text-xl font-bold text-[#1a1c23] tracking-tight">QueueLanka</span>
+          </Link>
 
-          <h1 className="text-[28px] font-bold text-[#142646] mb-2">Log in to your Account</h1>
-          <p className="text-gray-500 text-[14px] mb-8">Welcome back! Select method to log in:</p>
+          <h1 className="text-3xl font-bold text-[#1a1c23] mb-2 tracking-tight">Log in to your Account</h1>
+          <p className="text-gray-500 text-sm mb-6">Welcome back! Select method to log in:</p>
 
-          {apiError && <div className="px-4 py-3 mb-6 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">{apiError}</div>}
+          {apiError && <div className="px-4 py-3 mb-6 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm font-medium">{apiError}</div>}
 
           {/* Social Auth Buttons */}
-          <div className="flex gap-4 mb-8">
-            <button type="button" className="flex-1 py-2.5 px-4 bg-white border border-gray-200 rounded-lg text-[13px] font-semibold text-gray-700 flex items-center justify-center gap-2.5 hover:bg-gray-50 transition-colors shadow-sm">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <div className="flex gap-4 mb-6">
+            <button type="button" className="flex-1 py-3 px-4 bg-white border border-gray-200 rounded-full text-sm font-bold text-[#1a1c23] flex items-center justify-center gap-2.5 hover:bg-gray-50 transition-colors shadow-sm">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.75h3.57c2.08-1.92 3.28-4.74 3.28-8.07z" fill="#4285F4" />
                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.75c-.99.66-2.26 1.05-3.71 1.05-2.85 0-5.27-1.93-6.13-4.52H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
                 <path d="M5.87 14.12c-.22-.66-.35-1.36-.35-2.12s.13-1.46.35-2.12V7.04H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.96l3.69-2.84z" fill="#FBBC05" />
@@ -144,24 +142,24 @@ export default function LoginForm() {
               </svg>
               Google
             </button>
-            <button type="button" className="flex-1 py-2.5 px-4 bg-white border border-gray-200 rounded-lg text-[13px] font-semibold text-gray-700 flex items-center justify-center gap-2.5 hover:bg-gray-50 transition-colors shadow-sm">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <button type="button" className="flex-1 py-3 px-4 bg-white border border-gray-200 rounded-full text-sm font-bold text-[#1a1c23] flex items-center justify-center gap-2.5 hover:bg-gray-50 transition-colors shadow-sm">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" fill="#1877F2" />
               </svg>
               Facebook
             </button>
           </div>
 
-          <div className="relative flex items-center justify-center mb-8">
+          <div className="relative flex items-center justify-center mb-6">
             <span className="absolute inset-x-0 h-px bg-gray-200"></span>
-            <span className="relative bg-white px-3 text-[12px] text-gray-400 font-medium tracking-wide">or continue with email</span>
+            <span className="relative bg-white px-3 text-xs text-gray-400 font-semibold tracking-wider uppercase">or continue with email</span>
           </div>
 
           <form onSubmit={handleSubmit} noValidate>
             {/* Username/Email */}
             <div className="mb-4">
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="3" y="5" width="18" height="14" rx="2" ry="2"></rect><polyline points="3 7 12 13 21 7"></polyline>
                   </svg>
@@ -171,23 +169,23 @@ export default function LoginForm() {
                   name="username"
                   type="text"
                   autoComplete="username"
-                  placeholder="Email"
+                  placeholder="Email or Username"
                   value={form.username}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className={`w-full pl-10 pr-4 py-3.5 bg-[#F9FAFB] border ${touched.username && errors.username ? "border-red-400" : "border-gray-200"} rounded-lg text-sm outline-none transition-all duration-200 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600`}
+                  className={`w-full pl-11 pr-4 py-3.5 bg-gray-50 border ${touched.username && errors.username ? "border-red-400" : "border-gray-200"} rounded-xl text-sm outline-none transition-all duration-200 focus:bg-white focus:border-[#78d64b] focus:ring-1 focus:ring-[#78d64b] text-[#1a1c23] font-medium`}
                   disabled={loading}
                 />
               </div>
               {touched.username && errors.username && (
-                <span className="block text-xs text-red-500 mt-1.5" role="alert">{errors.username}</span>
+                <span className="block text-xs text-red-500 mt-1.5 font-medium" role="alert">{errors.username}</span>
               )}
             </div>
 
             {/* Password */}
-            <div className="mb-6">
+            <div className="mb-5">
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                   </svg>
@@ -201,12 +199,12 @@ export default function LoginForm() {
                   value={form.password}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  className={`w-full pl-10 pr-10 py-3.5 bg-[#F9FAFB] border ${touched.password && errors.password ? "border-red-400" : "border-gray-200"} rounded-lg text-sm outline-none transition-all duration-200 focus:bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600`}
+                  className={`w-full pl-11 pr-11 py-3.5 bg-gray-50 border ${touched.password && errors.password ? "border-red-400" : "border-gray-200"} rounded-xl text-sm outline-none transition-all duration-200 focus:bg-white focus:border-[#78d64b] focus:ring-1 focus:ring-[#78d64b] text-[#1a1c23] font-medium`}
                   disabled={loading}
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600"
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-[#1a1c23] transition-colors"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
@@ -217,110 +215,52 @@ export default function LoginForm() {
                 </button>
               </div>
               {touched.password && errors.password && (
-                <span className="block text-xs text-red-500 mt-1.5" role="alert">{errors.password}</span>
+                <span className="block text-xs text-red-500 mt-1.5 font-medium" role="alert">{errors.password}</span>
               )}
             </div>
 
             {/* Options Row */}
             <div className="flex items-center justify-between mb-8">
               <label className="flex items-center gap-2 cursor-pointer group">
-                <input type="checkbox" className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 cursor-pointer" />
-                <span className="text-[13px] font-medium text-gray-500">Remember me</span>
+                <input type="checkbox" className="w-4 h-4 text-[#0a5c4e] bg-gray-100 border-gray-300 rounded focus:ring-[#78d64b] cursor-pointer" />
+                <span className="text-[13px] font-semibold text-gray-500 group-hover:text-[#1a1c23] transition-colors">Remember me</span>
               </label>
-              <a href="#" className="text-[13px] font-semibold text-blue-600 hover:underline" onClick={(e) => e.preventDefault()}>Forgot Password?</a>
+              <a href="#" className="text-[13px] font-bold text-[#0a5c4e] hover:text-[#78d64b] transition-colors" onClick={(e) => e.preventDefault()}>Forgot Password?</a>
             </div>
 
-            <button type="submit" className="w-full py-3.5 bg-[#0C5AFA] text-white rounded-lg text-sm font-semibold mb-6 transition-colors hover:bg-blue-700 active:bg-blue-800 disabled:opacity-70 disabled:cursor-not-allowed shadow-md" disabled={loading}>
+            <button type="submit" className="w-full py-4 bg-[#1a1c23] text-white rounded-full text-sm font-bold mb-6 transition-all hover:bg-black active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed shadow-md" disabled={loading}>
               {loading ? "Logging in…" : "Log in"}
             </button>
           </form>
 
-          <p className="text-center text-[13px] text-gray-500 m-0">
-            Don't have an account? <Link to="/register" className="text-blue-600 font-semibold hover:underline">Create an account</Link>
+          <p className="text-center text-[13px] text-gray-500 font-medium">
+            Don't have an account? <Link to="/register" className="text-[#0a5c4e] font-bold hover:underline hover:text-[#78d64b]">Create an account</Link>
           </p>
         </div>
 
         {/* Right Side: Visual Section */}
-        <div className="hidden lg:flex w-[50%] bg-[#0f5cff] relative overflow-hidden flex-col items-center justify-center p-12 text-center text-white">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#0C5AFA] to-[#0A4BD6]" />
-
-          {/* Abstract Rings Background inside blue section */}
-          <div className="absolute w-[600px] h-[600px] border border-white/10 rounded-full" />
-          <div className="absolute w-[450px] h-[450px] border border-white/15 rounded-full" />
-          <div className="absolute w-[300px] h-[300px] border border-white/20 rounded-full bg-white/5" />
+        <div className="hidden lg:flex w-[50%] bg-[#0a5c4e] relative overflow-hidden flex-col items-center justify-center p-12 text-center text-white">
+          <img src="https://images.unsplash.com/photo-1552581234-26160f608093?auto=format&fit=crop&w=800&q=80" alt="Team meeting" className="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-overlay" />
+          <div className="absolute inset-0 bg-[#0a5c4e]/60" />
 
           {/* Foreground Content */}
-          <div className="relative z-10 w-full max-w-[400px]">
-            {/* Slider Logic Handled in Component State */}
-
-            {/* Slide Content */}
-            <div className="transition-opacity duration-500 ease-in-out">
-              {/* Abstract Dashboard Graphic (Changes based on slide) */}
-              <div className="relative w-full aspect-[4/3] bg-white rounded-xl shadow-2xl mb-12 flex flex-col items-start p-4 border border-white/30 overflow-hidden text-gray-300">
-                {currentSlide === 0 && (
-                  <>
-                    <div className="flex items-center gap-1.5 mb-4">
-                      <div className="w-2.5 h-2.5 rounded-full bg-red-400"></div>
-                      <div className="w-2.5 h-2.5 rounded-full bg-yellow-400"></div>
-                      <div className="w-2.5 h-2.5 rounded-full bg-green-400"></div>
-                    </div>
-                    <div className="w-1/2 h-4 bg-blue-100 rounded-full mb-6"></div>
-                    <div className="w-full flex items-center gap-3 mb-4">
-                      <div className="w-8 h-8 rounded-full bg-blue-50"></div>
-                      <div className="flex-1 flex flex-col gap-2">
-                        <div className="w-full h-3 bg-gray-100 rounded-full"></div>
-                        <div className="w-2/3 h-3 bg-gray-100 rounded-full"></div>
-                      </div>
-                    </div>
-                    <div className="w-full flex items-center gap-3 mb-4 opacity-50">
-                      <div className="w-8 h-8 rounded-full bg-gray-100"></div>
-                      <div className="flex-1 flex flex-col gap-2">
-                        <div className="w-full h-3 bg-gray-50 rounded-full"></div>
-                        <div className="w-2/3 h-3 bg-gray-50 rounded-full"></div>
-                      </div>
-                    </div>
-                  </>
-                )}
-                {currentSlide === 1 && (
-                  <div className="w-full h-full flex items-center justify-center">
-                    {/* Mock Graph */}
-                    <svg viewBox="0 0 100 50" className="w-full h-full stroke-blue-500 fill-none" preserveAspectRatio="none">
-                      <path d="M0,50 Q20,30 40,40 T80,10 T100,5" strokeWidth="2" />
-                      <path d="M0,50 L0,50 Q20,30 40,40 T80,10 T100,5 L100,50 Z" className="fill-blue-50 stroke-none" />
-                    </svg>
-                  </div>
-                )}
-                {currentSlide === 2 && (
-                  <div className="w-full h-full flex flex-col items-center justify-center gap-4">
-                    {/* Mock ID Card */}
-                    <div className="w-32 h-20 bg-gray-100 rounded-lg flex items-center px-4 gap-3 shadow-sm border border-gray-200">
-                      <div className="w-8 h-8 rounded-full bg-gray-300"></div>
-                      <div className="flex flex-col gap-1.5 flex-1">
-                        <div className="w-full h-2 bg-gray-300 rounded-full"></div>
-                        <div className="w-1/2 h-2 bg-gray-200 rounded-full"></div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <h2 className="text-[22px] font-bold mb-3 tracking-wide text-white min-h-[60px] flex items-center justify-center">
-                {currentSlide === 0 ? "Skip the queues forever." :
-                  currentSlide === 1 ? "Real-time service tracking." :
-                    "Seamless digital identity."}
-              </h2>
-              <p className="text-[13px] text-blue-100/90 leading-relaxed font-light mb-8 h-10">
-                {currentSlide === 0 ? "Book appointments online and never wait in a government office line again." :
-                  currentSlide === 1 ? "Monitor the status of your applications and requests from an easy-to-use interface." :
-                    "Access all your citizenship services and history securely from one unified account."}
-              </p>
+          <div className="relative z-10 w-full max-w-[380px] bg-white/10 backdrop-blur-md border border-white/20 p-8 rounded-[2rem] shadow-xl">
+            {/* Abstract Decorative Element */}
+            <div className="w-20 h-20 mx-auto bg-[#78d64b] rounded-2xl flex items-center justify-center text-[#074b42] shadow-lg mb-8 transform -rotate-6">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
             </div>
-
-            {/* Pagination Dots */}
-            <div className="flex items-center justify-center gap-2">
-              <button onClick={() => setCurrentSlide(0)} className={`w-1.5 h-1.5 rounded-full transition-all ${currentSlide === 0 ? 'bg-white w-4' : 'bg-white/30'}`}></button>
-              <button onClick={() => setCurrentSlide(1)} className={`w-1.5 h-1.5 rounded-full transition-all ${currentSlide === 1 ? 'bg-white w-4' : 'bg-white/30'}`}></button>
-              <button onClick={() => setCurrentSlide(2)} className={`w-1.5 h-1.5 rounded-full transition-all ${currentSlide === 2 ? 'bg-white w-4' : 'bg-white/30'}`}></button>
+            
+            <h2 className="text-3xl font-bold mb-4 tracking-tight text-white leading-tight">
+                Streamline Your <br/> <span className="text-[#78d64b]">Queue Process</span>
+            </h2>
+            <p className="text-[15px] text-[#a0ccbc] leading-relaxed font-medium mb-8">
+                Log in to monitor live analytics, manage your counters, and reduce customer wait times by up to 98%.
+            </p>
+            
+            <div className="flex items-center justify-center gap-3">
+                <div className="w-12 h-1 bg-[#78d64b] rounded-full"></div>
+                <div className="w-3 h-1 bg-white/30 rounded-full"></div>
+                <div className="w-3 h-1 bg-white/30 rounded-full"></div>
             </div>
           </div>
         </div>
