@@ -1,0 +1,6 @@
+@QueueLanka.Gateway_HostAddress = http://localhost:5012
+
+GET {{QueueLanka.Gateway_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
