@@ -52,7 +52,7 @@ public class ServiceCenterService : IServiceCenterService
         if (dto.Latitude.HasValue != dto.Longitude.HasValue)
             throw new InvalidServiceCenterDataException("Latitude and Longitude must be provided together.");
 
-        var center = new ServiceCenter
+        var center = new Models.ServiceCenter
         {
             Name                      = dto.Name.Trim(),
             Address                   = dto.Address.Trim(),
@@ -142,7 +142,7 @@ public class ServiceCenterService : IServiceCenterService
     // ── Helpers ──────────────────────────────────────────────────
 
     private static ServiceCenterDto MapToDto(
-        ServiceCenter center,
+        Models.ServiceCenter center,
         CenterAvailability? availability,
         bool isAvailable)
     {

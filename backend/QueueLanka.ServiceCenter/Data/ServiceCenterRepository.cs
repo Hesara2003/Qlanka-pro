@@ -14,7 +14,7 @@ public class ServiceCenterRepository : IServiceCenterRepository
             ?? throw new InvalidOperationException("Connection string 'Default' is not configured.");
     }
 
-    public async Task<IEnumerable<ServiceCenter>> GetAllAsync()
+    public async Task<IEnumerable<Models.ServiceCenter>> GetAllAsync()
     {
         const string sql = @"
             SELECT center_id, full_address AS address, name, phone, email, description, timezone,
@@ -32,7 +32,7 @@ public class ServiceCenterRepository : IServiceCenterRepository
             await using var cmd = new MySqlCommand(sql, conn);
             await using var reader = await cmd.ExecuteReaderAsync();
 
-            var centers = new List<ServiceCenter>();
+            var centers = new List<Models.ServiceCenter>();
             while (await reader.ReadAsync())
                 centers.Add(MapServiceCenter((MySqlDataReader)reader));
 
@@ -44,7 +44,7 @@ public class ServiceCenterRepository : IServiceCenterRepository
         }
     }
 
-    public async Task<ServiceCenter?> GetByIdAsync(int centerId)
+    public async Task<Models.ServiceCenter?> GetByIdAsync(int centerId)
     {
         const string sql = @"
             SELECT center_id, full_address AS address, name, phone, email, description, timezone,
@@ -95,7 +95,7 @@ public class ServiceCenterRepository : IServiceCenterRepository
         }
     }
 
-    public async Task<ServiceCenter> CreateAsync(ServiceCenter center)
+    public async Task<Models.ServiceCenter> CreateAsync(Models.ServiceCenter center)
     {
         try
         {
@@ -172,9 +172,9 @@ public class ServiceCenterRepository : IServiceCenterRepository
         }
     }
 
-    private static ServiceCenter MapServiceCenter(MySqlDataReader reader)
+    private static Models.ServiceCenter MapServiceCenter(MySqlDataReader reader)
     {
-        var center = new ServiceCenter
+        var center = new Models.ServiceCenter
         {
             CenterId    = reader.GetInt32(reader.GetOrdinal("center_id")),
             Name        = reader.GetString(reader.GetOrdinal("name")),

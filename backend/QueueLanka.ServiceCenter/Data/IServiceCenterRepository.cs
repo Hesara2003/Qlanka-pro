@@ -4,14 +4,14 @@ namespace QueueLanka.ServiceCenter.Data;
 
 public interface IServiceCenterRepository
 {
-    Task<IEnumerable<ServiceCenter>> GetAllAsync();
-    Task<ServiceCenter?> GetByIdAsync(int centerId);
+    Task<IEnumerable<Models.ServiceCenter>> GetAllAsync();
+    Task<Models.ServiceCenter?> GetByIdAsync(int centerId);
     Task<CenterAvailability?> GetAvailabilityForDateAsync(int centerId, DateTime date);
     Task<IEnumerable<CenterOperatingDay>> GetOperatingDaysAsync(int centerId);
     Task<bool> IsCenterAvailableAsync(int centerId, DateTime date);
 
     /// <summary>Persists a new service center row (and optional location row) atomically.</summary>
-    Task<ServiceCenter> CreateAsync(ServiceCenter center);
+    Task<Models.ServiceCenter> CreateAsync(Models.ServiceCenter center);
 
     /// <summary>
     /// Returns <c>true</c> when a center with the same (case-insensitive) name AND address
