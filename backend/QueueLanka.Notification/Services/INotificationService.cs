@@ -1,11 +1,11 @@
-
+using System;
+using System.Threading.Tasks;
 
 namespace QueueLanka.Notification.Services;
 
 public interface INotificationService
 {
-    /// <summary>
-    /// Dispatches booking confirmation notifications across all configured channels (Email, SMS, etc).
-    /// </summary>
-    Task SendBookingConfirmationAsync(User user, ServiceCenter center, Appointment appointment, Token token);
+    Task SendVerificationEmailAsync(string firstName, string email, string token);
+    Task SendBookingConfirmationAsync(string userName, string userEmail, string centerName, DateTime appointmentDate, TimeSpan appointmentTime, string tokenNumber);
+    Task SendCancellationNoticeAsync(string userName, string userEmail, string centerName, string tokenNumber);
 }
