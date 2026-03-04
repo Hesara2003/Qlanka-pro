@@ -27,7 +27,7 @@ public class AppointmentService : IAppointmentService
     public async Task<AppointmentResponseDto> BookTokenAsync(int userId, BookAppointmentRequestDto requestDto)
     {
         // 1. Validate Service Center exists
-        var center = await _serviceCenterRepository.GetByIdAsync(requestDto.CenterId);
+        var center = await _serviceCenterClient.GetCenterAsync(requestDto.CenterId);
         if (center == null || !center.IsActive)
         {
             throw new ArgumentException("Service center not found or is currently inactive.");
@@ -46,7 +46,7 @@ public class AppointmentService : IAppointmentService
 
         // 3. Conflict Resolution: Unavailable Slots (Is the center open?)
         // Fetch specific day overrides first
-        var specificAvailability = await _serviceCenterRepository.GetAvailabilityForDateAsync(center.CenterId, requestedDate);
+        var specificAvailability = await _serviceCenterClient.GetAvailabilityAsync(center.CenterId, requestedDate);
         if (specificAvailability != null)
         {
             if (!specificAvailability.IsAvailable)
@@ -61,7 +61,7 @@ public class AppointmentService : IAppointmentService
         else
         {
             // Default weekly schedule check
-            var operatingDays = await _serviceCenterRepository.GetOperatingDaysAsync(center.CenterId);
+            var operatingDays = await _serviceCenterClient.GetOperatingDaysAsync(center.CenterId);
             var dayOfWeekStr = requestedDate.DayOfWeek.ToString().ToLower();
             var operatingDay = operatingDays.FirstOrDefault(d => d.DayOfWeek == dayOfWeekStr);
 
@@ -111,10 +111,10 @@ public class AppointmentService : IAppointmentService
         {
             try
             {
-                var user = await _userRepository.GetByIdAsync(userId);
-                if (user != null)
+                // var user = await _userRepository.GetByIdAsync(userId);
+                if (true)
                 {
-                    await _notificationService.SendBookingConfirmationAsync(user, center, createdAppointment, createdToken);
+                    await // TODO: Publish BookingConfirmedEvent to event bus
                 }
             }
             catch (Exception ex)

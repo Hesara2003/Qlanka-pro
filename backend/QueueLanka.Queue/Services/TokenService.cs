@@ -22,7 +22,7 @@ public class TokenService : ITokenService
 
         foreach (var token in tokens)
         {
-            var center = await _serviceCenterRepository.GetByIdAsync(token.CenterId);
+            var center = await _serviceCenterClient.GetCenterAsync(token.CenterId);
             if (center == null) continue;
 
             int? queuePosition = null;
@@ -40,7 +40,7 @@ public class TokenService : ITokenService
                     queuePosition = position; // Number of people ahead
 
                     // Calculate ETA
-                    var availability = await _serviceCenterRepository.GetAvailabilityForDateAsync(token.CenterId, token.IssuedDate);
+                    var availability = await _serviceCenterClient.GetAvailabilityAsync(token.CenterId, token.IssuedDate);
                     var openingTime = availability?.OpeningTime ?? center.OpeningTime;
                     var closingTime = availability?.ClosingTime ?? center.ClosingTime;
                     
