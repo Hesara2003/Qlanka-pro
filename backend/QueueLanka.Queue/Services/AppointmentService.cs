@@ -2,30 +2,25 @@ using QueueLanka.Queue.Data;
 using QueueLanka.Queue.DTOs.Appointment;
 using QueueLanka.Shared.Exceptions;
 using QueueLanka.Queue.Models;
+using QueueLanka.Queue.Integration;
 
 namespace QueueLanka.Queue.Services;
 public class AppointmentService : IAppointmentService
 {
     private readonly IAppointmentRepository _appointmentRepository;
-    private readonly IServiceCenterRepository _serviceCenterRepository;
+    private readonly IServiceCenterClient _serviceCenterClient;
     private readonly ITokenRepository _tokenRepository;
-    private readonly IUserRepository _userRepository;
-    private readonly INotificationService _notificationService;
     private readonly ILogger<AppointmentService> _logger;
 
     public AppointmentService(
         IAppointmentRepository appointmentRepository,
-        IServiceCenterRepository serviceCenterRepository,
+        IServiceCenterClient serviceCenterClient,
         ITokenRepository tokenRepository,
-        IUserRepository userRepository,
-        INotificationService notificationService,
         ILogger<AppointmentService> logger)
     {
         _appointmentRepository = appointmentRepository;
-        _serviceCenterRepository = serviceCenterRepository;
+        _serviceCenterClient = serviceCenterClient;
         _tokenRepository = tokenRepository;
-        _userRepository = userRepository;
-        _notificationService = notificationService;
         _logger = logger;
     }
 

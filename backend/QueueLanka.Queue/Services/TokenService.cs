@@ -1,17 +1,18 @@
 using QueueLanka.Queue.Data;
 using QueueLanka.Queue.DTOs.Token;
+using QueueLanka.Queue.Integration;
 
 namespace QueueLanka.Queue.Services;
 
 public class TokenService : ITokenService
 {
     private readonly ITokenRepository _tokenRepository;
-    private readonly IServiceCenterRepository _serviceCenterRepository;
+    private readonly IServiceCenterClient _serviceCenterClient;
 
-    public TokenService(ITokenRepository tokenRepository, IServiceCenterRepository serviceCenterRepository)
+    public TokenService(ITokenRepository tokenRepository, IServiceCenterClient serviceCenterClient)
     {
         _tokenRepository = tokenRepository;
-        _serviceCenterRepository = serviceCenterRepository;
+        _serviceCenterClient = serviceCenterClient;
     }
 
     public async Task<IEnumerable<UserTokenResponseDto>> GetUserTokensAsync(int userId)
