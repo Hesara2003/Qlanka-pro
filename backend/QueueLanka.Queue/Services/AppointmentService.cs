@@ -114,7 +114,7 @@ public class AppointmentService : IAppointmentService
                 // var user = await _userRepository.GetByIdAsync(userId);
                 if (true)
                 {
-                    await // TODO: Publish BookingConfirmedEvent to event bus
+                    // TODO: Publish BookingConfirmedEvent to event bus
                 }
             }
             catch (Exception ex)
