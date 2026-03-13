@@ -1,4 +1,4 @@
-using MySql.Data.MySqlClient;
+using Npgsql;
 using QueueLanka.API.Models;
 
 namespace QueueLanka.API.Data;
@@ -20,7 +20,7 @@ public class AppointmentRepository : IAppointmentRepository
             VALUES (@CenterId, @UserId, @AppointmentDate, @AppointmentTime, @Status);
             SELECT LAST_INSERT_ID();";
 
-        await using var conn = new MySqlConnection(_connectionString);
+        await using var conn = new NpgsqlConnection(_connectionString);
         await conn.OpenAsync();
         await using var cmd = new MySqlCommand(sql, conn);
 
@@ -47,13 +47,13 @@ public class AppointmentRepository : IAppointmentRepository
             WHERE appointment_id = @Id
             LIMIT 1";
 
-        await using var conn = new MySqlConnection(_connectionString);
+        await using var conn = new NpgsqlConnection(_connectionString);
         await conn.OpenAsync();
         await using var cmd = new MySqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@Id", appointmentId);
 
         await using var reader = await cmd.ExecuteReaderAsync();
-        return await reader.ReadAsync() ? MapAppointment((MySqlDataReader)reader) : null;
+        return await reader.ReadAsync() ? MapAppointment((NpgsqlDataReader)reader) : null;
     }
 
     public async Task<IEnumerable<Appointment>> GetByUserIdAsync(int userId)
@@ -65,7 +65,7 @@ public class AppointmentRepository : IAppointmentRepository
             WHERE user_id = @UserId
             ORDER BY appointment_date DESC, appointment_time DESC";
 
-        await using var conn = new MySqlConnection(_connectionString);
+        await using var conn = new NpgsqlConnection(_connectionString);
         await conn.OpenAsync();
         await using var cmd = new MySqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@UserId", userId);
@@ -74,7 +74,7 @@ public class AppointmentRepository : IAppointmentRepository
         var list = new List<Appointment>();
         while(await reader.ReadAsync())
         {
-            list.Add(MapAppointment((MySqlDataReader)reader));
+            list.Add(MapAppointment((NpgsqlDataReader)reader));
         }
         return list;
     }
@@ -92,7 +92,7 @@ public class AppointmentRepository : IAppointmentRepository
               AND status != 'Cancelled'
             LIMIT 1";
 
-        await using var conn = new MySqlConnection(_connectionString);
+        await using var conn = new NpgsqlConnection(_connectionString);
         await conn.OpenAsync();
         await using var cmd = new MySqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@CenterId", centerId);
@@ -103,7 +103,7 @@ public class AppointmentRepository : IAppointmentRepository
         return result != null;
     }
 
-    private static Appointment MapAppointment(MySqlDataReader reader)
+    private static Appointment MapAppointment(NpgsqlDataReader reader)
     {
         return new Appointment
         {
@@ -123,7 +123,7 @@ public class AppointmentRepository : IAppointmentRepository
     {
         const string sql = "CALL sp_book_token(@CenterId, @UserId, @Date, @Time, @TokenNumber, @Capacity, @AppointmentId, @TokenId, @ResultCode)";
 
-        await using var conn = new MySqlConnection(_connectionString);
+        await using var conn = new NpgsqlConnection(_connectionString);
         await conn.OpenAsync();
         await using var cmd = new MySqlCommand(sql, conn);
 

@@ -1,6 +1,6 @@
 using System.Security.Claims;
 
-namespace QueueLanka.Identity.Extensions;
+namespace QueueLanka.Shared.Extensions;
 
 public static class ClaimsPrincipalExtensions
 {

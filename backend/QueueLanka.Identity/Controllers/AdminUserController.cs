@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using QueueLanka.Shared.DTOs.Common;
 using QueueLanka.Identity.DTOs.User;
 using QueueLanka.Shared.Exceptions;
-using QueueLanka.Identity.Extensions;
+using QueueLanka.Shared.Extensions;
 using QueueLanka.Identity.Services;
 
 namespace QueueLanka.Identity.Controllers;

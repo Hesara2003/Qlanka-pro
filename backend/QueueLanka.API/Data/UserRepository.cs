@@ -1,4 +1,4 @@
-using MySql.Data.MySqlClient;
+using Npgsql;
 using QueueLanka.API.Models;
 
 namespace QueueLanka.API.Data;
@@ -27,7 +27,7 @@ public class UserRepository : IUserRepository
         if (isActive.HasValue)    sql.Append(" AND is_active = @IsActive");
         sql.Append(" ORDER BY created_at DESC");
 
-        await using var conn = new MySqlConnection(_connectionString);
+        await using var conn = new NpgsqlConnection(_connectionString);
         await conn.OpenAsync();
         await using var cmd = new MySqlCommand(sql.ToString(), conn);
         if (role is not null)     cmd.Parameters.AddWithValue("@Role",     role);
@@ -36,7 +36,7 @@ public class UserRepository : IUserRepository
         await using var reader = await cmd.ExecuteReaderAsync();
         var users = new List<User>();
         while (await reader.ReadAsync())
-            users.Add(MapUser((MySqlDataReader)reader));
+            users.Add(MapUser((NpgsqlDataReader)reader));
         return users;
     }
 
@@ -50,13 +50,13 @@ public class UserRepository : IUserRepository
             WHERE  user_id = @UserId
             LIMIT  1";
 
-        await using var conn = new MySqlConnection(_connectionString);
+        await using var conn = new NpgsqlConnection(_connectionString);
         await conn.OpenAsync();
         await using var cmd = new MySqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@UserId", userId);
 
         await using var reader = await cmd.ExecuteReaderAsync();
-        return await reader.ReadAsync() ? MapUser((MySqlDataReader)reader) : null;
+        return await reader.ReadAsync() ? MapUser((NpgsqlDataReader)reader) : null;
     }
 
     public async Task<User?> GetByUsernameAsync(string username)
@@ -69,13 +69,13 @@ public class UserRepository : IUserRepository
             WHERE  username = @Username
             LIMIT  1";
 
-        await using var conn = new MySqlConnection(_connectionString);
+        await using var conn = new NpgsqlConnection(_connectionString);
         await conn.OpenAsync();
         await using var cmd = new MySqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@Username", username);
 
         await using var reader = await cmd.ExecuteReaderAsync();
-        return await reader.ReadAsync() ? MapUser((MySqlDataReader)reader) : null;
+        return await reader.ReadAsync() ? MapUser((NpgsqlDataReader)reader) : null;
     }
 
     public async Task<User?> GetByEmailAsync(string email)
@@ -88,13 +88,13 @@ public class UserRepository : IUserRepository
             WHERE  email = @Email
             LIMIT  1";
 
-        await using var conn = new MySqlConnection(_connectionString);
+        await using var conn = new NpgsqlConnection(_connectionString);
         await conn.OpenAsync();
         await using var cmd = new MySqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@Email", email);
 
         await using var reader2 = await cmd.ExecuteReaderAsync();
-        return await reader2.ReadAsync() ? MapUser((MySqlDataReader)reader2) : null;
+        return await reader2.ReadAsync() ? MapUser((NpgsqlDataReader)reader2) : null;
     }
 
     public async Task<int> CreateAsync(User user)
@@ -104,7 +104,7 @@ public class UserRepository : IUserRepository
             VALUES (@Username, @Email, @PasswordHash, @Role, @CenterId, TRUE, TRUE, UTC_TIMESTAMP());
             SELECT LAST_INSERT_ID();";
 
-        await using var conn = new MySqlConnection(_connectionString);
+        await using var conn = new NpgsqlConnection(_connectionString);
         await conn.OpenAsync();
         await using var cmd = new MySqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@Username", user.Username);
@@ -124,7 +124,7 @@ public class UserRepository : IUserRepository
             SET    is_email_verified = TRUE
             WHERE  user_id = @UserId";
 
-        await using var conn = new MySqlConnection(_connectionString);
+        await using var conn = new NpgsqlConnection(_connectionString);
         await conn.OpenAsync();
         await using var cmd = new MySqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@UserId", userId);
@@ -139,7 +139,7 @@ public class UserRepository : IUserRepository
             SET    last_login_at = UTC_TIMESTAMP()
             WHERE  user_id = @UserId";
 
-        await using var conn = new MySqlConnection(_connectionString);
+        await using var conn = new NpgsqlConnection(_connectionString);
         await conn.OpenAsync();
         await using var cmd = new MySqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@UserId", userId);
@@ -157,7 +157,7 @@ public class UserRepository : IUserRepository
             WHERE  user_id    = @UserId
               AND  deleted_at IS NULL";
 
-        await using var conn = new MySqlConnection(_connectionString);
+        await using var conn = new NpgsqlConnection(_connectionString);
         await conn.OpenAsync();
         await using var cmd = new MySqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@UserId",    userId);
@@ -175,7 +175,7 @@ public class UserRepository : IUserRepository
                    deleted_by = NULL
             WHERE  user_id    = @UserId";
 
-        await using var conn = new MySqlConnection(_connectionString);
+        await using var conn = new NpgsqlConnection(_connectionString);
         await conn.OpenAsync();
         await using var cmd = new MySqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@UserId", userId);
@@ -190,7 +190,7 @@ public class UserRepository : IUserRepository
             SET    is_active = @IsActive
             WHERE  user_id   = @UserId";
 
-        await using var conn = new MySqlConnection(_connectionString);
+        await using var conn = new NpgsqlConnection(_connectionString);
         await conn.OpenAsync();
         await using var cmd = new MySqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@UserId",   userId);
@@ -206,7 +206,7 @@ public class UserRepository : IUserRepository
                    (user_id, action, performed_by, old_values, new_values, notes, performed_at)
             VALUES (@UserId, @Action, @PerformedBy, @OldValues, @NewValues, @Notes, UTC_TIMESTAMP())";
 
-        await using var conn = new MySqlConnection(_connectionString);
+        await using var conn = new NpgsqlConnection(_connectionString);
         await conn.OpenAsync();
         await using var cmd = new MySqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@UserId",      entry.UserId);
@@ -218,7 +218,7 @@ public class UserRepository : IUserRepository
         await cmd.ExecuteNonQueryAsync();
     }
 
-    private static User MapUser(MySqlDataReader reader) => new()
+    private static User MapUser(NpgsqlDataReader reader) => new()
     {
         UserId          = reader.GetInt32("user_id"),
         Username        = reader.GetString("username"),
@@ -237,7 +237,7 @@ public class UserRepository : IUserRepository
     };
 
     /// <summary>Returns true when the reader result-set contains the named column.</summary>
-    private static bool HasColumn(MySqlDataReader reader, string columnName)
+    private static bool HasColumn(NpgsqlDataReader reader, string columnName)
     {
         for (int i = 0; i < reader.FieldCount; i++)
             if (reader.GetName(i).Equals(columnName, StringComparison.OrdinalIgnoreCase))

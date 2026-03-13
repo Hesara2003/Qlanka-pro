@@ -1,4 +1,4 @@
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using QueueLanka.Queue.Models;
 
 namespace QueueLanka.Queue.Data;
