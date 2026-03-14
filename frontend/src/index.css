@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'BDO Grotesk';
+  src: url('/bdo-grotesk-font-family/BDOGrotesk-VF-BF648a657078401.ttf') format('truetype');
+  font-weight: 100 900;
+  font-display: swap;
+  font-style: normal;
+}
+
+:root {
+  font-family: 'BDO Grotesk', system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+/* Custom Scrollbar for forms */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #e5e7eb;
+  border-radius: 10px;
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #e5e7eb transparent;
+}
+
+/* Background utilities */
+.bg-dot-pattern {
+  background-image: radial-gradient(#d1d5db 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.handwritten-font {
+  font-family: 'Caveat', 'Segoe Print', 'Bradley Hand', cursive;
+}

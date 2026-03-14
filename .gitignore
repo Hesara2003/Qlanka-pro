@@ -1,2 +1,29 @@
 # PDFs
 *.pdf
+
+# .NET build outputs
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.rsuser
+
+# ASP.NET
+appsettings.Production.json
+
+# Environment / secrets
+.env
+.env.*
+*.secrets.json
+
+# Node / frontend
+node_modules/
+dist/
+.next/
+build/
+
+# OS
+.DS_Store
+Thumbs.db
+migrate.js

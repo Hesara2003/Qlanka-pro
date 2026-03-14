@@ -1,0 +1,61 @@
+version: '3.8'
+services:
+  backend:
+    build:
+      context: ./backend/QueueLanka.API
+    container_name: backend
+    ports:
+      - "5000:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=qlanka_db;Username=qlanka;PasswordFile=/run/secrets/db_password
+      - JWT_SECRET_FILE=/run/secrets/jwt_secret
+    secrets:
+      - db_password
+      - jwt_secret
+    depends_on:
+      - db
+    networks:
+      - qlanka-net
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://backend:80
+    depends_on:
+      - backend
+    networks:
+      - qlanka-net
+
+  db:
+    image: postgres:16
+    container_name: db
+    environment:
+      - POSTGRES_USER=qlanka
+      - POSTGRES_DB=qlanka_db
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db_password
+    secrets:
+      - db_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - qlanka-net
+
+volumes:
+  db_data:
+
+secrets:
+  db_password:
+    file: ./secrets/db_password.txt
+  jwt_secret:
+    file: ./secrets/jwt_secret.txt
+
+networks:
+  qlanka-net:
+    driver: bridge

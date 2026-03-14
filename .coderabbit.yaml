@@ -1,0 +1,54 @@
+# CodeRabbit Configuration File
+# Documentation: https://coderabbit.ai/docs/configure-coderabbit
+
+language: "en-US"
+early_access: false
+
+reviews:
+  # The "chill" profile gives constructive feedback but is less nitpicky.
+  # Can also be "assertive" for stricter rule enforcement.
+  profile: "chill"
+
+  # If true, CodeRabbit will formally Request Changes when it finds issues.
+  request_changes_workflow: false
+
+  # Enable high-level summary of changes and an auto-generated poem
+  high_level_summary: true
+  poem: true
+  
+  # Displays the review status prominently
+  review_status: true
+
+  # Walkthrough table for file-by-file changes
+  collapse_walkthrough: false
+
+  auto_review:
+    enabled: true
+    ignore_title_keywords:
+      - "WIP"
+      - "Draft"
+      - "Skip Review"
+    # Do not auto-review draft PRs
+    drafts: false
+
+  # Files to exclude from CodeRabbit reviews
+  path_filters:
+    - "!**/*.generated.*"
+    - "!**/*.min.js"
+    - "!**/*.min.css"
+    - "!node_modules/**"
+    - "!dist/**"
+    - "!build/**"
+    - "!coverage/**"
+    - "!**/*.lock"
+    - "!package-lock.json"
+    - "!yarn.lock"
+    - "!pnpm-lock.yaml"
+    - "!**/*.csv"
+    - "!**/*.svg"
+    - "!**/*.map"
+    - "!.vscode/**"
+
+chat:
+  # Allow CodeRabbit to reply to comments addressing it
+  auto_reply: true
