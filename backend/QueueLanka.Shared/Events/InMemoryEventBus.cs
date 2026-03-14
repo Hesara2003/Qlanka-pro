@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -34,8 +34,10 @@ public class InMemoryEventBus : IEventBus
                 var method = handlerType.GetMethod("HandleAsync");
                 if (method != null)
                 {
-                    var task = (Task)method.Invoke(handler, new object[] { @event });
-                    await task;
+                    if (method.Invoke(handler, new object[] { @event }) is Task task)
+                    {
+                        await task;
+                    }
                 }
             }
             catch (Exception ex)

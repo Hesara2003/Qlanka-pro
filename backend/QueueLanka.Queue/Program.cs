@@ -5,6 +5,7 @@ using QueueLanka.Queue.Data;
 using QueueLanka.Queue.Services;
 using QueueLanka.Shared.Filters;
 using QueueLanka.Shared.Middleware;
+using QueueLanka.Queue.Integration;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
