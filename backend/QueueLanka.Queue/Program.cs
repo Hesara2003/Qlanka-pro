@@ -57,6 +57,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
 builder.Services.AddScoped<ITokenRepository, TokenRepository>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
+builder.Services.AddScoped<IServiceCenterClient, ServiceCenterClient>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 
 // We need an HttpClient for ServiceCenter
