@@ -9,7 +9,7 @@ using System.Security.Claims;
 namespace QueueLanka.Queue.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/appointment")]
 [Authorize]
 public class AppointmentController : ControllerBase
 {

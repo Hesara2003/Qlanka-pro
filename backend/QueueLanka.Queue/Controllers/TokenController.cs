@@ -7,7 +7,7 @@ using System.Security.Claims;
 namespace QueueLanka.Queue.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/token")]
 [Authorize(Roles = "citizen,officer,admin")] // Allow all authenticated roles for now, usually citizens check tokens
 public class TokenController : ControllerBase
 {
