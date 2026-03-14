@@ -1,0 +1,49 @@
+name: Trigger auto deployment for qlanka-identity
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ feature/microservices ]
+    paths:
+    - '**'
+    - '.github/workflows/qlanka-identity-AutoDeployTrigger-844f40b7-71b5-4c06-8b6b-a296d0aedbf6.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.QLANKAIDENTITY_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.QLANKAIDENTITY_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.QLANKAIDENTITY_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}
+          _dockerfilePathKey_: _dockerfilePath_
+          _targetLabelKey_: _targetLabel_
+          registryUrl: qlankaregistry.azurecr.io
+          registryUsername: ${{ secrets.QLANKAIDENTITY_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.QLANKAIDENTITY_REGISTRY_PASSWORD }}
+          containerAppName: qlanka-identity
+          resourceGroup: rg-queuelanka-pro
+          imageToBuild: qlankaregistry.azurecr.io/qlanka-identity:${{ github.sha }}
+          _buildArgumentsKey_: |
+            _buildArgumentsValues_
+
+
