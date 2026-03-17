@@ -47,7 +47,9 @@ function App() {
 
       {/* ── Officer-only routes ───────────────────────────── */}
       <Route element={<OfficerRoute />}>
-        <Route path="/officer" element={<OfficerDashboardPage />} />
+        <Route element={<AdminLayout />}>
+          <Route path="/officer" element={<OfficerDashboardPage />} />
+        </Route>
       </Route>
 
       {/* ── Catch-all → landing ───────────────────────────── */}

@@ -1,6 +1,6 @@
 // frontend/src/hooks/useCounter.ts
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { counterApi, CallNextError } from "../api/counterApi";
 import type { CalledTokenDto, CallNextErrorCode } from "../api/counterApi";
 
@@ -33,12 +33,19 @@ export function useCounter(counterId: number | undefined): UseCounterResult {
 
     const isMountedRef = useRef(true);
 
-    // Keep isMountedRef accurate when the component using this hook unmounts.
-    // (We can't use useEffect here without it being a component, so callers
-    //  should call reset() on unmount if needed — or accept minor setState warnings.)
+    useEffect(() => {
+        isMountedRef.current = true;
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
 
     const callNext = useCallback(async () => {
-        if (counterId === undefined) return;
+        if (counterId === undefined) {
+            setError("Counter not configured. Please contact an administrator.");
+            setErrorCode("UNKNOWN_ERROR");
+            return;
+        }
 
         setLoading(true);
         setError(null);
