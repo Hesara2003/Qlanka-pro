@@ -1,4 +1,4 @@
-using MySql.Data.MySqlClient;
+using Npgsql;
 using QueueLanka.API.Exceptions;
 using QueueLanka.API.Models;
 
@@ -27,14 +27,14 @@ public class ServiceCenterRepository : IServiceCenterRepository
 
         try
         {
-            await using var conn = new MySqlConnection(_connectionString);
+            await using var conn = new NpgsqlConnection(_connectionString);
             await conn.OpenAsync();
             await using var cmd = new MySqlCommand(sql, conn);
             await using var reader = await cmd.ExecuteReaderAsync();
 
             var centers = new List<ServiceCenter>();
             while (await reader.ReadAsync())
-                centers.Add(MapServiceCenter((MySqlDataReader)reader));
+                centers.Add(MapServiceCenter((NpgsqlDataReader)reader));
 
             return centers;
         }
@@ -58,13 +58,13 @@ public class ServiceCenterRepository : IServiceCenterRepository
 
         try
         {
-            await using var conn = new MySqlConnection(_connectionString);
+            await using var conn = new NpgsqlConnection(_connectionString);
             await conn.OpenAsync();
             await using var cmd = new MySqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@CenterId", centerId);
 
             await using var reader = await cmd.ExecuteReaderAsync();
-            return await reader.ReadAsync() ? MapServiceCenter((MySqlDataReader)reader) : null;
+            return await reader.ReadAsync() ? MapServiceCenter((NpgsqlDataReader)reader) : null;
         }
         catch (MySqlException ex)
         {
@@ -80,7 +80,7 @@ public class ServiceCenterRepository : IServiceCenterRepository
 
         try
         {
-            await using var conn = new MySqlConnection(_connectionString);
+            await using var conn = new NpgsqlConnection(_connectionString);
             await conn.OpenAsync();
             await using var cmd = new MySqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@Name",    name);
@@ -99,7 +99,7 @@ public class ServiceCenterRepository : IServiceCenterRepository
     {
         try
         {
-            await using var conn = new MySqlConnection(_connectionString);
+            await using var conn = new NpgsqlConnection(_connectionString);
             await conn.OpenAsync();
             await using var tx = await conn.BeginTransactionAsync();
 
@@ -172,7 +172,7 @@ public class ServiceCenterRepository : IServiceCenterRepository
         }
     }
 
-    private static ServiceCenter MapServiceCenter(MySqlDataReader reader)
+    private static ServiceCenter MapServiceCenter(NpgsqlDataReader reader)
     {
         var center = new ServiceCenter
         {
@@ -231,13 +231,13 @@ public class ServiceCenterRepository : IServiceCenterRepository
 
         try
         {
-            await using var conn = new MySqlConnection(_connectionString);
+            await using var conn = new NpgsqlConnection(_connectionString);
             await conn.OpenAsync();
             await using var cmd = new MySqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@CenterId", centerId);
 
             await using var reader = await cmd.ExecuteReaderAsync();
-            return await reader.ReadAsync() ? MapLocation((MySqlDataReader)reader) : null;
+            return await reader.ReadAsync() ? MapLocation((NpgsqlDataReader)reader) : null;
         }
         catch (MySqlException ex)
         {
@@ -249,7 +249,7 @@ public class ServiceCenterRepository : IServiceCenterRepository
     {
         try
         {
-            await using var conn = new MySqlConnection(_connectionString);
+            await using var conn = new NpgsqlConnection(_connectionString);
             await conn.OpenAsync();
             return await UpsertLocationCoreAsync(location, conn, null);
         }
@@ -265,7 +265,7 @@ public class ServiceCenterRepository : IServiceCenterRepository
     /// </summary>
     private static async Task<CenterLocation> UpsertLocationCoreAsync(
         CenterLocation location,
-        MySqlConnection conn,
+        NpgsqlConnection conn,
         MySqlTransaction? tx)
     {
         const string sql = @"
@@ -314,7 +314,7 @@ public class ServiceCenterRepository : IServiceCenterRepository
         return location;
     }
 
-    private static CenterLocation MapLocation(MySqlDataReader reader)
+    private static CenterLocation MapLocation(NpgsqlDataReader reader)
     {
         return new CenterLocation
         {
@@ -346,7 +346,7 @@ public class ServiceCenterRepository : IServiceCenterRepository
 
         try
         {
-            await using var conn = new MySqlConnection(_connectionString);
+            await using var conn = new NpgsqlConnection(_connectionString);
             await conn.OpenAsync();
             await using var cmd = new MySqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@CenterId", centerId);
@@ -384,7 +384,7 @@ public class ServiceCenterRepository : IServiceCenterRepository
 
         try
         {
-            await using var conn = new MySqlConnection(_connectionString);
+            await using var conn = new NpgsqlConnection(_connectionString);
             await conn.OpenAsync();
             await using var cmd = new MySqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@CenterId", centerId);
@@ -423,7 +423,7 @@ public class ServiceCenterRepository : IServiceCenterRepository
 
         try
         {
-            await using var conn = new MySqlConnection(_connectionString);
+            await using var conn = new NpgsqlConnection(_connectionString);
             await conn.OpenAsync();
             await using var cmd = new MySqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("@CenterId", centerId);

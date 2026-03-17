@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="7.3.1" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.AspNetCore.Http" />
+    <Using Include="Microsoft.Extensions.Logging" />
+    <Using Include="Microsoft.AspNetCore.Hosting" />
+    <Using Include="Microsoft.Extensions.Hosting" />
+    <Using Include="Microsoft.Extensions.Configuration" />
+  </ItemGroup>
+</Project>

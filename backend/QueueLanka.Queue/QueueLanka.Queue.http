@@ -1,0 +1,6 @@
+@QueueLanka.Queue_HostAddress = http://localhost:5239
+
+GET {{QueueLanka.Queue_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

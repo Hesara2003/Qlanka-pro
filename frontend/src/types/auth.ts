@@ -22,6 +22,8 @@ export interface LoginResponse {
   refreshToken: string;
   expiresIn: number;
   role: string;
+  /** Populated for officer-role users — their assigned counter ID. */
+  counterId?: number;
 }
 
 export interface ApiError {
@@ -33,4 +35,6 @@ export interface AuthUser {
   username: string;
   role: string;
   token: string;
+  /** Populated for officer-role users — their assigned counter ID. */
+  counterId?: number;
 }
