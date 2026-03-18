@@ -1,4 +1,4 @@
-using Npgsql;
+using MySql.Data.MySqlClient;
 using QueueLanka.API.Models;
 
 namespace QueueLanka.API.Data;
@@ -20,7 +20,7 @@ public class EmailVerificationRepository : IEmailVerificationRepository
             VALUES (@UserId, @Token, @ExpiresAt, UTC_TIMESTAMP());
             SELECT LAST_INSERT_ID();";
 
-        await using var conn = new NpgsqlConnection(_connectionString);
+        await using var conn = new MySqlConnection(_connectionString);
         await conn.OpenAsync();
         await using var cmd = new MySqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@UserId",    token.UserId);
@@ -41,12 +41,12 @@ public class EmailVerificationRepository : IEmailVerificationRepository
               AND  expires_at > UTC_TIMESTAMP()
             LIMIT 1";
 
-        await using var conn = new NpgsqlConnection(_connectionString);
+        await using var conn = new MySqlConnection(_connectionString);
         await conn.OpenAsync();
         await using var cmd = new MySqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@Token", token);
 
-        await using var reader = (NpgsqlDataReader)await cmd.ExecuteReaderAsync();
+        await using var reader = (MySqlDataReader)await cmd.ExecuteReaderAsync();
         if (!await reader.ReadAsync()) return null;
 
         return new EmailVerificationToken
@@ -67,7 +67,7 @@ public class EmailVerificationRepository : IEmailVerificationRepository
             SET    used_at = UTC_TIMESTAMP()
             WHERE  token_id = @TokenId";
 
-        await using var conn = new NpgsqlConnection(_connectionString);
+        await using var conn = new MySqlConnection(_connectionString);
         await conn.OpenAsync();
         await using var cmd = new MySqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@TokenId", tokenId);
