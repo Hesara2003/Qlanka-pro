@@ -1,4 +1,4 @@
-using Npgsql;
+using MySql.Data.MySqlClient;
 using QueueLanka.API.Models;
 
 namespace QueueLanka.API.Data;
@@ -22,7 +22,7 @@ public class TokenRepository : ITokenRepository
                     @IssuedTime, @EstimatedServiceTime, @ServedTime, @CompletedTime, @QueuePosition);
             SELECT LAST_INSERT_ID();";
 
-        await using var conn = new NpgsqlConnection(_connectionString);
+        await using var conn = new MySqlConnection(_connectionString);
         await conn.OpenAsync();
         await using var cmd = new MySqlCommand(sql, conn);
 
@@ -54,13 +54,13 @@ public class TokenRepository : ITokenRepository
             WHERE token_id = @Id
             LIMIT 1";
 
-        await using var conn = new NpgsqlConnection(_connectionString);
+        await using var conn = new MySqlConnection(_connectionString);
         await conn.OpenAsync();
         await using var cmd = new MySqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@Id", tokenId);
 
         await using var reader = await cmd.ExecuteReaderAsync();
-        return await reader.ReadAsync() ? MapToken((NpgsqlDataReader)reader) : null;
+        return await reader.ReadAsync() ? MapToken((MySqlDataReader)reader) : null;
     }
 
     public async Task<Token?> GetByNumberDateCenterAsync(int centerId, DateTime date, string tokenNumber)
@@ -72,7 +72,7 @@ public class TokenRepository : ITokenRepository
             WHERE center_id = @CenterId AND issued_date = @Date AND token_number = @TokenNumber
             LIMIT 1";
 
-        await using var conn = new NpgsqlConnection(_connectionString);
+        await using var conn = new MySqlConnection(_connectionString);
         await conn.OpenAsync();
         await using var cmd = new MySqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@CenterId", centerId);
@@ -80,7 +80,7 @@ public class TokenRepository : ITokenRepository
         cmd.Parameters.AddWithValue("@TokenNumber", tokenNumber);
 
         await using var reader = await cmd.ExecuteReaderAsync();
-        return await reader.ReadAsync() ? MapToken((NpgsqlDataReader)reader) : null;
+        return await reader.ReadAsync() ? MapToken((MySqlDataReader)reader) : null;
     }
 
     public async Task<IEnumerable<Token>> GetByUserIdAsync(int userId)
@@ -92,7 +92,7 @@ public class TokenRepository : ITokenRepository
             WHERE user_id = @UserId
             ORDER BY issued_date DESC, issued_time DESC";
 
-        await using var conn = new NpgsqlConnection(_connectionString);
+        await using var conn = new MySqlConnection(_connectionString);
         await conn.OpenAsync();
         await using var cmd = new MySqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@UserId", userId);
@@ -101,7 +101,7 @@ public class TokenRepository : ITokenRepository
         var list = new List<Token>();
         while(await reader.ReadAsync())
         {
-            list.Add(MapToken((NpgsqlDataReader)reader));
+            list.Add(MapToken((MySqlDataReader)reader));
         }
         return list;
     }
@@ -115,7 +115,7 @@ public class TokenRepository : ITokenRepository
             WHERE center_id = @CenterId AND issued_date = @Date
             ORDER BY issued_time ASC";
 
-        await using var conn = new NpgsqlConnection(_connectionString);
+        await using var conn = new MySqlConnection(_connectionString);
         await conn.OpenAsync();
         await using var cmd = new MySqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@CenterId", centerId);
@@ -125,7 +125,7 @@ public class TokenRepository : ITokenRepository
         var list = new List<Token>();
         while(await reader.ReadAsync())
         {
-            list.Add(MapToken((NpgsqlDataReader)reader));
+            list.Add(MapToken((MySqlDataReader)reader));
         }
         return list;
     }
@@ -133,7 +133,7 @@ public class TokenRepository : ITokenRepository
     public async Task<int> CountByCenterAndDateAsync(int centerId, DateTime date)
     {
         const string sql = @"SELECT COUNT(*) FROM tokens WHERE center_id = @CenterId AND issued_date = @Date AND status NOT IN ('Cancelled')";
-        await using var conn = new NpgsqlConnection(_connectionString);
+        await using var conn = new MySqlConnection(_connectionString);
         await conn.OpenAsync();
         await using var cmd = new MySqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@CenterId", centerId);
@@ -146,7 +146,7 @@ public class TokenRepository : ITokenRepository
     public async Task<bool> UpdateStatusAsync(int tokenId, string status)
     {
         const string sql = @"UPDATE tokens SET status = @Status WHERE token_id = @Id";
-        await using var conn = new NpgsqlConnection(_connectionString);
+        await using var conn = new MySqlConnection(_connectionString);
         await conn.OpenAsync();
         await using var cmd = new MySqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@Id", tokenId);
@@ -162,7 +162,7 @@ public class TokenRepository : ITokenRepository
                              SET status = 'Cancelled', cancelled_at = UTC_TIMESTAMP(), updated_at = UTC_TIMESTAMP() 
                              WHERE token_id = @Id AND user_id = @UserId AND status = 'Waiting'";
         
-        await using var conn = new NpgsqlConnection(_connectionString);
+        await using var conn = new MySqlConnection(_connectionString);
         await conn.OpenAsync();
         await using var cmd = new MySqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@Id", tokenId);
@@ -176,7 +176,7 @@ public class TokenRepository : ITokenRepository
     {
         const string sql = "CALL sp_cancel_token_shift_queue(@TokenId, @UserId, @IsAdmin, @Success)";
 
-        await using var conn = new NpgsqlConnection(_connectionString);
+        await using var conn = new MySqlConnection(_connectionString);
         await conn.OpenAsync();
         await using var cmd = new MySqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@TokenId", tokenId);
@@ -196,7 +196,7 @@ public class TokenRepository : ITokenRepository
         return Convert.ToByte(successParam.Value) == 1;
     }
 
-    private static Token MapToken(NpgsqlDataReader reader)
+    private static Token MapToken(MySqlDataReader reader)
     {
         return new Token
         {
