@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using QueueLanka.Queue.DTOs.Token;
 using QueueLanka.Queue.Services;
+using QueueLanka.Shared.DTOs.Common;
 using System.Security.Claims;
 
 namespace QueueLanka.Queue.Controllers;
@@ -27,7 +28,7 @@ public class TokenController : ControllerBase
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
         {
-            return Unauthorized(new { code = "INVALID_USER", message = "User ID not found in token." });
+            return Unauthorized(new ErrorResponse("INVALID_USER", "User ID not found in token."));
         }
 
         var tokens = await _tokenService.GetUserTokensAsync(userId);
@@ -43,7 +44,7 @@ public class TokenController : ControllerBase
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
         {
-            return Unauthorized(new { code = "INVALID_USER", message = "User ID not found in token." });
+            return Unauthorized(new ErrorResponse("INVALID_USER", "User ID not found in token."));
         }
 
         var roleClaim = User.FindFirst(ClaimTypes.Role)?.Value;
@@ -57,25 +58,13 @@ public class TokenController : ControllerBase
                 Ok(new { message = "Token cancelled successfully." }),
 
             CancellationResult.AlreadyCancelled =>
-                Conflict(new
-                {
-                    code    = "TOKEN_ALREADY_CANCELLED",
-                    message = "This token has already been cancelled."
-                }),
+                Conflict(new ErrorResponse("TOKEN_ALREADY_CANCELLED", "This token has already been cancelled.")),
 
             CancellationResult.NotCancellable =>
-                UnprocessableEntity(new
-                {
-                    code    = "TOKEN_NOT_CANCELLABLE",
-                    message = "This token cannot be cancelled because it is currently being served, has already been completed, or has been marked as a no-show."
-                }),
+                UnprocessableEntity(new ErrorResponse("TOKEN_NOT_CANCELLABLE", "This token cannot be cancelled because it is currently being served, has already been completed, or has been marked as a no-show.")),
 
             _ => // TokenNotFound
-                NotFound(new
-                {
-                    code    = "TOKEN_NOT_FOUND",
-                    message = "Token not found or does not belong to your account."
-                })
+                NotFound(new ErrorResponse("TOKEN_NOT_FOUND", "Token not found or does not belong to your account."))
         };
     }
 }
