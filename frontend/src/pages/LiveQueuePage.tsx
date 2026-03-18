@@ -1,9 +1,12 @@
-import { useEffect, useState } from "react";
+// frontend/src/pages/LiveQueuePage.tsx
+
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { tokenApi } from "../api/tokenApi";
 import type { QueuePositionDto } from "../api/tokenApi";
 import { useServiceCenter } from "../hooks/useServiceCenters";
+import { useQueueHub } from "../hooks/useQueueHub";
 
 export default function LiveQueuePage() {
     const { centerId } = useParams();
@@ -12,6 +15,7 @@ export default function LiveQueuePage() {
 
     const centerIdNum = centerId ? parseInt(centerId, 10) : 0;
     const { center } = useServiceCenter(centerIdNum);
+    const { latestCalledToken, connectionStatus } = useQueueHub(centerIdNum || undefined);
 
     const [queue, setQueue] = useState<QueuePositionDto[]>([]);
     const [loading, setLoading] = useState(true);
@@ -26,24 +30,36 @@ export default function LiveQueuePage() {
     // Live clock state
     const [currentTime, setCurrentTime] = useState(new Date());
 
-    // Fetch live queue data
-    useEffect(() => {
-        const fetchQueue = async () => {
-            if (!centerIdNum) return;
-            try {
-                const data = await tokenApi.getServiceCenterQueue(centerIdNum);
-                setQueue(data);
-            } catch (error) {
-                console.error("Failed to fetch queue", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchQueue();
-        const interval = setInterval(fetchQueue, 30000); // 30s refresh
-        return () => clearInterval(interval);
+    const fetchQueue = useCallback(async () => {
+        if (!centerIdNum) return;
+        try {
+            const data = await tokenApi.getServiceCenterQueue(centerIdNum);
+            setQueue(data);
+        } catch (error) {
+            console.error("Failed to fetch queue", error);
+        } finally {
+            setLoading(false);
+        }
     }, [centerIdNum]);
+
+    // Fetch live queue data (polling fallback)
+    useEffect(() => {
+        setLoading(true);
+        void fetchQueue();
+
+        const interval = setInterval(() => {
+            void fetchQueue();
+        }, 30000);
+
+        return () => clearInterval(interval);
+    }, [fetchQueue]);
+
+    // Real-time refresh when a token is called for the same center.
+    useEffect(() => {
+        if (!latestCalledToken || latestCalledToken.centerId !== centerIdNum) return;
+        setServingTime(0);
+        void fetchQueue();
+    }, [latestCalledToken, centerIdNum, fetchQueue]);
 
     // Serving time counter effect
     useEffect(() => {
@@ -167,7 +183,8 @@ export default function LiveQueuePage() {
                     <div className="h-12 bg-[#004a8f] text-white flex items-center justify-between px-6 text-base font-bold shrink-0 border-b border-[#003566]">
                         <span>{center?.name || "Service Center"}</span>
                         <div className="flex items-center gap-2 text-sm font-medium opacity-80 bg-black/20 px-3 py-1 rounded-full">
-                            <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" /> Live
+                            <div className={`w-2 h-2 rounded-full ${connectionStatus === "connected" ? "bg-green-400 animate-pulse" : "bg-gray-400"}`} />
+                            {connectionStatus === "connected" ? "Live" : "Reconnecting"}
                         </div>
                     </div>
 
