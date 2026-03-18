@@ -93,7 +93,8 @@ public class AuthService : IAuthService
             Token        = accessToken,
             RefreshToken = refreshToken,
             ExpiresIn    = expiryMins * 60,
-            Role         = user.Role
+            Role         = user.Role.ToLowerInvariant(),
+            CounterId    = null
         };
     }
 
