@@ -26,7 +26,7 @@ services:
       - "5001:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=db-identity;Port=5432;Database=identity_db;Username=qlanka;PasswordFile=/run/secrets/db_password
+      - ConnectionStrings__DefaultConnection=Server=db-identity;Port=3306;Database=identity_db;Uid=qlanka;Pwd=P@ssw0rd123
       - Jwt__Secret=/run/secrets/jwt_secret
       - Jwt__Issuer=queuelanka-api
       - Jwt__Audience=queuelanka-client
@@ -52,7 +52,7 @@ services:
       - "5002:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=db-service-center;Port=5432;Database=servicecenters_db;Username=qlanka;PasswordFile=/run/secrets/db_password
+      - ConnectionStrings__DefaultConnection=Server=db-service-center;Port=3306;Database=servicecenters_db;Uid=qlanka;Pwd=P@ssw0rd123
       - Jwt__Secret=/run/secrets/jwt_secret
       - Jwt__Issuer=queuelanka-api
       - Jwt__Audience=queuelanka-client
@@ -73,7 +73,7 @@ services:
       - "5003:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=db-queue;Port=5432;Database=queue_db;Username=qlanka;PasswordFile=/run/secrets/db_password
+      - ConnectionStrings__DefaultConnection=Server=db-queue;Port=3306;Database=queue_db;Uid=qlanka;Pwd=P@ssw0rd123
       - Jwt__Secret=/run/secrets/jwt_secret
       - Jwt__Issuer=queuelanka-api
       - Jwt__Audience=queuelanka-client
@@ -117,50 +117,53 @@ services:
       - qlanka-net
 
   db-identity:
-    image: postgres:16
+    image: mysql:8.0
     container_name: db-identity
     environment:
-      - POSTGRES_USER=qlanka
-      - POSTGRES_DB=identity_db
-      - POSTGRES_PASSWORD_FILE=/run/secrets/db_password
+      - MYSQL_USER=qlanka
+      - MYSQL_DATABASE=identity_db
+      - MYSQL_PASSWORD_FILE=/run/secrets/db_password
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db_password
     secrets:
       - db_password
     ports:
-      - "5431:5432"
+      - "33061:3306"
     volumes:
-      - db_identity_data:/var/lib/postgresql/data
+      - db_identity_data:/var/lib/mysql
     networks:
       - qlanka-net
 
   db-service-center:
-    image: postgres:16
+    image: mysql:8.0
     container_name: db-service-center
     environment:
-      - POSTGRES_USER=qlanka
-      - POSTGRES_DB=servicecenters_db
-      - POSTGRES_PASSWORD_FILE=/run/secrets/db_password
+      - MYSQL_USER=qlanka
+      - MYSQL_DATABASE=servicecenters_db
+      - MYSQL_PASSWORD_FILE=/run/secrets/db_password
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db_password
     secrets:
       - db_password
     ports:
-      - "5432:5432"
+      - "33062:3306"
     volumes:
-      - db_servicecenter_data:/var/lib/postgresql/data
+      - db_servicecenter_data:/var/lib/mysql
     networks:
       - qlanka-net
 
   db-queue:
-    image: postgres:16
+    image: mysql:8.0
     container_name: db-queue
     environment:
-      - POSTGRES_USER=qlanka
-      - POSTGRES_DB=queue_db
-      - POSTGRES_PASSWORD_FILE=/run/secrets/db_password
+      - MYSQL_USER=qlanka
+      - MYSQL_DATABASE=queue_db
+      - MYSQL_PASSWORD_FILE=/run/secrets/db_password
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db_password
     secrets:
       - db_password
     ports:
-      - "5433:5432"
+      - "33063:3306"
     volumes:
-      - db_queue_data:/var/lib/postgresql/data
+      - db_queue_data:/var/lib/mysql
     networks:
       - qlanka-net
 
