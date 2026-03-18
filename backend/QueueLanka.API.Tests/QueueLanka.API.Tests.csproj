@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\QueueLanka.API\QueueLanka.API.csproj" />
+    <ProjectReference Include="..\QueueLanka.Queue\QueueLanka.Queue.csproj" />
   </ItemGroup>
 
 </Project>
