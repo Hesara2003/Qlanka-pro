@@ -6,6 +6,7 @@ const PAGE_TITLES: Record<string, { title: string; subtitle: string }> = {
     "/admin/users":                    { title: "User Management",        subtitle: "View, search and manage user accounts" },
     "/admin/service-centers":          { title: "Service Centers",        subtitle: "Browse all registered service centers" },
     "/admin/service-centers/create":   { title: "Create Service Center",  subtitle: "Register a new government service center" },
+    "/officer":                        { title: "Officer Workstation",    subtitle: "Manage calls for your assigned counter" },
 };
 
 export default function AdminLayout() {
