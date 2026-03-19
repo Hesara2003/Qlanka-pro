@@ -1,6 +1,11 @@
+// backend/QueueLanka.Queue/Services/TokenService.cs
+
 using QueueLanka.Queue.Data;
 using QueueLanka.Queue.DTOs.Token;
+using QueueLanka.Queue.Events;
 using QueueLanka.Queue.Integration;
+using QueueLanka.Shared.Events;
+using QueueTokenCancelledEvent = QueueLanka.Queue.Events.TokenCancelledEvent;
 
 namespace QueueLanka.Queue.Services;
 
@@ -8,11 +13,22 @@ public class TokenService : ITokenService
 {
     private readonly ITokenRepository _tokenRepository;
     private readonly IServiceCenterClient _serviceCenterClient;
+    private readonly IEventBus _eventBus;
+    private readonly IQueueBroadcastService _queueBroadcastService;
+    private readonly ILogger<TokenService> _logger;
 
-    public TokenService(ITokenRepository tokenRepository, IServiceCenterClient serviceCenterClient)
+    public TokenService(
+        ITokenRepository tokenRepository,
+        IServiceCenterClient serviceCenterClient,
+        IEventBus eventBus,
+        IQueueBroadcastService queueBroadcastService,
+        ILogger<TokenService> logger)
     {
         _tokenRepository = tokenRepository;
         _serviceCenterClient = serviceCenterClient;
+        _eventBus = eventBus;
+        _queueBroadcastService = queueBroadcastService;
+        _logger = logger;
     }
 
     public async Task<IEnumerable<UserTokenResponseDto>> GetUserTokensAsync(int userId)
@@ -120,6 +136,53 @@ public class TokenService : ITokenService
         // means a concurrent update changed the status between our read and the
         // stored-procedure check (e.g. the officer started serving it).
         var cancelled = await _tokenRepository.CancelAndShiftQueueAsync(tokenId, userId, isAdmin);
-        return cancelled ? CancellationResult.Success : CancellationResult.NotCancellable;
+        if (!cancelled)
+            return CancellationResult.NotCancellable;
+
+        var refreshedToken = await _tokenRepository.GetByIdAsync(tokenId) ?? token;
+        var centerTokens = await _tokenRepository.GetByCenterAndDateAsync(refreshedToken.CenterId, refreshedToken.IssuedDate);
+        var waitingTokens = centerTokens
+            .Where(t => string.Equals(t.Status, "Waiting", StringComparison.OrdinalIgnoreCase))
+            .OrderBy(t => t.QueuePosition ?? int.MaxValue)
+            .ThenBy(t => t.IssuedTime)
+            .ToList();
+
+        var cancelledEvent = new QueueTokenCancelledEvent
+        {
+            TokenId = refreshedToken.TokenId,
+            TokenNumber = refreshedToken.TokenNumber,
+            CounterId = 0,
+            CenterId = refreshedToken.CenterId,
+            CancelledAt = refreshedToken.CancelledAt ?? DateTime.UtcNow,
+            CancelledBy = isAdmin ? "admin" : "citizen",
+            NextWaitingTokenNumber = waitingTokens.FirstOrDefault()?.TokenNumber,
+            NewWaitingCount = waitingTokens.Count
+        };
+
+        try
+        {
+            await _eventBus.PublishAsync(cancelledEvent);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Token cancellation succeeded but event bus publish failed for token {TokenId}",
+                cancelledEvent.TokenId);
+        }
+
+        try
+        {
+            await _queueBroadcastService.BroadcastTokenCancelled(cancelledEvent);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Token cancellation succeeded but SignalR broadcast failed for token {TokenId}",
+                cancelledEvent.TokenId);
+        }
+
+        return CancellationResult.Success;
     }
 }
