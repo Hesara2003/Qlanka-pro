@@ -81,13 +81,17 @@ export default function LoginForm() {
         username: form.username.trim(),
         role: result.role,
         token: result.token,
+        counterId: result.counterId,
       };
 
       login(authUser);
       // Admins always land on the admin dashboard.
+      // Officers always land on their workstation.
       // Citizens are sent back to their original destination (if any), otherwise the dashboard.
       const destination = authUser.role === "admin"
         ? "/admin"
+        : authUser.role === "officer"
+          ? "/officer"
         : (from ?? "/dashboard");
       navigate(destination, { replace: true });
     } catch (err: unknown) {

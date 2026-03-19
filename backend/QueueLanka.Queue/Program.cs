@@ -1,8 +1,14 @@
+// backend/QueueLanka.Queue/Program.cs
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using QueueLanka.Queue.Data;
+using QueueLanka.Queue.Events;
+using QueueLanka.Queue.Hubs;
 using QueueLanka.Queue.Services;
+using QueueLanka.Shared.Events;
 using QueueLanka.Shared.Filters;
 using QueueLanka.Shared.Middleware;
 using QueueLanka.Queue.Integration;
@@ -16,6 +22,7 @@ builder.Services.AddControllers(options =>
 });
 
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSignalR();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "QueueLanka Queue API", Version = "v1" });
@@ -57,9 +64,14 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
 builder.Services.AddScoped<ITokenRepository, TokenRepository>();
+builder.Services.AddScoped<ICounterRepository, CounterRepository>();
+builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 builder.Services.AddScoped<IServiceCenterClient, ServiceCenterClient>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<ICounterService, CounterService>();
+builder.Services.AddSingleton<IEventBus, InMemoryEventBus>();
+builder.Services.AddTransient<TokenCalledEventHandler>();
 
 // We need an HttpClient for ServiceCenter
 builder.Services.AddHttpClient("ServiceCenter", client => 
@@ -69,15 +81,22 @@ builder.Services.AddHttpClient("ServiceCenter", client =>
 
 builder.Services.AddHealthChecks();
 
+var frontendOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+    ?? new[] { builder.Configuration["Cors:FrontendOrigin"] ?? "http://localhost:5173" };
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
-        policy.SetIsOriginAllowed(origin => true)
+        policy.WithOrigins(frontendOrigins)
               .AllowAnyHeader()
-              .AllowAnyMethod());
+              .AllowAnyMethod()
+              .AllowCredentials());
 });
 
 var app = builder.Build();
+
+var eventBus = app.Services.GetRequiredService<IEventBus>();
+eventBus.Subscribe<TokenCalledEvent, TokenCalledEventHandler>();
 
 app.UseMiddleware<ExceptionMiddleware>();
 app.MapHealthChecks("/health");
@@ -89,5 +108,31 @@ app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<QueueHub>("/hubs/queue");
 
 app.Run();
+
+internal sealed class TokenCalledEventHandler : IIntegrationEventHandler<TokenCalledEvent>
+{
+    private readonly IHubContext<QueueHub, IQueueHubClient> _hubContext;
+    private readonly ILogger<TokenCalledEventHandler> _logger;
+
+    public TokenCalledEventHandler(
+        IHubContext<QueueHub, IQueueHubClient> hubContext,
+        ILogger<TokenCalledEventHandler> logger)
+    {
+        _hubContext = hubContext;
+        _logger = logger;
+    }
+
+    public async Task HandleAsync(TokenCalledEvent @event)
+    {
+        var groupName = QueueHub.GetCenterGroupName(@event.CenterId);
+        await _hubContext.Clients.Group(groupName).TokenCalled(@event);
+
+        _logger.LogInformation(
+            "Broadcasted TokenCalledEvent for token {TokenId} to group {GroupName}",
+            @event.TokenId,
+            groupName);
+    }
+}
