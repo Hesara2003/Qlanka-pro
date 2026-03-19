@@ -1,0 +1,16 @@
+// backend/QueueLanka.Queue/Events/TokenCalledEvent.cs
+
+namespace QueueLanka.Queue.Events;
+
+public class TokenCalledEvent
+{
+    public int TokenId { get; set; }
+    public int CenterId { get; set; }
+    public int CounterId { get; set; }
+    public int? UserId { get; set; }
+    public string TokenNumber { get; set; } = string.Empty;
+    public DateTime IssuedDate { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public DateTime IssuedTime { get; set; }
+    public DateTime CalledAt { get; set; }
+}
