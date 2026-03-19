@@ -1,9 +1,15 @@
-import { useEffect, useState } from "react";
+// frontend/src/pages/LiveQueuePage.tsx
+
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { tokenApi } from "../api/tokenApi";
 import type { QueuePositionDto } from "../api/tokenApi";
 import { useServiceCenter } from "../hooks/useServiceCenters";
+import { useQueueHub } from "../hooks/useQueueHub";
+import ConnectionStatusBanner from "../components/common/ConnectionStatusBanner";
+import { useToast } from "../hooks/useToast";
+import ToastContainer from "../components/common/ToastContainer";
 
 export default function LiveQueuePage() {
     const { centerId } = useParams();
@@ -12,13 +18,28 @@ export default function LiveQueuePage() {
 
     const centerIdNum = centerId ? parseInt(centerId, 10) : 0;
     const { center } = useServiceCenter(centerIdNum);
+    const [hasActiveToken, setHasActiveToken] = useState(false);
+    const [myActiveTokenId, setMyActiveTokenId] = useState<number | null>(null);
+    const [myActiveTokenNumber, setMyActiveTokenNumber] = useState<string | null>(null);
 
-    const [queue, setQueue] = useState<QueuePositionDto[]>([]);
+    const {
+        latestCalledToken,
+        latestStatusUpdate,
+        latestReassignment,
+        latestCancellation,
+        latestQueueUpdate,
+        connectionStatus,
+        reconnect,
+    } = useQueueHub({
+        centerId: centerIdNum || undefined,
+        enabled: Boolean(centerIdNum && hasActiveToken),
+    });
+
+    const [currentServing, setCurrentServing] = useState<QueuePositionDto | null>(null);
+    const [waitingList, setWaitingList] = useState<QueuePositionDto[]>([]);
     const [loading, setLoading] = useState(true);
-
-    // Simulate current serving data based on the top of the queue or mock data if empty
-    const currentServing = queue.length > 0 ? queue[0] : null;
-    const waitingList = queue.slice(1);
+    const [myTokenBanner, setMyTokenBanner] = useState<{ type: "served" | "cancelled"; message: string } | null>(null);
+    const { toasts, addToast, removeToast } = useToast();
 
     // Mock timer state for "Serving Time"
     const [servingTime, setServingTime] = useState(0);
@@ -26,24 +47,153 @@ export default function LiveQueuePage() {
     // Live clock state
     const [currentTime, setCurrentTime] = useState(new Date());
 
-    // Fetch live queue data
-    useEffect(() => {
-        const fetchQueue = async () => {
-            if (!centerIdNum) return;
-            try {
-                const data = await tokenApi.getServiceCenterQueue(centerIdNum);
-                setQueue(data);
-            } catch (error) {
-                console.error("Failed to fetch queue", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchQueue();
-        const interval = setInterval(fetchQueue, 30000); // 30s refresh
-        return () => clearInterval(interval);
+    const fetchQueue = useCallback(async () => {
+        if (!centerIdNum) return;
+        try {
+            const data = await tokenApi.getServiceCenterQueue(centerIdNum);
+            setCurrentServing(data.length > 0 ? data[0] : null);
+            setWaitingList(data.slice(1).map((token, index) => ({
+                ...token,
+                position: index + 1,
+            })));
+        } catch (error) {
+            console.error("Failed to fetch queue", error);
+        } finally {
+            setLoading(false);
+        }
     }, [centerIdNum]);
+
+    const fetchActiveToken = useCallback(async () => {
+        if (!centerIdNum || !user) {
+            setHasActiveToken(false);
+            setMyActiveTokenId(null);
+            setMyActiveTokenNumber(null);
+            return;
+        }
+
+        try {
+            const myTokens = await tokenApi.getMyTokens();
+            const activeToken = myTokens.find((token) =>
+                token.centerId === centerIdNum
+                && ["Waiting", "Called", "Serving"].includes(token.status));
+
+            setHasActiveToken(Boolean(activeToken));
+            setMyActiveTokenId(activeToken?.tokenId ?? null);
+            setMyActiveTokenNumber(activeToken?.tokenNumber ?? null);
+        } catch {
+            setHasActiveToken(false);
+            setMyActiveTokenId(null);
+            setMyActiveTokenNumber(null);
+        }
+    }, [centerIdNum, user]);
+
+    useEffect(() => {
+        setLoading(true);
+        void fetchActiveToken();
+        void fetchQueue();
+    }, [fetchQueue, fetchActiveToken]);
+
+    useEffect(() => {
+        if (!latestCalledToken || latestCalledToken.centerId !== centerIdNum) return;
+        setServingTime(0);
+        setCurrentServing((prev) => ({
+            tokenId: latestCalledToken.tokenId,
+            tokenNumber: latestCalledToken.tokenNumber,
+            status: latestCalledToken.status,
+            position: prev?.position ?? 0,
+            eta: null,
+        }));
+        setWaitingList((prev) => prev
+            .filter((token) => token.tokenId !== latestCalledToken.tokenId)
+            .map((token, index) => ({ ...token, position: index + 1 })));
+        addToast(`Now serving token ${latestCalledToken.tokenNumber}`, "success", 4000);
+    }, [latestCalledToken, centerIdNum, addToast]);
+
+    useEffect(() => {
+        if (!latestStatusUpdate || latestStatusUpdate.centerId !== centerIdNum) return;
+        setServingTime(0);
+
+        setWaitingList((prevQueue) => {
+            const withoutUpdatedToken = prevQueue.filter((token) => token.tokenId !== latestStatusUpdate.tokenId);
+            return withoutUpdatedToken.map((token, index) => ({
+                ...token,
+                position: index + 1,
+            }));
+        });
+        setCurrentServing((prev) => (prev?.tokenId === latestStatusUpdate.tokenId ? null : prev));
+
+        const verb = latestStatusUpdate.newStatus === "served" ? "has been served" : "was skipped";
+        addToast(`Token ${latestStatusUpdate.tokenNumber} ${verb}`, latestStatusUpdate.newStatus === "served" ? "success" : "warning", 4000);
+
+        if (latestStatusUpdate.newStatus === "served"
+            && (myActiveTokenId === latestStatusUpdate.tokenId
+                || (myActiveTokenNumber && myActiveTokenNumber === latestStatusUpdate.tokenNumber))) {
+            setMyTokenBanner({ type: "served", message: "You have been served! Thank you." });
+            setHasActiveToken(false);
+        }
+    }, [latestStatusUpdate, centerIdNum, addToast, myActiveTokenId, myActiveTokenNumber]);
+
+    useEffect(() => {
+        if (!latestReassignment || latestReassignment.centerId !== centerIdNum) return;
+
+        setWaitingList((prevQueue) => prevQueue
+            .map((token, index) => ({
+                ...token,
+                position: index + 1,
+            })));
+
+        if ((myActiveTokenId && myActiveTokenId === latestReassignment.tokenId)
+            || (myActiveTokenNumber && myActiveTokenNumber === latestReassignment.tokenNumber)) {
+            addToast(`Your token has been moved to Counter #${latestReassignment.targetCounterId}`, "info", 4000);
+        }
+    }, [latestReassignment, centerIdNum, myActiveTokenId, myActiveTokenNumber, addToast]);
+
+    useEffect(() => {
+        if (!latestCancellation || latestCancellation.centerId !== centerIdNum) return;
+
+        setWaitingList((prevQueue) => prevQueue
+            .filter((token) => token.tokenId !== latestCancellation.tokenId)
+            .map((token, index) => ({
+                ...token,
+                position: index + 1,
+            })));
+        setCurrentServing((prev) => (prev?.tokenId === latestCancellation.tokenId ? null : prev));
+
+        addToast(`Token ${latestCancellation.tokenNumber} has been cancelled`, "error", 4000);
+
+        if ((myActiveTokenId && myActiveTokenId === latestCancellation.tokenId)
+            || (myActiveTokenNumber && myActiveTokenNumber === latestCancellation.tokenNumber)) {
+            setMyTokenBanner({ type: "cancelled", message: "Your token has been cancelled." });
+            setHasActiveToken(false);
+        }
+    }, [latestCancellation, centerIdNum, addToast, myActiveTokenId, myActiveTokenNumber]);
+
+    useEffect(() => {
+        if (!latestQueueUpdate || latestQueueUpdate.centerId !== centerIdNum) return;
+
+        const updatedWaiting = (latestQueueUpdate.waitingTokens ?? []).map((token) => {
+            const etaDate = new Date(Date.now() + Math.max(0, token.estimatedWaitSeconds ?? 0) * 1000).toISOString();
+            return {
+                tokenId: token.tokenId,
+                tokenNumber: token.tokenNumber,
+                status: "Waiting",
+                position: token.queuePosition,
+                eta: etaDate,
+            } satisfies QueuePositionDto;
+        });
+
+        setWaitingList(updatedWaiting);
+    }, [latestQueueUpdate, centerIdNum]);
+
+    useEffect(() => {
+        if (!myTokenBanner) return;
+
+        const timeout = setTimeout(() => {
+            setMyTokenBanner(null);
+        }, 4000);
+
+        return () => clearTimeout(timeout);
+    }, [myTokenBanner]);
 
     // Serving time counter effect
     useEffect(() => {
@@ -68,6 +218,33 @@ export default function LiveQueuePage() {
 
     return (
         <div className="h-screen w-full bg-[#f0f2f5] flex flex-col font-sans overflow-hidden">
+            <ConnectionStatusBanner
+                connectionStatus={connectionStatus}
+                onManualRefresh={() => {
+                    setLoading(true);
+                    void reconnect();
+                    void fetchQueue();
+                }}
+            />
+
+            {myTokenBanner?.type === "served" && (
+                <div className="w-full mb-3 rounded-lg bg-[#78d64b] text-black px-4 py-3 font-semibold text-sm">
+                    {myTokenBanner.message}
+                </div>
+            )}
+
+            {myTokenBanner?.type === "cancelled" && (
+                <div className="w-full mb-3 rounded-lg bg-red-500 text-white px-4 py-3 font-semibold text-sm flex items-center justify-between">
+                    <span>{myTokenBanner.message}</span>
+                    <button
+                        onClick={() => navigate("/service-centers")}
+                        className="underline underline-offset-2 text-white text-xs font-bold"
+                    >
+                        Rebook
+                    </button>
+                </div>
+            )}
+
             {/* Header Navbar */}
             <div className="h-16 lg:h-20 bg-[#003d7b] flex items-center justify-between px-6 lg:px-10 text-white shrink-0 shadow-md z-10">
                 <div className="flex items-center gap-4 border border-[#ffffff33] rounded-lg p-2 bg-[#002f5e]">
@@ -140,7 +317,7 @@ export default function LiveQueuePage() {
                     <div className="flex items-center justify-center gap-8 shrink-0 py-3 mt-3 border-t border-gray-100">
                         <div className="text-center">
                             <p className="text-gray-500 font-bold text-xs tracking-widest uppercase mb-0.5">Tokens Served</p>
-                            <p className="text-[#003d7b] font-black text-2xl">{queue.length * 5 + 10}</p>
+                            <p className="text-[#003d7b] font-black text-2xl">{waitingList.length + (currentServing ? 1 : 0)}</p>
                         </div>
                         <div className="w-px h-10 bg-gray-200"></div>
                         <div className="text-center">
@@ -166,8 +343,23 @@ export default function LiveQueuePage() {
                     </div>
                     <div className="h-12 bg-[#004a8f] text-white flex items-center justify-between px-6 text-base font-bold shrink-0 border-b border-[#003566]">
                         <span>{center?.name || "Service Center"}</span>
-                        <div className="flex items-center gap-2 text-sm font-medium opacity-80 bg-black/20 px-3 py-1 rounded-full">
-                            <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" /> Live
+                        <div className="flex items-center gap-2">
+                            {connectionStatus !== "connected" && (
+                                <button
+                                    onClick={() => {
+                                        setLoading(true);
+                                        void reconnect();
+                                        void fetchQueue();
+                                    }}
+                                    className="text-xs font-medium opacity-90 bg-black/20 px-3 py-1 rounded-full hover:bg-black/30"
+                                >
+                                    Manual Refresh
+                                </button>
+                            )}
+                            <div className="flex items-center gap-2 text-sm font-medium opacity-80 bg-black/20 px-3 py-1 rounded-full">
+                                <div className={`w-2 h-2 rounded-full ${connectionStatus === "connected" ? "bg-green-400 animate-pulse" : "bg-gray-400"}`} />
+                                {connectionStatus === "connected" ? "Live" : "Reconnecting"}
+                            </div>
                         </div>
                     </div>
 
@@ -226,6 +418,8 @@ export default function LiveQueuePage() {
                     background: #94a3b8;
                 }
             `}</style>
+
+            <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
         </div>
     );
 }
