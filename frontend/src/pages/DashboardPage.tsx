@@ -1,8 +1,13 @@
+// frontend/src/pages/DashboardPage.tsx
+
 import { Navigate, Link } from "react-router-dom";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTokens } from "../hooks/useTokens";
 import { UserTokenCard } from "../components/dashboard/UserTokenCard";
+import { useQueueHub } from "../hooks/useQueueHub";
+import { useToast } from "../hooks/useToast";
+import ToastContainer from "../components/common/ToastContainer";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
@@ -17,32 +22,136 @@ const BOOKING_TRENDS = [
   { name: 'Sun', tokens: 0 },
 ];
 
-/** Auto-dismissing success toast duration (ms). */
-const TOAST_DURATION = 4000;
-
 export default function DashboardPage() {
   const { user } = useAuth();
   const { tokens, loading: loadingTokens, error, lastUpdated, refresh, cancelToken } =
     useTokens({ pollInterval: 30_000 });
+  const [liveTokens, setLiveTokens] = useState(tokens);
+  const [turnAlert, setTurnAlert] = useState(false);
+  const [servedBanner, setServedBanner] = useState<string | null>(null);
+  const [cancelledBanner, setCancelledBanner] = useState<string | null>(null);
+  const { toasts, addToast, removeToast } = useToast();
 
-  // ── Success toast ─────────────────────────────────────────────
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const activeToken = liveTokens.find((token) => ["Waiting", "Called", "Serving"].includes(token.status)) ?? null;
 
-  const showToast = useCallback((message: string) => {
-    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    setToastMessage(message);
-    toastTimerRef.current = setTimeout(() => setToastMessage(null), TOAST_DURATION);
+  const { latestCalledToken, latestStatusUpdate, latestCancellation, latestQueueUpdate } = useQueueHub({
+    centerId: activeToken?.centerId,
+    enabled: Boolean(activeToken),
+    onReconnected: async () => {
+      refresh();
+    },
+  });
+
+  useEffect(() => {
+    setLiveTokens(tokens);
+  }, [tokens]);
+
+  const turnAlertTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    if (turnAlertTimerRef.current) {
+      clearTimeout(turnAlertTimerRef.current);
+    }
   }, []);
 
-  useEffect(() => () => { if (toastTimerRef.current) clearTimeout(toastTimerRef.current); }, []);
+  useEffect(() => {
+    if (!latestCalledToken || !activeToken) return;
+    if (latestCalledToken.centerId !== activeToken.centerId) return;
+    if (latestCalledToken.tokenNumber !== activeToken.tokenNumber) return;
+
+    setTurnAlert(true);
+    addToast("It's your turn!", "success", 4000);
+
+    if (turnAlertTimerRef.current) {
+      clearTimeout(turnAlertTimerRef.current);
+    }
+
+    turnAlertTimerRef.current = setTimeout(() => {
+      setTurnAlert(false);
+    }, 4000);
+  }, [latestCalledToken, activeToken, addToast]);
+
+  useEffect(() => {
+    if (!latestStatusUpdate || !activeToken) return;
+    if (latestStatusUpdate.centerId !== activeToken.centerId) return;
+
+    setLiveTokens((prev) => prev.map((token) => {
+      if (token.tokenNumber !== latestStatusUpdate.tokenNumber) {
+        return token;
+      }
+
+      if (latestStatusUpdate.newStatus === "served") {
+        return { ...token, status: "Served", servedTime: latestStatusUpdate.servedAt };
+      }
+
+      if (latestStatusUpdate.newStatus === "skipped") {
+        return { ...token, status: "Skipped" };
+      }
+
+      return token;
+    }));
+
+    if (latestStatusUpdate.newStatus === "served" && latestStatusUpdate.tokenNumber === activeToken.tokenNumber) {
+      setServedBanner("You have been served! Thank you.");
+    }
+  }, [latestStatusUpdate, activeToken]);
+
+  useEffect(() => {
+    if (!servedBanner) return;
+    const timeoutId = window.setTimeout(() => setServedBanner(null), 4000);
+    return () => window.clearTimeout(timeoutId);
+  }, [servedBanner]);
+
+  useEffect(() => {
+    if (!latestCancellation || !activeToken) return;
+    if (latestCancellation.centerId !== activeToken.centerId) return;
+
+    setLiveTokens((prev) => prev.map((token) => (
+      token.tokenNumber === latestCancellation.tokenNumber
+        ? { ...token, status: "Cancelled", cancelledAt: latestCancellation.cancelledAt }
+        : token
+    )));
+
+    if (latestCancellation.tokenNumber === activeToken.tokenNumber) {
+      setCancelledBanner("Your token has been cancelled.");
+    }
+  }, [latestCancellation, activeToken]);
+
+  useEffect(() => {
+    if (!cancelledBanner) return;
+    const timeoutId = window.setTimeout(() => setCancelledBanner(null), 4000);
+    return () => window.clearTimeout(timeoutId);
+  }, [cancelledBanner]);
+
+  useEffect(() => {
+    if (!latestQueueUpdate || !activeToken) return;
+    if (latestQueueUpdate.centerId !== activeToken.centerId) return;
+
+    const waitingTokenMap = new Map(
+      (latestQueueUpdate.waitingTokens ?? []).map((token) => [token.tokenNumber, token]),
+    );
+
+    setLiveTokens((prev) => prev.map((token) => {
+      const waitingToken = waitingTokenMap.get(token.tokenNumber);
+      if (!waitingToken) {
+        return token;
+      }
+
+      const etaIso = new Date(Date.now() + Math.max(0, waitingToken.estimatedWaitSeconds ?? 0) * 1000).toISOString();
+      return {
+        ...token,
+        queuePosition: waitingToken.queuePosition,
+        eta: etaIso,
+      };
+    }));
+  }, [latestQueueUpdate, activeToken]);
 
   // ── Cancel handler ────────────────────────────────────────────
   const handleCancelToken = useCallback(async (tokenId: number) => {
-    const tokenNumber = tokens.find(t => t.tokenId === tokenId)?.tokenNumber ?? "token";
+    const tokenNumber = liveTokens.find(t => t.tokenId === tokenId)?.tokenNumber ?? "token";
     await cancelToken(tokenId); // throws on failure — card surfaces the error
-    showToast(`Token ${tokenNumber} has been cancelled. Your queue spot has been released.`);
-  }, [tokens, cancelToken, showToast]);
+    addToast(`Token ${tokenNumber} has been cancelled. Your queue spot has been released.`, "warning", 4000);
+  }, [liveTokens, cancelToken, addToast]);
 
   if (!user) return <Navigate to="/login" replace />;
 
@@ -53,14 +162,21 @@ export default function DashboardPage() {
 
   return (
     <div className="w-full flex flex-col pt-4">
-      {/* ── Success toast ── */}
-      {toastMessage && (
-        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-emerald-50 border border-emerald-300 rounded-2xl px-5 py-3 flex items-center gap-3 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)] w-11/12 max-w-md animate-[fadeInDown_0.2s_ease]">
-          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="#059669" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
-          <span className="text-emerald-800 text-sm font-bold flex-1">{toastMessage}</span>
-          <button onClick={() => setToastMessage(null)} className="text-emerald-400 hover:text-emerald-600">✕</button>
+      {turnAlert && (
+        <div className="w-full mb-4 bg-[#78d64b] text-black px-4 py-3 rounded-lg font-bold text-sm animate-pulse">
+          It&apos;s your turn!
+        </div>
+      )}
+
+      {servedBanner && (
+        <div className="w-full mb-4 bg-[#78d64b] text-black px-4 py-3 rounded-lg font-semibold text-sm">
+          {servedBanner}
+        </div>
+      )}
+
+      {cancelledBanner && (
+        <div className="w-full mb-4 bg-red-500 text-white px-4 py-3 rounded-lg font-semibold text-sm">
+          {cancelledBanner}
         </div>
       )}
 
@@ -115,7 +231,7 @@ export default function DashboardPage() {
             </p>
           </div>
           <div className="mt-8 relative z-10">
-            <div className="text-6xl font-extrabold tracking-tighter">{tokens.length}</div>
+            <div className="text-6xl font-extrabold tracking-tighter">{liveTokens.length}</div>
             <div className="text-xs font-bold uppercase tracking-widest mt-1 opacity-80">Active Tokens</div>
           </div>
         </div>
@@ -162,7 +278,7 @@ export default function DashboardPage() {
             <div className="w-10 h-10 border-4 border-gray-800 border-t-[#78d64b] rounded-full animate-spin mb-4" />
             <p className="text-[12px] font-bold text-gray-500 uppercase tracking-widest">Fetching your queue positions...</p>
           </div>
-        ) : tokens.length === 0 ? (
+        ) : liveTokens.length === 0 ? (
           <div className="bg-[#1a1c23] p-12 rounded-[2rem] border border-gray-800 shadow-xl border-dashed text-center">
             <svg className="w-16 h-16 text-gray-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
@@ -175,12 +291,14 @@ export default function DashboardPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {tokens.map((token) => (
+            {liveTokens.map((token) => (
               <UserTokenCard key={token.tokenId} token={token} onCancel={handleCancelToken} />
             ))}
           </div>
         )}
       </div>
+
+      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
     </div>
   );
 }
