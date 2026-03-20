@@ -1,3 +1,5 @@
+// frontend/src/App.tsx
+
 import { Route, Routes, Navigate } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
@@ -10,9 +12,12 @@ import AdminCreateServiceCenterPage from "./pages/AdminCreateServiceCenterPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import AdminServiceCentersPage from "./pages/AdminServiceCentersPage";
+import AdminCountersPage from "./pages/AdminCountersPage";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import AdminRoute from "./components/common/AdminRoute";
+import OfficerRoute from "./components/common/OfficerRoute";
 import AdminLayout from "./components/common/AdminLayout";
+import OfficerDashboardPage from "./pages/OfficerDashboardPage";
 import UserLayout from "./components/common/UserLayout";
 
 function App() {
@@ -40,6 +45,14 @@ function App() {
           <Route path="/admin/service-centers" element={<AdminServiceCentersPage />} />
           <Route path="/admin/service-centers/create" element={<AdminCreateServiceCenterPage />} />
           <Route path="/admin/users" element={<AdminUsersPage />} />
+          <Route path="/admin/counters" element={<AdminCountersPage />} />
+        </Route>
+      </Route>
+
+      {/* ── Officer-only routes ───────────────────────────── */}
+      <Route element={<OfficerRoute />}>
+        <Route element={<AdminLayout />}>
+          <Route path="/officer" element={<OfficerDashboardPage />} />
         </Route>
       </Route>
 
