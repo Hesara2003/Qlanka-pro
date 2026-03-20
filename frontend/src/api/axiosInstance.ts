@@ -24,8 +24,8 @@ axiosInstance.interceptors.response.use(
     if (axios.isAxiosError(error)) {
       const status = error.response?.status;
 
-      // 401: Session expired — clear stored credentials
-      if (status === 401) {
+      // 401/403: Session expired or forbidden — clear stored credentials
+      if (status === 401 || status === 403) {
         localStorage.removeItem("token");
         localStorage.removeItem("auth_user");
         // Redirect to login if not already there
