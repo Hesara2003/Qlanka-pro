@@ -14,6 +14,7 @@ public class Token
     public DateTime? ServedTime { get; set; }
     public DateTime? CompletedTime { get; set; }
     public DateTime? CancelledAt { get; set; }
+    public DateTime? CalledAt    { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public int? QueuePosition { get; set; }
