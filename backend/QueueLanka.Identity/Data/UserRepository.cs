@@ -119,7 +119,7 @@ public class UserRepository : IUserRepository
             var result = await cmd.ExecuteScalarAsync();
             return Convert.ToInt32(result);
         }
-        catch (MySqlException ex) when (ex.Number == 1452)
+        catch (MySqlException ex) when (IsCenterConstraintError(ex))
         {
             throw new AppException(422, "INVALID_CENTER", "Service center ID is invalid or unavailable for officer registration.");
         }
@@ -261,5 +261,14 @@ public class UserRepository : IUserRepository
             if (reader.GetName(i).Equals(columnName, StringComparison.OrdinalIgnoreCase))
                 return true;
         return false;
+    }
+
+    private static bool IsCenterConstraintError(MySqlException ex)
+    {
+        if (ex.Number is 1452 or 1451 or 1216 or 1217)
+            return true;
+
+        return ex.Message.Contains("center_id", StringComparison.OrdinalIgnoreCase)
+            && ex.Message.Contains("foreign key", StringComparison.OrdinalIgnoreCase);
     }
 }
