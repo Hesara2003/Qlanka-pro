@@ -60,6 +60,10 @@ export default function AdminCountersPage() {
   }, []);
 
   useEffect(() => {
+    void loadOfficers();
+  }, [loadOfficers]);
+
+  useEffect(() => {
     if (centers.length > 0 && selectedCenterId == null) {
       setSelectedCenterId(centers[0].centerId);
     }
@@ -77,8 +81,7 @@ export default function AdminCountersPage() {
     }
 
     void refreshCenters();
-    void loadOfficers();
-  }, [showCreateModal, refreshCenters, loadOfficers]);
+  }, [showCreateModal, refreshCenters]);
 
   useEffect(() => {
     if (!latestCounterStatusChange) {
@@ -314,7 +317,13 @@ export default function AdminCountersPage() {
           {counters.map((counter) => (
             <CounterCard
               key={counter.counterId}
-              counter={counter}
+              counter={{
+                ...counter,
+                assignedOfficerName: 
+                  counter.assignedOfficerName ?? 
+                  officers.find(o => o.userId === counter.assignedOfficerUserId)?.username ?? 
+                  null
+              }}
               loading={!canManageCounters || (statusUpdateLoading && actionCounterId === counter.counterId)}
               onStatusChange={(counterId, isOpen, reason) => {
                 if (!canManageCounters) return;
