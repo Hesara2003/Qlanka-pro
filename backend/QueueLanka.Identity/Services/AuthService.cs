@@ -32,9 +32,15 @@ public class AuthService : IAuthService
         if (!ValidRoles.Contains(dto.Role.ToLower()))
             throw new AppException(422, "INVALID_ROLE", "Role must be one of: citizen, officer, admin.");
 
-        // Officers must specify a centre
-        if (dto.Role.Equals("officer", StringComparison.OrdinalIgnoreCase) && dto.CenterId is null)
-            throw new AppException(422, "CENTER_REQUIRED", "centerId is required for role 'officer'.");
+        // Officers must specify a valid centre
+        if (dto.Role.Equals("officer", StringComparison.OrdinalIgnoreCase))
+        {
+            if (dto.CenterId is null)
+                throw new AppException(422, "CENTER_REQUIRED", "centerId is required for role 'officer'.");
+
+            if (dto.CenterId <= 0)
+                throw new AppException(422, "INVALID_CENTER", "centerId must be greater than 0 for role 'officer'.");
+        }
 
         // Check uniqueness
         if (await _users.GetByUsernameAsync(dto.Username) is not null)

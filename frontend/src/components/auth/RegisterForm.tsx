@@ -53,6 +53,8 @@ function validate(values: FormState): FormErrors {
       errors.centerId = "Centre ID is required for officers.";
     } else if (isNaN(Number(values.centerId))) {
       errors.centerId = "Centre ID must be a number.";
+    } else if (Number(values.centerId) <= 0) {
+      errors.centerId = "Centre ID must be greater than 0.";
     }
   }
 

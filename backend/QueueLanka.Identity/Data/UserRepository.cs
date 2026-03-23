@@ -1,5 +1,6 @@
 using MySqlConnector;
 using QueueLanka.Identity.Models;
+using QueueLanka.Shared.Exceptions;
 
 namespace QueueLanka.Identity.Data;
 
@@ -113,8 +114,25 @@ public class UserRepository : IUserRepository
         cmd.Parameters.AddWithValue("@Role",     user.Role);
         cmd.Parameters.AddWithValue("@CenterId", user.CenterId.HasValue ? user.CenterId.Value : DBNull.Value);
 
-        var result = await cmd.ExecuteScalarAsync();
-        return Convert.ToInt32(result);
+        try
+        {
+            var result = await cmd.ExecuteScalarAsync();
+            return Convert.ToInt32(result);
+        }
+        catch (MySqlException ex) when (ex.Number == 1452)
+        {
+            throw new AppException(422, "INVALID_CENTER", "Service center ID is invalid or unavailable for officer registration.");
+        }
+        catch (MySqlException ex) when (ex.Number == 1062)
+        {
+            if (ex.Message.Contains("username", StringComparison.OrdinalIgnoreCase))
+                throw new DuplicateUsernameException(user.Username);
+
+            if (ex.Message.Contains("email", StringComparison.OrdinalIgnoreCase))
+                throw new DuplicateEmailException(user.Email);
+
+            throw new AppException(409, "DUPLICATE_USER", "A user with these details already exists.");
+        }
     }
 
     public async Task SetEmailVerifiedAsync(int userId)
