@@ -6,6 +6,7 @@ on:
 
 env:
   AZURE_WEBAPP_URL: https://queuelanka-api-fwhthqd4g9e0aee2.centralindia-01.azurewebsites.net
+  AZURE_API_BASE_URL: https://qlanka-gateway.redrock-2a740b8b.centralindia.azurecontainerapps.io
   AZURE_FRONTEND_URL: https://queuelanka-frontend-hrcvdec5dnach0aj.centralindia-01.azurewebsites.net
 
 jobs:
@@ -137,7 +138,7 @@ jobs:
       working-directory: frontend
       run: npm run build
       env:
-        VITE_API_BASE_URL: ${{ env.AZURE_WEBAPP_URL }}
+        VITE_API_BASE_URL: ${{ env.AZURE_API_BASE_URL }}
 
     - name: Prune dev dependencies
       working-directory: frontend
