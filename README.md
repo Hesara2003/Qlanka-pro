@@ -9,8 +9,20 @@ QueueLanka Pro is a smart queue management platform with token booking, live que
 ```
 Qlanka-pro/
 ├── frontend/   # React/Next.js client application
-└── backend/    # Node.js / API server
+├── backend/    # .NET API server
+├── docs/       # Documentation and guides
+└── scripts/    # Development and deployment scripts
 ```
+
+---
+
+## Documentation
+
+See the [docs/](docs/) directory for comprehensive documentation including:
+
+- **[Call Next Token Feature](docs/call-next-token-user-guide.md)**: User guide for officers
+- **[Technical API Guide](docs/call-next-token-technical-guide.md)**: Developer documentation
+- **[Branching Strategy](docs/branching-strategy.md)**: Git workflow guidelines
 
 ---
 
