@@ -1,6 +1,7 @@
 // backend/QueueLanka.Queue/Services/CounterService.cs
 
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using QueueLanka.Queue.Data;
 using QueueLanka.Queue.DTOs.Counter;
@@ -25,6 +26,7 @@ public class CounterService : ICounterService
     private readonly IServiceCenterClient? _serviceCenterClient;
     private readonly ILogger<CounterService> _logger;
 
+    [ActivatorUtilitiesConstructor]
     public CounterService(
         ICounterRepository counterRepository,
         ITokenRepository tokenRepository,
