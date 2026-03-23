@@ -206,7 +206,8 @@ export function useCounter(
                 skippedCount: payload.skippedCount ?? 0,
                 averageServiceTimeSeconds: payload.averageServiceTimeSeconds ?? 0,
             });
-        } catch {
+        } catch (err) {
+            console.error("Dashboard fetch error:", err);
             if (!isMountedRef.current) return;
             setDashboard(null);
             setWaitingTokens([]);
@@ -237,7 +238,8 @@ export function useCounter(
                 skippedCount: payload.skippedCount ?? 0,
                 averageServiceTimeSeconds: payload.averageServiceTimeSeconds ?? 0,
             });
-        } catch {
+        } catch (err) {
+            console.error("Stats fetch error:", err);
             if (!isMountedRef.current) return;
             setStats({ servedCount: 0, skippedCount: 0, averageServiceTimeSeconds: 0 });
         } finally {

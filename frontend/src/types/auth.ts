@@ -37,4 +37,5 @@ export interface AuthUser {
   token: string;
   /** Populated for officer-role users — their assigned counter ID. */
   counterId?: number;
+  centerId?: number;
 }

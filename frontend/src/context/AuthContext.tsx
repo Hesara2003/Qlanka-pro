@@ -25,6 +25,7 @@ interface JwtPayload {
   "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"?: string;
   "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"?: string;
   exp?: number;
+  centerId?: string;
 }
 
 function parseJwtPayload(token: string): JwtPayload | null {
@@ -86,6 +87,7 @@ function buildUserFromStorage(): AuthUser | null {
     role: roleClaim.toLowerCase(),
     token,
     counterId: persistedUser.counterId,
+    centerId: payload?.centerId ? parseInt(payload.centerId, 10) : persistedUser.centerId,
   };
 }
 
@@ -107,9 +109,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback((authUser: AuthUser) => {
+    const payload = parseJwtPayload(authUser.token);
     const normalizedUser: AuthUser = {
       ...authUser,
       role: authUser.role.toLowerCase(),
+      centerId: payload?.centerId ? parseInt(payload.centerId, 10) : authUser.centerId,
     };
 
     localStorage.setItem("token", normalizedUser.token);
