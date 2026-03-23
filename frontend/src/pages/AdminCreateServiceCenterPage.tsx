@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import { AxiosError } from "axios";
-import { useAuth } from "../context/AuthContext";
 import { createServiceCenter } from "../api/serviceCenterApi";
 import type { CreateServiceCenterRequest } from "../types/serviceCenter";
 // ─────────────────────────────────────────────────────────────────────────────
@@ -127,14 +126,6 @@ const inputCls = (error?: string) =>
 //  Page
 // ─────────────────────────────────────────────────────────────────────────────
 export default function AdminCreateServiceCenterPage() {
-  const navigate = useNavigate();
-  const { user } = useAuth();
-
-  useEffect(() => {
-    if (!user) navigate("/login");
-    else if (user.role !== "admin") navigate("/service-centers");
-  }, [user, navigate]);
-
   // ── State ─────────────────────────────────────────────────────────────────
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<CreateServiceCenterRequest>(INITIAL);
