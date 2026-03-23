@@ -1,4 +1,6 @@
-import { Navigate, Outlet } from "react-router-dom";
+// frontend/src/components/common/AdminRoute.tsx
+
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 /**
@@ -7,10 +9,23 @@ import { useAuth } from "../../context/AuthContext";
  * Logged in but not admin → /dashboard
  */
 export default function AdminRoute() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+  const location = useLocation();
 
-  if (!user) return <Navigate to="/login" replace />;
-  if (user.role !== "admin") return <Navigate to="/dashboard" replace />;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <span className="inline-block w-8 h-8 rounded-full border-4 border-black/20 border-t-black animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    const returnUrl = `${location.pathname}${location.search}${location.hash}`;
+    return <Navigate to={`/login?returnUrl=${encodeURIComponent(returnUrl)}`} replace />;
+  }
+
+  if (user.role.toLowerCase() !== "admin") return <Navigate to="/dashboard" replace />;
 
   return <Outlet />;
 }

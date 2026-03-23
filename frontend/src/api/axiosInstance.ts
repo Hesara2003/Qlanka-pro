@@ -1,7 +1,21 @@
+// frontend/src/api/axiosInstance.ts
+
 import axios from "axios";
 
+export class AuthorizationError extends Error {
+  public readonly code: string;
+  public readonly status: number;
+
+  constructor(message: string, code = "AUTH_FORBIDDEN", status = 403) {
+    super(message);
+    this.name = "AuthorizationError";
+    this.code = code;
+    this.status = status;
+  }
+}
+
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5000",
+  baseURL: "https://qlanka-gateway.redrock-2a740b8b.centralindia.azurecontainerapps.io",
   headers: {
     "Content-Type": "application/json",
   },
@@ -24,16 +38,23 @@ axiosInstance.interceptors.response.use(
     if (axios.isAxiosError(error)) {
       const status = error.response?.status;
 
-      // 401: Session expired — clear stored credentials
       if (status === 401) {
         localStorage.removeItem("token");
         localStorage.removeItem("auth_user");
-        // Redirect to login if not already there
+        window.dispatchEvent(new CustomEvent("auth:logout"));
+
         if (!window.location.pathname.startsWith("/login")) {
-          window.location.href = "/login";
+          window.location.href = "/login?reason=session_expired";
         }
       }
+
+      if (status === 403) {
+        return Promise.reject(
+          new AuthorizationError("You do not have permission to perform this action")
+        );
+      }
     }
+
     return Promise.reject(error);
   }
 );

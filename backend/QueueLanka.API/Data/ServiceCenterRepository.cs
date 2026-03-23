@@ -111,8 +111,8 @@ public class ServiceCenterRepository : IServiceCenterRepository
                      average_service_time_minutes, opening_time, closing_time, is_active)
                 VALUES
                     (@Name, @Address, @Phone, @Email, @Description, @Timezone, @Capacity,
-                     @AvgTime, @OpeningTime, @ClosingTime, @IsActive);
-                SELECT LAST_INSERT_ID();";
+                     @AvgTime, @OpeningTime, @ClosingTime, @IsActive)
+                RETURNING center_id;";
 
             await using var cmdInsert = new MySqlCommand(insertCenter, conn, (MySqlTransaction)tx);
             cmdInsert.Parameters.AddWithValue("@Name",        center.Name);
@@ -260,7 +260,7 @@ public class ServiceCenterRepository : IServiceCenterRepository
     }
 
     /// <summary>
-    /// Core INSERT … ON DUPLICATE KEY UPDATE. Can be called inside an existing
+    /// Core INSERT … ON CONFLICT UPDATE. Can be called inside an existing
     /// transaction (pass <paramref name="tx"/>) or standalone (pass <c>null</c>).
     /// </summary>
     private static async Task<CenterLocation> UpsertLocationCoreAsync(
@@ -275,18 +275,19 @@ public class ServiceCenterRepository : IServiceCenterRepository
             VALUES
                 (@CenterId, @StreetAddress, @City, @District, @Province, @PostalCode,
                  @Country, @Latitude, @Longitude, @GoogleMapsUrl, @Landmark)
-            ON DUPLICATE KEY UPDATE
-                street_address  = VALUES(street_address),
-                city            = VALUES(city),
-                district        = VALUES(district),
-                province        = VALUES(province),
-                postal_code     = VALUES(postal_code),
-                country         = VALUES(country),
-                latitude        = VALUES(latitude),
-                longitude       = VALUES(longitude),
-                google_maps_url = VALUES(google_maps_url),
-                landmark        = VALUES(landmark);
-            SELECT LAST_INSERT_ID();";
+            ON CONFLICT (center_id) DO UPDATE SET
+                street_address  = EXCLUDED.street_address,
+                city            = EXCLUDED.city,
+                district        = EXCLUDED.district,
+                province        = EXCLUDED.province,
+                postal_code     = EXCLUDED.postal_code,
+                country         = EXCLUDED.country,
+                latitude        = EXCLUDED.latitude,
+                longitude       = EXCLUDED.longitude,
+                google_maps_url = EXCLUDED.google_maps_url,
+                landmark        = EXCLUDED.landmark,
+                updated_at      = NOW()
+            RETURNING location_id;";
 
         await using var cmd = tx is null
             ? new MySqlCommand(sql, conn)
@@ -305,10 +306,7 @@ public class ServiceCenterRepository : IServiceCenterRepository
         cmd.Parameters.AddWithValue("@Landmark",      (object?)location.Landmark      ?? DBNull.Value);
 
         var result = await cmd.ExecuteScalarAsync();
-        // LAST_INSERT_ID() returns 0 on an UPDATE; in that case re-load the existing row's ID.
-        long insertId = Convert.ToInt64(result);
-        if (insertId > 0)
-            location.LocationId = (int)insertId;
+        location.LocationId = Convert.ToInt32(result);
 
         location.CreatedAt = DateTime.UtcNow;
         return location;
@@ -380,7 +378,16 @@ public class ServiceCenterRepository : IServiceCenterRepository
             SELECT operating_day_id, center_id, day_of_week, is_open, opening_time, closing_time, created_at
             FROM center_operating_days
             WHERE center_id = @CenterId
-            ORDER BY FIELD(day_of_week, 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday')";
+            ORDER BY CASE day_of_week
+                WHEN 'monday' THEN 1
+                WHEN 'tuesday' THEN 2
+                WHEN 'wednesday' THEN 3
+                WHEN 'thursday' THEN 4
+                WHEN 'friday' THEN 5
+                WHEN 'saturday' THEN 6
+                WHEN 'sunday' THEN 7
+                ELSE 8
+            END";
 
         try
         {

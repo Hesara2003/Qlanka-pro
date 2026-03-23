@@ -1,0 +1,41 @@
+name: Build & Push Microservices
+
+on:
+  push:
+    branches: [feature/microservices, main, test/microservices]
+    paths:
+      - 'backend/**'
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - name: qlanka-gateway
+            dockerfile: QueueLanka.Gateway/Dockerfile
+          - name: qlanka-identity
+            dockerfile: QueueLanka.Identity/Dockerfile
+          - name: qlanka-servicecenter
+            dockerfile: QueueLanka.ServiceCenter/Dockerfile
+          - name: qlanka-queue
+            dockerfile: QueueLanka.Queue/Dockerfile
+          - name: qlanka-notification
+            dockerfile: QueueLanka.Notification/Dockerfile
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Azure Container Registry
+        uses: azure/docker-login@v2
+        with:
+          login-server: qlankaregistry.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and push ${{ matrix.service.name }}
+        run: |
+          docker build -t qlankaregistry.azurecr.io/${{ matrix.service.name }}:latest -f backend/${{ matrix.service.dockerfile }} backend
+          docker push qlankaregistry.azurecr.io/${{ matrix.service.name }}:latest

@@ -2,10 +2,12 @@ name: CI / CD Pipeline
 
 on:
   push:
+    branches: [develop, test/microservices, feature/microservices]
   pull_request:
 
 env:
-  AZURE_WEBAPP_URL: https://queuelanka-api-fwhthqd4g9e0aee2.centralindia-01.azurewebsites.net
+  AZURE_WEBAPP_URL: https://qlanka-gateway.redrock-2a740b8b.centralindia.azurecontainerapps.io
+  AZURE_API_BASE_URL: https://qlanka-gateway.redrock-2a740b8b.centralindia.azurecontainerapps.io
   AZURE_FRONTEND_URL: https://queuelanka-frontend-hrcvdec5dnach0aj.centralindia-01.azurewebsites.net
 
 jobs:
@@ -50,11 +52,11 @@ jobs:
 
     # Publish the API and stash the artefact for the deploy job
     - name: Publish backend
-      if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+      if: github.event_name == 'push' && (github.ref == 'refs/heads/test/microservices' || github.ref == 'refs/heads/feature/microservices')
       run: dotnet publish backend/QueueLanka.API/QueueLanka.API.csproj --configuration Release --no-build --output ./publish/backend
 
     - name: Upload backend artefact
-      if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+      if: github.event_name == 'push' && (github.ref == 'refs/heads/test/microservices' || github.ref == 'refs/heads/feature/microservices')
       uses: actions/upload-artifact@v4
       with:
         name: backend-publish
@@ -68,7 +70,7 @@ jobs:
     name: Deploy Backend → Azure App Service
     runs-on: ubuntu-latest
     needs: build-and-test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/test/microservices' || github.ref == 'refs/heads/feature/microservices')
     environment:
       name: develop
       url: ${{ env.AZURE_WEBAPP_URL }}
@@ -114,7 +116,7 @@ jobs:
     name: Deploy Frontend → Azure App Service
     runs-on: ubuntu-latest
     needs: build-and-test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/test/microservices' || github.ref == 'refs/heads/feature/microservices')
     environment:
       name: develop
 
@@ -137,7 +139,7 @@ jobs:
       working-directory: frontend
       run: npm run build
       env:
-        VITE_API_BASE_URL: ${{ env.AZURE_WEBAPP_URL }}
+        VITE_API_BASE_URL: ${{ env.AZURE_API_BASE_URL }}
 
     - name: Prune dev dependencies
       working-directory: frontend
