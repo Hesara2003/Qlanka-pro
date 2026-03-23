@@ -1,20 +1,105 @@
 version: '3.8'
+
 services:
-  backend:
+  gateway:
     build:
-      context: ./backend/QueueLanka.API
-    container_name: backend
+      context: .
+      dockerfile: ./backend/QueueLanka.Gateway/Dockerfile
+    container_name: gateway
     ports:
       - "5000:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=qlanka_db;Username=qlanka;PasswordFile=/run/secrets/db_password
-      - JWT_SECRET_FILE=/run/secrets/jwt_secret
+    depends_on:
+      - identity
+      - service-center
+      - queue
+    networks:
+      - qlanka-net
+
+  identity:
+    build:
+      context: .
+      dockerfile: ./backend/QueueLanka.Identity/Dockerfile
+    container_name: identity
+    ports:
+      - "5001:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=db-identity;Port=3306;Database=identity_db;Uid=qlanka;Pwd=P@ssw0rd123
+      - Jwt__Secret=/run/secrets/jwt_secret
+      - Jwt__Issuer=queuelanka-api
+      - Jwt__Audience=queuelanka-client
+      - Email__Smtp__Host=localhost
+      - Email__Smtp__Port=1025
+      - Email__Smtp__Username=test
+      - Email__Smtp__Password=test
+      - Email__From__Address=noreply@queuelanka.com
     secrets:
       - db_password
       - jwt_secret
     depends_on:
-      - db
+      - db-identity
+    networks:
+      - qlanka-net
+
+  service-center:
+    build:
+      context: .
+      dockerfile: ./backend/QueueLanka.ServiceCenter/Dockerfile
+    container_name: service-center
+    ports:
+      - "5002:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=db-service-center;Port=3306;Database=servicecenters_db;Uid=qlanka;Pwd=P@ssw0rd123
+      - Jwt__Secret=/run/secrets/jwt_secret
+      - Jwt__Issuer=queuelanka-api
+      - Jwt__Audience=queuelanka-client
+    secrets:
+      - db_password
+      - jwt_secret
+    depends_on:
+      - db-service-center
+    networks:
+      - qlanka-net
+
+  queue:
+    build:
+      context: .
+      dockerfile: ./backend/QueueLanka.Queue/Dockerfile
+    container_name: queue
+    ports:
+      - "5003:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=db-queue;Port=3306;Database=queue_db;Uid=qlanka;Pwd=P@ssw0rd123
+      - Jwt__Secret=/run/secrets/jwt_secret
+      - Jwt__Issuer=queuelanka-api
+      - Jwt__Audience=queuelanka-client
+      - ServiceUrls__ServiceCenter=http://service-center:80/
+    secrets:
+      - db_password
+      - jwt_secret
+    depends_on:
+      - db-queue
+    networks:
+      - qlanka-net
+
+  notification:
+    build:
+      context: .
+      dockerfile: ./backend/QueueLanka.Notification/Dockerfile
+    container_name: notification
+    ports:
+      - "5004:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Email__Smtp__Host=localhost
+      - Email__Smtp__Port=1025
+      - Email__Smtp__Username=test
+      - Email__Smtp__Password=test
+      - Email__From__Address=noreply@queuelanka.com
     networks:
       - qlanka-net
 
@@ -25,30 +110,67 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - VITE_API_URL=http://backend:80
+      - VITE_API_URL=http://gateway:5000
     depends_on:
-      - backend
+      - gateway
     networks:
       - qlanka-net
 
-  db:
-    image: postgres:16
-    container_name: db
+  db-identity:
+    image: mysql:8.0
+    container_name: db-identity
     environment:
-      - POSTGRES_USER=qlanka
-      - POSTGRES_DB=qlanka_db
-      - POSTGRES_PASSWORD_FILE=/run/secrets/db_password
+      - MYSQL_USER=qlanka
+      - MYSQL_DATABASE=identity_db
+      - MYSQL_PASSWORD_FILE=/run/secrets/db_password
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db_password
     secrets:
       - db_password
     ports:
-      - "5432:5432"
+      - "33061:3306"
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - db_identity_data:/var/lib/mysql
+    networks:
+      - qlanka-net
+
+  db-service-center:
+    image: mysql:8.0
+    container_name: db-service-center
+    environment:
+      - MYSQL_USER=qlanka
+      - MYSQL_DATABASE=servicecenters_db
+      - MYSQL_PASSWORD_FILE=/run/secrets/db_password
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db_password
+    secrets:
+      - db_password
+    ports:
+      - "33062:3306"
+    volumes:
+      - db_servicecenter_data:/var/lib/mysql
+    networks:
+      - qlanka-net
+
+  db-queue:
+    image: mysql:8.0
+    container_name: db-queue
+    environment:
+      - MYSQL_USER=qlanka
+      - MYSQL_DATABASE=queue_db
+      - MYSQL_PASSWORD_FILE=/run/secrets/db_password
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db_password
+    secrets:
+      - db_password
+    ports:
+      - "33063:3306"
+    volumes:
+      - db_queue_data:/var/lib/mysql
     networks:
       - qlanka-net
 
 volumes:
-  db_data:
+  db_identity_data:
+  db_servicecenter_data:
+  db_queue_data:
 
 secrets:
   db_password:

@@ -1,11 +1,15 @@
+// frontend/src/components/common/AdminLayout.tsx
+
 import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 const PAGE_TITLES: Record<string, { title: string; subtitle: string }> = {
     "/admin":                          { title: "Dashboard",             subtitle: "Overview of the QueueLanka system" },
     "/admin/users":                    { title: "User Management",        subtitle: "View, search and manage user accounts" },
+    "/admin/counters":                 { title: "Counter Management",     subtitle: "Create and control counters by center" },
     "/admin/service-centers":          { title: "Service Centers",        subtitle: "Browse all registered service centers" },
     "/admin/service-centers/create":   { title: "Create Service Center",  subtitle: "Register a new government service center" },
+    "/officer":                        { title: "Officer Workstation",    subtitle: "Manage calls for your assigned counter" },
 };
 
 export default function AdminLayout() {
@@ -27,7 +31,7 @@ export default function AdminLayout() {
             <aside className="w-64 bg-white border-r border-gray-100 flex flex-col justify-between py-6 px-4">
                 <div>
                     {/* Logo */}
-                    <Link to="/admin" className="flex items-center gap-3 mb-10 px-2">
+                    <Link to={user?.role === "officer" ? "/officer" : "/admin"} className="flex items-center gap-3 mb-10 px-2">
                         <div className="w-8 h-8 bg-teal-500 rounded-lg flex items-center justify-center">
                             <div className="w-3 h-3 bg-white rounded-sm"></div>
                         </div>
@@ -39,53 +43,69 @@ export default function AdminLayout() {
                         <p className="px-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Main Menu</p>
                         <nav className="flex flex-col gap-1">
                             <Link
-                                to="/admin"
-                                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold transition-colors shadow-sm ${currentPath === "/admin"
+                                to={user?.role === "officer" ? "/officer" : "/admin"}
+                                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold transition-colors shadow-sm ${currentPath === "/admin" || currentPath === "/officer"
                                     ? "bg-gray-50 text-gray-900"
                                     : "text-gray-500 hover:text-gray-900 hover:bg-gray-50 font-medium"
                                     }`}
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={currentPath === "/admin" ? 2.5 : 2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={currentPath === "/admin" || currentPath === "/officer" ? 2.5 : 2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                                 </svg>
                                 Dashboard
                             </Link>
-                            <Link
-                                to="/admin/users"
-                                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors shadow-sm ${currentPath === "/admin/users"
-                                    ? "bg-gray-50 text-gray-900 font-bold"
-                                    : "text-gray-500 hover:text-gray-900 hover:bg-gray-50 font-medium"
-                                    }`}
-                            >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={currentPath === "/admin/users" ? 2.5 : 2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
-                                Users
-                            </Link>
-                            <Link
-                                to="/admin/service-centers"
-                                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors shadow-sm ${currentPath === "/admin/service-centers"
-                                    ? "bg-gray-50 text-gray-900 font-bold"
-                                    : "text-gray-500 hover:text-gray-900 hover:bg-gray-50 font-medium"
-                                    }`}
-                            >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={currentPath === "/admin/service-centers" ? 2.5 : 2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                </svg>
-                                Centers
-                            </Link>
-                            <Link
-                                to="/admin/service-centers/create"
-                                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors shadow-sm ${currentPath === "/admin/service-centers/create"
-                                    ? "bg-gray-50 text-gray-900 font-bold"
-                                    : "text-gray-500 hover:text-gray-900 hover:bg-gray-50 font-medium"
-                                    }`}
-                            >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={currentPath === "/admin/service-centers/create" ? 2.5 : 2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                </svg>
-                                Create
-                            </Link>
+                            {user?.role === "admin" && (
+                                <>
+                                    <Link
+                                        to="/admin/users"
+                                        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors shadow-sm ${currentPath === "/admin/users"
+                                            ? "bg-gray-50 text-gray-900 font-bold"
+                                            : "text-gray-500 hover:text-gray-900 hover:bg-gray-50 font-medium"
+                                            }`}
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={currentPath === "/admin/users" ? 2.5 : 2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                        Users
+                                    </Link>
+                                    <Link
+                                        to="/admin/service-centers"
+                                        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors shadow-sm ${currentPath === "/admin/service-centers"
+                                            ? "bg-gray-50 text-gray-900 font-bold"
+                                            : "text-gray-500 hover:text-gray-900 hover:bg-gray-50 font-medium"
+                                            }`}
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={currentPath === "/admin/service-centers" ? 2.5 : 2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                        </svg>
+                                        Centers
+                                    </Link>
+                                    <Link
+                                        to="/admin/counters"
+                                        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors shadow-sm ${currentPath === "/admin/counters"
+                                            ? "bg-gray-50 text-gray-900 font-bold"
+                                            : "text-gray-500 hover:text-gray-900 hover:bg-gray-50 font-medium"
+                                            }`}
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={currentPath === "/admin/counters" ? 2.5 : 2} d="M8 7h8m-8 5h8m-8 5h5M4 4h16a1 1 0 011 1v14a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1z" />
+                                        </svg>
+                                        Counter Management
+                                    </Link>
+                                    <Link
+                                        to="/admin/service-centers/create"
+                                        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors shadow-sm ${currentPath === "/admin/service-centers/create"
+                                            ? "bg-gray-50 text-gray-900 font-bold"
+                                            : "text-gray-500 hover:text-gray-900 hover:bg-gray-50 font-medium"
+                                            }`}
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={currentPath === "/admin/service-centers/create" ? 2.5 : 2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                        </svg>
+                                        Create
+                                    </Link>
+                                </>
+                            )}
                         </nav>
                     </div>
 
@@ -121,8 +141,8 @@ export default function AdminLayout() {
                 <header className="sticky top-0 z-20 bg-white/90 backdrop-blur-sm border-b border-gray-100 px-8 h-16 flex items-center justify-between flex-shrink-0">
                     {/* Page title */}
                     <div className="flex items-center gap-3">
-                        {currentPath !== "/admin" && (
-                            <button onClick={() => navigate("/admin")} className="text-gray-400 hover:text-gray-600 transition-colors">
+                        {currentPath !== "/admin" && currentPath !== "/officer" && (
+                            <button onClick={() => navigate(user?.role === "officer" ? "/officer" : "/admin")} className="text-gray-400 hover:text-gray-600 transition-colors">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                                 </svg>
