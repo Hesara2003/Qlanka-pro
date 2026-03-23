@@ -1,12 +1,23 @@
 namespace QueueLanka.Queue.Integration;
 
+using System.Text.Json.Serialization;
+
 public class ServiceCenterDto
 {
     public int CenterId { get; set; }
     public string Name { get; set; } = string.Empty;
     public bool IsActive { get; set; }
     public int Capacity { get; set; }
+    [JsonPropertyName("openingTime")]
+    public string? OpeningTimeRaw { get; set; }
+
+    [JsonPropertyName("closingTime")]
+    public string? ClosingTimeRaw { get; set; }
+
+    [JsonIgnore]
     public TimeSpan OpeningTime { get; set; }
+
+    [JsonIgnore]
     public TimeSpan ClosingTime { get; set; }
     public int AverageServiceTimeMinutes { get; set; }
 }

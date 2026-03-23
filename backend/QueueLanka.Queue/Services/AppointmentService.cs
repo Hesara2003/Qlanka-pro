@@ -76,10 +76,19 @@ public class AppointmentService : IAppointmentService
 
             if (operatingDays.Count == 0)
             {
-                // MVP fallback when operating-days endpoint is unavailable:
-                // use center-level opening/closing hours.
-                openTime = center.OpeningTime;
-                closeTime = center.ClosingTime;
+                // Fallback defaults: weekdays 09:00-17:00 when operating-days data is unavailable.
+                _logger.LogWarning(
+                    "Operating days unavailable for CenterId={CenterId}. Using default weekday hours (09:00-17:00).",
+                    center.CenterId);
+
+                var dayOfWeek = requestedDate.DayOfWeek;
+                if (dayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
+                {
+                    throw new InvalidOperationException("Center is closed on this day of the week.");
+                }
+
+                openTime = new TimeSpan(9, 0, 0);
+                closeTime = new TimeSpan(17, 0, 0);
             }
             else
             {

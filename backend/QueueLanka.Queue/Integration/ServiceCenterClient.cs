@@ -16,71 +16,42 @@ public class ServiceCenterClient : IServiceCenterClient
 
     public async Task<ServiceCenterDto?> GetCenterAsync(int centerId)
     {
+        var centers = await GetCentersAsync();
+        return centers.FirstOrDefault(center => center.CenterId == centerId);
+    }
+
+    private async Task<List<ServiceCenterDto>> GetCentersAsync()
+    {
         try
         {
-            var response = await _httpClient.GetAsync($"/api/service-centers/{centerId}");
+            var response = await _httpClient.GetAsync("/api/service-centers");
             if (!response.IsSuccessStatusCode)
             {
-                var errorBody = await response.Content.ReadAsStringAsync();
                 _logger.LogWarning(
-                    "ServiceCenter lookup failed for CenterId={CenterId}. Status={StatusCode}. Body={Body}",
-                    centerId,
-                    (int)response.StatusCode,
-                    errorBody);
-                return null;
+                    "ServiceCenter list lookup failed. Status={StatusCode}. Returning empty list.",
+                    (int)response.StatusCode);
+                return new List<ServiceCenterDto>();
             }
 
             var content = await response.Content.ReadAsStringAsync();
-            var apiResponse = JsonSerializer.Deserialize<ApiResponse<JsonElement>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-            if (apiResponse is null || apiResponse.Data.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null)
+            var apiResponse = JsonSerializer.Deserialize<ApiResponse<List<ServiceCenterDto>>>(
+                content,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            var centers = apiResponse?.Data ?? new List<ServiceCenterDto>();
+
+            foreach (var center in centers)
             {
-                _logger.LogWarning("ServiceCenter {CenterId} response did not include a data payload", centerId);
-                return null;
+                center.OpeningTime = ParseTimeOrZero(center.OpeningTimeRaw);
+                center.ClosingTime = ParseTimeOrZero(center.ClosingTimeRaw);
             }
 
-            var data = apiResponse.Data;
-
-            var openingTimeRaw = data.TryGetProperty("openingTime", out var openingProp)
-                ? openingProp.GetString()
-                : null;
-            var closingTimeRaw = data.TryGetProperty("closingTime", out var closingProp)
-                ? closingProp.GetString()
-                : null;
-
-            if (!TryParseCenterTime(openingTimeRaw, out var openingTime) || !TryParseCenterTime(closingTimeRaw, out var closingTime))
-            {
-                _logger.LogWarning(
-                    "ServiceCenter {CenterId} has invalid opening/closing time format. opening='{Opening}', closing='{Closing}'",
-                    centerId,
-                    openingTimeRaw,
-                    closingTimeRaw);
-                return null;
-            }
-
-            var mappedCenter = new ServiceCenterDto
-            {
-                CenterId = data.TryGetProperty("centerId", out var centerIdProp) ? centerIdProp.GetInt32() : centerId,
-                Name = data.TryGetProperty("name", out var nameProp) ? (nameProp.GetString() ?? string.Empty) : string.Empty,
-                IsActive = data.TryGetProperty("isActive", out var isActiveProp) && isActiveProp.GetBoolean(),
-                Capacity = data.TryGetProperty("capacity", out var capacityProp) ? capacityProp.GetInt32() : 0,
-                AverageServiceTimeMinutes = data.TryGetProperty("averageServiceTimeMinutes", out var avgProp) ? avgProp.GetInt32() : 15,
-                OpeningTime = openingTime,
-                ClosingTime = closingTime
-            };
-
-            _logger.LogInformation(
-                "ServiceCenter lookup success for CenterId={CenterId}. Active={IsActive}. Open={Opening} Close={Closing}",
-                mappedCenter.CenterId,
-                mappedCenter.IsActive,
-                mappedCenter.OpeningTime,
-                mappedCenter.ClosingTime);
-
-            return mappedCenter;
+            return centers;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to get ServiceCenter {CenterId}", centerId);
-            return null;
+            _logger.LogError(ex, "Failed to get ServiceCenter list");
+            return new List<ServiceCenterDto>();
         }
     }
 
@@ -96,15 +67,20 @@ public class ServiceCenterClient : IServiceCenterClient
         return new List<CenterOperatingDayDto>();
     }
 
-    private static bool TryParseCenterTime(string? rawTime, out TimeSpan time)
+    private static TimeSpan ParseTimeOrZero(string? rawTime)
     {
         if (string.IsNullOrWhiteSpace(rawTime))
         {
-            time = default;
-            return false;
+            return TimeSpan.Zero;
         }
 
-        return TimeSpan.TryParse(rawTime, out time)
-            || DateTime.TryParse(rawTime, out var asDateTime) && (time = asDateTime.TimeOfDay) >= TimeSpan.Zero;
+        try
+        {
+            return TimeSpan.Parse(rawTime);
+        }
+        catch
+        {
+            return TimeSpan.Zero;
+        }
     }
 }

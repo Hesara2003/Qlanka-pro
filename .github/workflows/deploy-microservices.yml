@@ -5,6 +5,7 @@ on:
     branches: [feature/microservices, main]
     paths:
       - 'backend/**'
+      - '.github/workflows/deploy-microservices.yml'
   workflow_dispatch:
 
 jobs:
@@ -15,14 +16,19 @@ jobs:
         service:
           - name: qlanka-gateway
             dockerfile: QueueLanka.Gateway/Dockerfile
+            containerapp: qlanka-gateway
           - name: qlanka-identity
             dockerfile: QueueLanka.Identity/Dockerfile
+            containerapp: qlanka-identity
           - name: qlanka-servicecenter
             dockerfile: QueueLanka.ServiceCenter/Dockerfile
+            containerapp: qlanka-servicecenter
           - name: qlanka-queue
             dockerfile: QueueLanka.Queue/Dockerfile
+            containerapp: qlanka-queue
           - name: qlanka-notification
             dockerfile: QueueLanka.Notification/Dockerfile
+            containerapp: qlanka-notification
 
     steps:
       - name: Checkout code
@@ -37,5 +43,72 @@ jobs:
 
       - name: Build and push ${{ matrix.service.name }}
         run: |
-          docker build -t qlankaregistry.azurecr.io/${{ matrix.service.name }}:latest -f backend/${{ matrix.service.dockerfile }} backend
+          docker build \
+            -t qlankaregistry.azurecr.io/${{ matrix.service.name }}:${{ github.sha }} \
+            -t qlankaregistry.azurecr.io/${{ matrix.service.name }}:latest \
+            -f backend/${{ matrix.service.dockerfile }} backend
+          docker push qlankaregistry.azurecr.io/${{ matrix.service.name }}:${{ github.sha }}
           docker push qlankaregistry.azurecr.io/${{ matrix.service.name }}:latest
+
+  deploy-containerapps:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    permissions:
+      id-token: write
+      contents: read
+    strategy:
+      matrix:
+        service:
+          - name: qlanka-gateway
+            containerapp: qlanka-gateway
+          - name: qlanka-identity
+            containerapp: qlanka-identity
+          - name: qlanka-servicecenter
+            containerapp: qlanka-servicecenter
+          - name: qlanka-queue
+            containerapp: qlanka-queue
+          - name: qlanka-notification
+            containerapp: qlanka-notification
+
+    steps:
+      - name: Azure login with service principal JSON
+        if: ${{ secrets.AZURE_CREDENTIALS != '' }}
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Azure login with OIDC
+        if: ${{ secrets.AZURE_CREDENTIALS == '' }}
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy ${{ matrix.service.name }} image to Container App
+        shell: bash
+        run: |
+          az containerapp update \
+            --name "${{ matrix.service.containerapp }}" \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --image "qlankaregistry.azurecr.io/${{ matrix.service.name }}:${{ github.sha }}"
+
+      - name: Set Queue env vars
+        if: ${{ matrix.service.name == 'qlanka-queue' }}
+        shell: bash
+        run: |
+          az containerapp update \
+            --name "${{ matrix.service.containerapp }}" \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --set-env-vars \
+              ServiceUrls__ServiceCenter=https://qlanka-servicecenter.internal.redrock-2a740b8b.centralindia.azurecontainerapps.io/ \
+              Jwt__Issuer=queuelanka-api \
+              Jwt__Audience=queuelanka-client
+
+      - name: Route 100% traffic to newest revision
+        shell: bash
+        run: |
+          az containerapp revision set-mode \
+            --name "${{ matrix.service.containerapp }}" \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --mode single
