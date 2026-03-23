@@ -784,7 +784,16 @@ public class CounterRepository : ICounterRepository
         await using var conn = new MySqlConnection(_connectionString);
         await conn.OpenAsync();
 
-        var (counterTable, tokenTable) = await ResolveCounterAndTokenTablesAsync(conn);
+        string counterTable;
+        string tokenTable;
+        try
+        {
+            (counterTable, tokenTable) = await ResolveCounterAndTokenTablesAsync(conn);
+        }
+        catch (InvalidOperationException)
+        {
+            return new List<CounterResponseDto>();
+        }
 
         var sql = $@"
             SELECT
@@ -826,7 +835,16 @@ public class CounterRepository : ICounterRepository
         await using var conn = new MySqlConnection(_connectionString);
         await conn.OpenAsync();
 
-        var (counterTable, tokenTable) = await ResolveCounterAndTokenTablesAsync(conn);
+        string counterTable;
+        string tokenTable;
+        try
+        {
+            (counterTable, tokenTable) = await ResolveCounterAndTokenTablesAsync(conn);
+        }
+        catch (InvalidOperationException)
+        {
+            return null;
+        }
 
         var sql = $@"
             SELECT
