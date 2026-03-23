@@ -121,11 +121,14 @@ public class AppointmentRepository : IAppointmentRepository
     public async Task<(int AppointmentId, int TokenId, string ResultCode)> BookAtomicAsync(
         int centerId, int userId, DateTime date, TimeSpan time, string tokenNumber, int capacity)
     {
-        const string sql = "CALL sp_book_token(@CenterId, @UserId, @Date, @Time, @TokenNumber, @Capacity, @AppointmentId, @TokenId, @ResultCode)";
+        const string storedProcedureName = "sp_book_token";
 
         await using var conn = new MySqlConnection(_connectionString);
         await conn.OpenAsync();
-        await using var cmd = new MySqlCommand(sql, conn);
+        await using var cmd = new MySqlCommand(storedProcedureName, conn)
+        {
+            CommandType = System.Data.CommandType.StoredProcedure
+        };
 
         // Input Parameters
         cmd.Parameters.AddWithValue("@CenterId", centerId);
