@@ -22,6 +22,7 @@ See the [docs/](docs/) directory for comprehensive documentation including:
 
 - **[Call Next Token Feature](docs/call-next-token-user-guide.md)**: User guide for officers
 - **[Technical API Guide](docs/call-next-token-technical-guide.md)**: Developer documentation
+- **[API Contract](docs/call-next-token-api-contract.md)**: Detailed specification for Call Next Token endpoint
 - **[Branching Strategy](docs/branching-strategy.md)**: Git workflow guidelines
 
 ---

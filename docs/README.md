@@ -7,6 +7,7 @@ This directory contains all project documentation.
 ### Call Next Token Feature
 - **[User Guide](call-next-token-user-guide.md)**: How officers use the Call Next Token feature
 - **[Technical Guide](call-next-token-technical-guide.md)**: API reference, real-time updates, and implementation details
+- **[API Contract](call-next-token-api-contract.md)**: Detailed API specification for the Call Next Token endpoint
 
 ## Development Resources
 
