@@ -1001,12 +1001,16 @@ public class CounterRepository : ICounterRepository
 
     private static async Task<(string CounterTable, string TokenTable)> ResolveCounterAndTokenTablesAsync(MySqlConnection conn)
     {
-        var counterTable = await ResolveExistingTableAsync(conn, CounterTableCandidates);
-        var tokenTable = await ResolveExistingTableAsync(conn, TokenTableCandidates);
+        var counterTable = await ResolveExistingTableAsync(conn, CounterTableCandidates)
+            ?? await ResolveTableByColumnsAsync(conn, new[] { "counter_id", "center_id", "name" });
+
+        var tokenTable = await ResolveExistingTableAsync(conn, TokenTableCandidates)
+            ?? await ResolveTableByColumnsAsync(conn, new[] { "token_id", "center_id", "token_number" });
+
         return (counterTable, tokenTable);
     }
 
-    private static async Task<string> ResolveExistingTableAsync(MySqlConnection conn, IEnumerable<string> candidates)
+    private static async Task<string?> ResolveExistingTableAsync(MySqlConnection conn, IEnumerable<string> candidates)
     {
         const string sql = @"
             SELECT COUNT(1)
@@ -1025,7 +1029,40 @@ public class CounterRepository : ICounterRepository
             }
         }
 
-        throw new InvalidOperationException($"None of the expected table names were found. Candidates: {string.Join(", ", candidates)}");
+        return null;
+    }
+
+    private static async Task<string> ResolveTableByColumnsAsync(MySqlConnection conn, IReadOnlyCollection<string> requiredColumns)
+    {
+        const string sql = @"
+            SELECT c.table_name
+            FROM information_schema.columns c
+            WHERE c.table_schema = DATABASE()
+            GROUP BY c.table_name
+            HAVING SUM(c.column_name IN ({0})) = @RequiredCount
+            ORDER BY c.table_name
+            LIMIT 1";
+
+        var parameterNames = requiredColumns.Select((_, index) => $"@Col{index}").ToArray();
+        var finalSql = string.Format(sql, string.Join(", ", parameterNames));
+
+        await using var cmd = new MySqlCommand(finalSql, conn);
+        var i = 0;
+        foreach (var column in requiredColumns)
+        {
+            cmd.Parameters.AddWithValue($"@Col{i}", column);
+            i++;
+        }
+        cmd.Parameters.AddWithValue("@RequiredCount", requiredColumns.Count);
+
+        var result = await cmd.ExecuteScalarAsync();
+        if (result is string tableName && !string.IsNullOrWhiteSpace(tableName))
+        {
+            return tableName;
+        }
+
+        throw new InvalidOperationException(
+            $"Unable to infer table name from required columns: {string.Join(", ", requiredColumns)}");
     }
 
     private static CounterResponseDto MapCounterResponse(MySqlDataReader reader)
