@@ -182,7 +182,6 @@ public class CounterRepository : ICounterRepository
             const string updateTokenSql = @"
                 UPDATE tokens
                 SET status     = @Status,
-                    served_at  = CASE WHEN @IsServed = 1 THEN UTC_TIMESTAMP() ELSE served_at END,
                     served_time = CASE WHEN @IsServed = 1 THEN UTC_TIMESTAMP() ELSE served_time END,
                     updated_at = UTC_TIMESTAMP()
                 WHERE token_id = @TokenId
@@ -661,7 +660,7 @@ public class CounterRepository : ICounterRepository
     public async Task<int> GetAverageServiceTimeAsync(int counterId)
     {
         const string sql = @"
-            SELECT AVG(TIMESTAMPDIFF(SECOND, called_at, served_at))
+            SELECT AVG(TIMESTAMPDIFF(SECOND, called_at, served_time))
             FROM tokens
             WHERE counter_id = @CounterId
               AND status IN ('Served', 'Completed')
@@ -747,11 +746,10 @@ public class CounterRepository : ICounterRepository
                         ELSE NULL
                     END AS current_token_number,
                     c.assigned_officer_user_id,
-                    u.username AS assigned_officer_name,
+                    NULL AS assigned_officer_name,
                     c.created_at
                 FROM counters c
                 LEFT JOIN tokens t ON t.token_id = c.current_token_id
-                LEFT JOIN users u ON u.user_id = c.assigned_officer_user_id
                 WHERE c.counter_id = @CounterId
                 LIMIT 1";
 
@@ -798,11 +796,10 @@ public class CounterRepository : ICounterRepository
                     ELSE NULL
                 END AS current_token_number,
                 c.assigned_officer_user_id,
-                u.username AS assigned_officer_name,
+                NULL AS assigned_officer_name,
                 c.created_at
             FROM counters c
             LEFT JOIN tokens t ON t.token_id = c.current_token_id
-            LEFT JOIN users u ON u.user_id = c.assigned_officer_user_id
             WHERE c.center_id = @CenterId
             ORDER BY c.name ASC";
 
@@ -839,11 +836,10 @@ public class CounterRepository : ICounterRepository
                     ELSE NULL
                 END AS current_token_number,
                 c.assigned_officer_user_id,
-                u.username AS assigned_officer_name,
+                NULL AS assigned_officer_name,
                 c.created_at
             FROM counters c
             LEFT JOIN tokens t ON t.token_id = c.current_token_id
-            LEFT JOIN users u ON u.user_id = c.assigned_officer_user_id
             WHERE c.counter_id = @CounterId
             LIMIT 1";
 
