@@ -87,7 +87,14 @@ builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 builder.Services.AddScoped<IAppointmentService, AppointmentService>();
 builder.Services.AddScoped<IServiceCenterClient, ServiceCenterClient>();
 builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddScoped<ICounterService, CounterService>();
+builder.Services.AddScoped<ICounterService>(sp => new CounterService(
+    sp.GetRequiredService<ICounterRepository>(),
+    sp.GetRequiredService<ITokenRepository>(),
+    sp.GetRequiredService<IAuditLogRepository>(),
+    sp.GetRequiredService<IEventBus>(),
+    sp.GetRequiredService<IQueueBroadcastService>(),
+    sp.GetRequiredService<ILogger<CounterService>>(),
+    sp.GetService<IServiceCenterClient>()));
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IQueueBroadcastService, QueueBroadcastService>();
 builder.Services.AddSingleton<IEventBus, InMemoryEventBus>();
