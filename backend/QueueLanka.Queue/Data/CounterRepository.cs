@@ -798,8 +798,8 @@ public class CounterRepository : ICounterRepository
                 c.assigned_officer_user_id,
                 NULL AS assigned_officer_name,
                 c.created_at
-            FROM counters c
-            LEFT JOIN tokens t ON t.token_id = c.current_token_id
+            FROM queue_counters c
+            LEFT JOIN queue_tokens t ON t.token_id = c.current_token_id
             WHERE c.center_id = @CenterId
             ORDER BY c.name ASC";
 
@@ -838,8 +838,8 @@ public class CounterRepository : ICounterRepository
                 c.assigned_officer_user_id,
                 NULL AS assigned_officer_name,
                 c.created_at
-            FROM counters c
-            LEFT JOIN tokens t ON t.token_id = c.current_token_id
+            FROM queue_counters c
+            LEFT JOIN queue_tokens t ON t.token_id = c.current_token_id
             WHERE c.counter_id = @CounterId
             LIMIT 1";
 
