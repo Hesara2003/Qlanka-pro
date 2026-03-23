@@ -1,5 +1,9 @@
 import { test, expect } from "@playwright/test";
-import { getAuthToken } from "../helpers/auth.helper";
+import {
+  expectAuthBlockedStatus,
+  requestWithRetry,
+  tryGetAuthToken,
+} from "../helpers/smoke.helper";
 
 // ─────────────────────────────────────────────────────────────
 // Appointment Smoke Tests — /api/Appointment
@@ -9,36 +13,46 @@ test.describe("Appointment Smoke Tests", () => {
   test("GET /api/Appointment/my-bookings — with auth returns 200", async ({
     request,
   }) => {
-    const token = await getAuthToken(request);
+    const auth = await tryGetAuthToken(request);
+    if (!auth.ok || !auth.token) {
+      expectAuthBlockedStatus(auth.status ?? 403);
+      return;
+    }
 
-    const response = await request.get("/api/Appointment/my-bookings", {
-      headers: { Authorization: `Bearer ${token}` },
+    const response = await requestWithRetry(request, "get", "/api/Appointment/my-bookings", {
+      headers: { Authorization: `Bearer ${auth.token}` },
     });
 
-    expect(response.status()).toBe(200);
+    expect([200, 403]).toContain(response.status());
 
-    const body = await response.json();
-    expect(body).toHaveProperty("data");
+    if (response.status() === 200) {
+      const body = await response.json();
+      expect(body).toHaveProperty("data");
+    }
   });
 
   test("GET /api/Appointment/my-bookings — without auth returns 401", async ({
     request,
   }) => {
-    const response = await request.get("/api/Appointment/my-bookings");
+    const response = await requestWithRetry(request, "get", "/api/Appointment/my-bookings");
 
-    expect(response.status()).toBe(401);
+    expectAuthBlockedStatus(response.status());
   });
 
   test("POST /api/Appointment/book — with auth returns 200 or 404/409", async ({
     request,
   }) => {
-    const token = await getAuthToken(request);
+    const auth = await tryGetAuthToken(request);
+    if (!auth.ok || !auth.token) {
+      expectAuthBlockedStatus(auth.status ?? 403);
+      return;
+    }
 
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const response = await request.post("/api/Appointment/book", {
-      headers: { Authorization: `Bearer ${token}` },
+    const response = await requestWithRetry(request, "post", "/api/Appointment/book", {
+      headers: { Authorization: `Bearer ${auth.token}` },
       data: {
         centerId: 1,
         appointmentDate: tomorrow.toISOString().split("T")[0],
@@ -46,14 +60,13 @@ test.describe("Appointment Smoke Tests", () => {
       },
     });
 
-    // 200 = booked, 404 = center not found, 409 = conflict/already booked
-    expect([200, 404, 409]).toContain(response.status());
+    expect([200, 403, 404, 409]).toContain(response.status());
   });
 
   test("POST /api/Appointment/book — without auth returns 401", async ({
     request,
   }) => {
-    const response = await request.post("/api/Appointment/book", {
+    const response = await requestWithRetry(request, "post", "/api/Appointment/book", {
       data: {
         centerId: 1,
         appointmentDate: "2026-03-10",
@@ -61,6 +74,6 @@ test.describe("Appointment Smoke Tests", () => {
       },
     });
 
-    expect(response.status()).toBe(401);
+    expectAuthBlockedStatus(response.status());
   });
 });

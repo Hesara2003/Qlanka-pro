@@ -32,6 +32,8 @@ public class QueueBroadcastServiceTests
         _mockQueueHubClient.Setup(c => c.TokenStatusUpdated(It.IsAny<TokenStatusUpdatedEvent>())).Returns(Task.CompletedTask);
         _mockQueueHubClient.Setup(c => c.TokenCancelled(It.IsAny<TokenCancelledEvent>())).Returns(Task.CompletedTask);
         _mockQueueHubClient.Setup(c => c.QueueUpdated(It.IsAny<QueueUpdatedEvent>())).Returns(Task.CompletedTask);
+        _mockQueueHubClient.Setup(c => c.TokenReassigned(It.IsAny<TokenReassignedEvent>())).Returns(Task.CompletedTask);
+        _mockQueueHubClient.Setup(c => c.CounterStatusChanged(It.IsAny<CounterStatusEvent>())).Returns(Task.CompletedTask);
 
         _service = new QueueBroadcastService(_mockHubContext.Object, _mockLogger.Object);
     }
@@ -114,6 +116,66 @@ public class QueueBroadcastServiceTests
         _mockHubClients.Verify(c => c.Group("queue-4"), Times.Once);
         _mockQueueHubClient.Verify(c => c.TokenCancelled(It.Is<TokenCancelledEvent>(e =>
             e.TokenId == 30 && e.CancelledBy == "citizen")), Times.Once);
+    }
+
+    [Fact]
+    public async Task BroadcastQueueUpdated_SendsToCorrectCounterGroup()
+    {
+        var payload = new QueueUpdatedEvent
+        {
+            CenterId = 2,
+            CounterId = 5,
+            WaitingCount = 4,
+            ServedCountToday = 10,
+            SkippedCountToday = 1,
+            TriggerAction = "TokenCalled",
+            Timestamp = DateTime.UtcNow
+        };
+
+        await _service.BroadcastQueueUpdated(payload);
+
+        _mockHubClients.Verify(c => c.Group("counter-5"), Times.Once);
+        _mockQueueHubClient.Verify(c => c.QueueUpdated(It.Is<QueueUpdatedEvent>(e =>
+            e.CounterId == 5 && e.TriggerAction == "TokenCalled")), Times.Once);
+    }
+
+    [Fact]
+    public async Task BroadcastTokenReassigned_SendsToCorrectCenterGroup()
+    {
+        var payload = new TokenReassignedEvent
+        {
+            TokenId = 44,
+            TokenNumber = "A044",
+            CenterId = 3,
+            SourceCounterId = 1,
+            TargetCounterId = 2,
+            ReassignedAt = DateTime.UtcNow
+        };
+
+        await _service.BroadcastTokenReassigned(payload);
+
+        _mockHubClients.Verify(c => c.Group("queue-3"), Times.Once);
+        _mockQueueHubClient.Verify(c => c.TokenReassigned(It.Is<TokenReassignedEvent>(e =>
+            e.TokenId == 44 && e.TargetCounterId == 2)), Times.Once);
+    }
+
+    [Fact]
+    public async Task BroadcastCounterStatusChanged_SendsToCorrectCenterGroup()
+    {
+        var payload = new CounterStatusEvent
+        {
+            CounterId = 9,
+            CenterId = 2,
+            IsOpen = false,
+            CounterName = "Counter 9",
+            ChangedAt = DateTime.UtcNow
+        };
+
+        await _service.BroadcastCounterStatusChanged(payload);
+
+        _mockHubClients.Verify(c => c.Group("queue-2"), Times.Once);
+        _mockQueueHubClient.Verify(c => c.CounterStatusChanged(It.Is<CounterStatusEvent>(e =>
+            e.CounterId == 9 && e.IsOpen == false)), Times.Once);
     }
 
     [Fact]

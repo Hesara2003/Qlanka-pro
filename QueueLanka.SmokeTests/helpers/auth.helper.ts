@@ -1,4 +1,5 @@
 import { APIRequestContext } from "@playwright/test";
+import { tryGetAuthToken } from "./smoke.helper";
 
 // ── Test credentials ──────────────────────────────────────────
 // Change these to match a real seeded user in your database.
@@ -14,17 +15,14 @@ const TEST_USER = {
 export async function getAuthToken(
   request: APIRequestContext
 ): Promise<string> {
-  const response = await request.post("/api/auth/login", {
-    data: TEST_USER,
-  });
+  const result = await tryGetAuthToken(request);
 
-  if (!response.ok()) {
+  if (!result.ok || !result.token) {
     throw new Error(
-      `Login failed (${response.status()}). ` +
+      `Login failed (${result.status ?? "network"}). ` +
         `Make sure the test user "${TEST_USER.username}" exists in the database.`
     );
   }
 
-  const body = await response.json();
-  return body.token; // LoginResponseDto is a flat object: { token, refreshToken, expiresIn, role }
+  return result.token;
 }
