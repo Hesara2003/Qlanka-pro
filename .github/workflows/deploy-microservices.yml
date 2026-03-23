@@ -2,7 +2,7 @@ name: Build & Push Microservices
 
 on:
   push:
-    branches: [feature/microservices, main, test/microservices]
+    branches: [feature/microservices, main]
     paths:
       - 'backend/**'
   workflow_dispatch:
