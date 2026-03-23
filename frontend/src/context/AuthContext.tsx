@@ -20,7 +20,10 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 interface JwtPayload {
   sub?: string;
   unique_name?: string;
+  name?: string;
   role?: string;
+  "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"?: string;
+  "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"?: string;
   exp?: number;
 }
 
@@ -46,12 +49,6 @@ function buildUserFromStorage(): AuthUser | null {
   }
 
   const payload = parseJwtPayload(token);
-  if (!payload?.role) {
-    localStorage.removeItem("token");
-    localStorage.removeItem("auth_user");
-    return null;
-  }
-
   const rawUser = localStorage.getItem("auth_user");
   let persistedUser: Partial<AuthUser> = {};
 
@@ -63,9 +60,30 @@ function buildUserFromStorage(): AuthUser | null {
     }
   }
 
+  const roleClaim = payload?.role
+    ?? payload?.["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]
+    ?? persistedUser.role;
+
+  if (!roleClaim) {
+    localStorage.removeItem("token");
+    localStorage.removeItem("auth_user");
+    return null;
+  }
+
+  if (payload?.exp && payload.exp * 1000 <= Date.now()) {
+    localStorage.removeItem("token");
+    localStorage.removeItem("auth_user");
+    return null;
+  }
+
   return {
-    username: persistedUser.username ?? payload.unique_name ?? "",
-    role: payload.role.toLowerCase(),
+    username:
+      persistedUser.username
+      ?? payload?.unique_name
+      ?? payload?.name
+      ?? payload?.["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"]
+      ?? "",
+    role: roleClaim.toLowerCase(),
     token,
     counterId: persistedUser.counterId,
   };
