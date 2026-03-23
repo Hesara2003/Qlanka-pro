@@ -17,8 +17,9 @@
 2. [Service Centers](#2-service-centers)
 3. [Appointments](#3-appointments)
 4. [Tokens](#4-tokens)
-5. [Admin — User Management](#5-admin--user-management)
-6. [Response Envelope](#6-response-envelope)
+5. [Counters](#5-counters)
+6. [Admin — User Management](#6-admin--user-management)
+7. [Response Envelope](#7-response-envelope)
 
 ---
 
@@ -484,7 +485,93 @@ Cancel a specific token belonging to the authenticated user.
 
 ---
 
-## 5. Admin — User Management
+## 5. Counters
+
+Base route: `/api/counters`  
+**Auth required** — role: `officer` only.
+
+---
+
+### POST `/api/counters/{counterId}/call-next`
+
+Call the next waiting token at the specified counter in FIFO order. Updates the token status to 'called' and broadcasts real-time updates to all connected clients.
+
+**Path parameter**
+
+| Param | Type | Required | Rules |
+|---|---|---|---|
+| `counterId` | int | ✅ | Must be > 0, counter must be open |
+
+**Request body:** None (empty body)
+
+**Example request**
+```bash
+POST /api/counters/5/call-next
+Authorization: Bearer <officer-jwt-token>
+Content-Type: application/json
+
+{}
+```
+
+**Responses**
+
+| Code | Description | Body |
+|---|---|---|
+| `200 OK` | Token successfully called | `ApiResponse<CallNextTokenResponseDto>` |
+| `400 Bad Request` | Counter is closed or invalid | `ErrorResponse` (`COUNTER_CLOSED`) |
+| `401 Unauthorized` | Missing/invalid token | `ErrorResponse` |
+| `403 Forbidden` | Not an officer | `ErrorResponse` |
+| `404 Not Found` | No waiting tokens available | `ErrorResponse` (`NO_WAITING_TOKENS`) |
+| `500 Internal Server Error` | Server error | `ErrorResponse` |
+
+**200 response body**
+```json
+{
+  "success": true,
+  "data": {
+    "tokenId": 123,
+    "centerId": 1,
+    "counterId": 5,
+    "userId": 456,
+    "tokenNumber": "A001",
+    "issuedDate": "2026-03-15",
+    "status": "called",
+    "issuedTime": "2026-03-15T10:30:00Z",
+    "calledAt": "2026-03-15T11:45:00Z"
+  },
+  "metadata": {
+    "timestamp": "2026-03-15T11:45:00Z",
+    "correlationId": "abc-123"
+  },
+  "message": "Token A001 has been called successfully."
+}
+```
+
+**Error response examples**
+
+**404 - No waiting tokens:**
+```json
+{
+  "code": "NO_WAITING_TOKENS",
+  "message": "There are no waiting tokens for this counter today."
+}
+```
+
+**400 - Counter closed:**
+```json
+{
+  "code": "COUNTER_CLOSED",
+  "message": "Counter is closed or does not exist."
+}
+```
+
+> **Real-time updates:** This endpoint triggers `QueueUpdated` events via SignalR to all clients connected to the counter's group, providing live queue state updates including waiting counts, served counts, and estimated wait times.
+
+> **Atomic operation:** The token selection and status update is performed atomically to prevent race conditions when multiple officers attempt to call tokens simultaneously.
+
+---
+
+## 6. Admin — User Management
 
 Base route: `/api/admin/users`  
 **Auth required** — role: `admin` only.
@@ -569,7 +656,7 @@ Soft-delete a user account. Cannot delete another admin account.
 
 ---
 
-## 6. Response Envelope
+## 7. Response Envelope
 
 ### Success — `ApiResponse<T>`
 
