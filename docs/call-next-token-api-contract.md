@@ -58,7 +58,7 @@ Content-Type: application/json
     "counterId": 5,
     "userId": 456,
     "tokenNumber": "A001",
-    "issuedDate": "2026-03-15",
+    "issuedDate": "2026-03-15T00:00:00Z",
     "status": "called",
     "issuedTime": "2026-03-15T10:30:00Z",
     "calledAt": "2026-03-15T11:45:00Z"
@@ -71,65 +71,57 @@ Content-Type: application/json
 }
 ```
 
-#### Response Fields
+#### Response Envelope Fields
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `success` | boolean | Always `true` for successful responses |
-| `data.tokenId` | integer | Unique identifier of the called token |
-| `data.centerId` | integer | ID of the service center |
-| `data.counterId` | integer | ID of the counter that called the token |
-| `data.userId` | integer \| null | ID of the user who owns the token |
-| `data.tokenNumber` | string | Human-readable token number (e.g., "A001") |
-| `data.issuedDate` | string | Date when token was issued (ISO 8601 date) |
-| `data.status` | string | Token status, always "called" for this response |
-| `data.issuedTime` | string | Time when token was issued (ISO 8601 datetime) |
-| `data.calledAt` | string | Timestamp when token was called (ISO 8601 datetime) |
-| `metadata.timestamp` | string | Server timestamp of the response |
-| `metadata.correlationId` | string | Unique request correlation ID |
-| `message` | string | Human-readable success message |
+| `success` | boolean | Indicates whether the request was successful (`true`). |
+| `data` | object | The called token details (see below). |
+| `metadata.timestamp` | string | ISO 8601 timestamp when the response was generated. |
+| `metadata.correlationId` | string \| null | Unique request identifier for tracking. |
+| `message` | string \| null | Human-readable status message. |
+
+#### Token Data Fields (`data`)
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `tokenId` | integer | Unique identifier of the called token. |
+| `centerId` | integer | ID of the service center. |
+| `counterId` | integer | ID of the counter that called the token. |
+| `userId` | integer \| null | ID of the user who owns the token (if registered). |
+| `tokenNumber` | string | Human-readable token number (e.g., "A001"). |
+| `issuedDate` | string | Date when token was issued (ISO 8601). |
+| `status` | string | Token status, always "called" for this response. |
+| `issuedTime` | string | Time when token was issued (ISO 8601). |
+| `calledAt` | string | Timestamp when token was called (ISO 8601). |
 
 ## Error Responses
 
-### 400 Bad Request - Counter Closed
+All error responses follow the project's standard `ErrorResponse` structure.
+
+### Error Response Structure
 ```json
 {
-  "code": "COUNTER_CLOSED",
-  "message": "Counter is closed or does not exist."
+  "success": false,
+  "code": "ERROR_CODE",
+  "message": "Human-readable error message.",
+  "details": null,
+  "timestamp": "2026-03-15T11:45:00Z",
+  "path": "/api/counters/5/call-next",
+  "correlationId": "abc-123"
 }
 ```
 
-### 401 Unauthorized - Authentication Failed
-```json
-{
-  "code": "INVALID_TOKEN",
-  "message": "Authentication token is missing or invalid."
-}
-```
+### Common Error Scenarios
 
-### 403 Forbidden - Insufficient Permissions
-```json
-{
-  "code": "FORBIDDEN",
-  "message": "Access denied. Officer role required."
-}
-```
+| HTTP Status | Error Code | Description |
+|-------------|------------|-------------|
+| 400 Bad Request | `COUNTER_CLOSED` | The counter is currently closed or does not exist. |
+| 401 Unauthorized | `INVALID_TOKEN` | Authentication token is missing, expired, or invalid. |
+| 403 Forbidden | `FORBIDDEN` | The user does not have the 'officer' role. |
+| 404 Not Found | `NO_WAITING_TOKENS` | There are no waiting tokens in the queue today. |
+| 500 Internal Error | `INTERNAL_ERROR` | An unexpected server-side error occurred. |
 
-### 404 Not Found - No Waiting Tokens
-```json
-{
-  "code": "NO_WAITING_TOKENS",
-  "message": "There are no waiting tokens for this counter today."
-}
-```
-
-### 500 Internal Server Error - Server Error
-```json
-{
-  "code": "INTERNAL_ERROR",
-  "message": "An unexpected error occurred. Please try again later."
-}
-```
 
 ## Error Handling Procedures
 
@@ -175,13 +167,18 @@ This endpoint triggers the following real-time events:
 
 #### QueueUpdated Event
 - **Group**: `counter:{counterId}`
-- **Purpose**: Updates all clients with current queue state
-- **Payload**: Contains waiting tokens, counts, and statistics
+- **Purpose**: Updates all clients with current queue state.
+- **Payload**:
+    - `waitingTokens`: List of `WaitingTokenDto` objects.
+    - `waitingCount`: Current number of tokens in queue.
+    - `servedCountToday`: Total tokens served today.
+    - `skippedCountToday`: Total tokens skipped today.
+    - `triggerAction`: Action that triggered the update (e.g., "TokenCalled").
 
 #### TokenCalled Event (Optional)
 - **Group**: `center:{centerId}`
-- **Purpose**: Notifies about specific token being called
-- **Payload**: Token details and calling information
+- **Purpose**: Notifies about specific token being called (e.g., for display displays).
+- **Payload**: Same structure as the success response `data` object (`TokenId`, `TokenNumber`, `CounterId`, etc.).
 
 ### Client Integration Requirements
 - Clients should subscribe to counter-specific SignalR groups
