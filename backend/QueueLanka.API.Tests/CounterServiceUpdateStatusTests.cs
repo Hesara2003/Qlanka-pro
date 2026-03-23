@@ -16,35 +16,28 @@ namespace QueueLanka.API.Tests;
 public class CounterServiceUpdateStatusTests
 {
     private readonly Mock<ICounterRepository> _mockCounterRepository;
+    private readonly Mock<ITokenRepository> _mockTokenRepository;
+    private readonly Mock<IAuditLogRepository> _mockAuditLogRepository;
     private readonly Mock<IEventBus> _mockEventBus;
     private readonly Mock<ILogger<CounterService>> _mockLogger;
-    private readonly Mock<IHubContext<QueueHub>> _mockHubContext;
-    private readonly Mock<IHubClients> _mockHubClients;
-    private readonly Mock<IClientProxy> _mockClientProxy;
+    private readonly Mock<IQueueBroadcastService> _mockQueueBroadcastService;
     private readonly CounterService _service;
 
     public CounterServiceUpdateStatusTests()
     {
         _mockCounterRepository = new Mock<ICounterRepository>();
+        _mockTokenRepository = new Mock<ITokenRepository>();
+        _mockAuditLogRepository = new Mock<IAuditLogRepository>();
         _mockEventBus = new Mock<IEventBus>();
         _mockLogger = new Mock<ILogger<CounterService>>();
-        _mockHubContext = new Mock<IHubContext<QueueHub>>();
-        _mockHubClients = new Mock<IHubClients>();
-        _mockClientProxy = new Mock<IClientProxy>();
-
-        _mockHubContext.SetupGet(h => h.Clients).Returns(_mockHubClients.Object);
-        _mockHubClients.Setup(c => c.Group(It.IsAny<string>())).Returns(_mockClientProxy.Object);
-        _mockClientProxy
-            .Setup(c => c.SendCoreAsync(
-                It.IsAny<string>(),
-                It.IsAny<object?[]>(),
-                It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
+        _mockQueueBroadcastService = new Mock<IQueueBroadcastService>();
 
         _service = new CounterService(
             _mockCounterRepository.Object,
+            _mockTokenRepository.Object,
+            _mockAuditLogRepository.Object,
             _mockEventBus.Object,
-            _mockHubContext.Object,
+            _mockQueueBroadcastService.Object,
             _mockLogger.Object);
     }
 
@@ -80,7 +73,7 @@ public class CounterServiceUpdateStatusTests
 
         _mockEventBus.Verify(
             e => e.PublishAsync(It.Is<TokenStatusUpdatedEvent>(evt =>
-                evt.TokenId == 10 && evt.CounterId == 5 && evt.Status == "served")),
+                evt.TokenId == 10 && evt.CounterId == 5 && evt.NewStatus == "served")),
             Times.Once);
     }
 
@@ -114,7 +107,7 @@ public class CounterServiceUpdateStatusTests
 
         _mockEventBus.Verify(
             e => e.PublishAsync(It.Is<TokenStatusUpdatedEvent>(evt =>
-                evt.TokenId == 12 && evt.CounterId == 5 && evt.Status == "skipped")),
+                evt.TokenId == 12 && evt.CounterId == 5 && evt.NewStatus == "skipped")),
             Times.Once);
     }
 

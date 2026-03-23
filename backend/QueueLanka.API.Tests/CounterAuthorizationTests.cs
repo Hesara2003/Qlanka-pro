@@ -158,12 +158,13 @@ public class CounterAuthorizationTests : IClassFixture<CounterAuthorizationWebAp
         };
 
         var expires = expired ? DateTime.UtcNow.AddMinutes(-10) : DateTime.UtcNow.AddMinutes(30);
+        var notBefore = expired ? DateTime.UtcNow.AddMinutes(-20) : DateTime.UtcNow.AddMinutes(-1);
 
         var token = new JwtSecurityToken(
             issuer: CounterAuthorizationWebApplicationFactory.JwtIssuer,
             audience: CounterAuthorizationWebApplicationFactory.JwtAudience,
             claims: claims,
-            notBefore: DateTime.UtcNow.AddMinutes(-1),
+            notBefore: notBefore,
             expires: expires,
             signingCredentials: credentials);
 
@@ -179,17 +180,9 @@ public sealed class CounterAuthorizationWebApplicationFactory : WebApplicationFa
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.ConfigureAppConfiguration((_, config) =>
-        {
-            var authConfig = new Dictionary<string, string?>
-            {
-                ["Jwt:Secret"] = JwtSecret,
-                ["Jwt:Issuer"] = JwtIssuer,
-                ["Jwt:Audience"] = JwtAudience,
-            };
-
-            config.AddInMemoryCollection(authConfig);
-        });
+        builder.UseSetting("Jwt:Secret", JwtSecret);
+        builder.UseSetting("Jwt:Issuer", JwtIssuer);
+        builder.UseSetting("Jwt:Audience", JwtAudience);
 
         builder.ConfigureServices(services =>
         {
