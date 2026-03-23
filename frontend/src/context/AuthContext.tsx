@@ -47,8 +47,8 @@ function buildUserFromStorage(): AuthUser | null {
   if (!token) {
     return null;
   }
-
   const payload = parseJwtPayload(token);
+
   const rawUser = localStorage.getItem("auth_user");
   let persistedUser: Partial<AuthUser> = {};
 

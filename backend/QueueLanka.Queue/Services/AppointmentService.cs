@@ -61,15 +61,29 @@ public class AppointmentService : IAppointmentService
         else
         {
             // Default weekly schedule check
-            var operatingDays = await _serviceCenterClient.GetOperatingDaysAsync(center.CenterId);
-            var dayOfWeekStr = requestedDate.DayOfWeek.ToString().ToLower();
-            var operatingDay = operatingDays.FirstOrDefault(d => d.DayOfWeek == dayOfWeekStr);
+            var operatingDays = (await _serviceCenterClient.GetOperatingDaysAsync(center.CenterId)).ToList();
 
-            if (operatingDay == null || !operatingDay.IsOpen)
-                throw new InvalidOperationException("Center is closed on this day of the week.");
+            TimeSpan openTime;
+            TimeSpan closeTime;
 
-            var openTime = operatingDay.OpeningTime ?? center.OpeningTime;
-            var closeTime = operatingDay.ClosingTime ?? center.ClosingTime;
+            if (operatingDays.Count == 0)
+            {
+                // MVP fallback when operating-days endpoint is unavailable:
+                // use center-level opening/closing hours.
+                openTime = center.OpeningTime;
+                closeTime = center.ClosingTime;
+            }
+            else
+            {
+                var dayOfWeekStr = requestedDate.DayOfWeek.ToString().ToLower();
+                var operatingDay = operatingDays.FirstOrDefault(d => d.DayOfWeek == dayOfWeekStr);
+
+                if (operatingDay == null || !operatingDay.IsOpen)
+                    throw new InvalidOperationException("Center is closed on this day of the week.");
+
+                openTime = operatingDay.OpeningTime ?? center.OpeningTime;
+                closeTime = operatingDay.ClosingTime ?? center.ClosingTime;
+            }
 
             if (requestedTime < openTime || requestedTime > closeTime)
                 throw new InvalidOperationException($"Requested time is outside operating hours ({openTime} to {closeTime}).");
