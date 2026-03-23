@@ -3,9 +3,6 @@ name: Build & Push Microservices
 on:
   push:
     branches: [feature/microservices, main]
-    paths:
-      - 'backend/**'
-      - '.github/workflows/deploy-microservices.yml'
   workflow_dispatch:
 
 jobs:
