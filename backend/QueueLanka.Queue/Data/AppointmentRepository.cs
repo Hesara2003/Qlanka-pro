@@ -122,11 +122,11 @@ public class AppointmentRepository : IAppointmentRepository
         int centerId, int userId, DateTime date, TimeSpan time, string tokenNumber, int capacity)
     {
         const string sql = @"
-            SET @p_appointment_id = 0;
-            SET @p_token_id = 0;
-            SET @p_result_code = '';
-            CALL sp_book_token(@p_center_id, @p_user_id, @p_date, @p_time, @p_token_number, @p_capacity, @p_appointment_id, @p_token_id, @p_result_code);
-            SELECT @p_appointment_id AS appointment_id, @p_token_id AS token_id, @p_result_code AS result_code;";
+            SET @app_out = 0;
+            SET @tok_out = 0;
+            SET @res_out = '';
+            CALL sp_book_token(@p_center_id, @p_user_id, @p_date, @p_time, @p_token_number, @p_capacity, @app_out, @tok_out, @res_out);
+            SELECT @app_out AS appointment_id, @tok_out AS token_id, @res_out AS result_code;";
 
         await using var conn = new MySqlConnection(_connectionString);
         await conn.OpenAsync();
