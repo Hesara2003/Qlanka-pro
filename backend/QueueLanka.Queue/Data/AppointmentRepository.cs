@@ -1,3 +1,4 @@
+using System.Data;
 using MySqlConnector;
 using QueueLanka.Queue.Models;
 
@@ -121,18 +122,13 @@ public class AppointmentRepository : IAppointmentRepository
     public async Task<(int AppointmentId, int TokenId, string ResultCode)> BookAtomicAsync(
         int centerId, int userId, DateTime date, TimeSpan time, string tokenNumber, int capacity)
     {
-        const string sql = @"
-            SET @app_out = 0;
-            SET @tok_out = 0;
-            SET @res_out = '';
-            CALL sp_book_token(@p_center_id, @p_user_id, @p_date, @p_time, @p_token_number, @p_capacity, @app_out, @tok_out, @res_out);
-            SELECT @app_out AS appointment_id, @tok_out AS token_id, @res_out AS result_code;";
-
         await using var conn = new MySqlConnection(_connectionString);
         await conn.OpenAsync();
-        await using var cmd = new MySqlCommand(sql, conn);
+        
+        await using var cmd = new MySqlCommand("sp_book_token", conn);
+        cmd.CommandType = CommandType.StoredProcedure;
 
-        // Input parameters for CALL
+        // Input parameters
         cmd.Parameters.AddWithValue("@p_center_id", centerId);
         cmd.Parameters.AddWithValue("@p_user_id", userId);
         cmd.Parameters.AddWithValue("@p_date", date.Date);
@@ -140,22 +136,21 @@ public class AppointmentRepository : IAppointmentRepository
         cmd.Parameters.AddWithValue("@p_token_number", tokenNumber);
         cmd.Parameters.AddWithValue("@p_capacity", capacity);
 
-        await using var reader = await cmd.ExecuteReaderAsync();
+        // Output parameters mapping to SP definition
+        var outApptId = new MySqlParameter("@p_appointment_id", MySqlDbType.Int32) { Direction = ParameterDirection.Output };
+        cmd.Parameters.Add(outApptId);
 
-        while (await reader.NextResultAsync())
-        {
-        }
+        var outTokenId = new MySqlParameter("@p_token_id", MySqlDbType.Int32) { Direction = ParameterDirection.Output };
+        cmd.Parameters.Add(outTokenId);
 
-        string resultCode = "UNKNOWN_ERROR";
-        int apptId = 0;
-        int tokenId = 0;
+        var outResultCode = new MySqlParameter("@p_result_code", MySqlDbType.VarChar, 50) { Direction = ParameterDirection.Output };
+        cmd.Parameters.Add(outResultCode);
 
-        if (await reader.ReadAsync())
-        {
-            resultCode = reader["result_code"]?.ToString() ?? "UNKNOWN_ERROR";
-            apptId = reader["appointment_id"] != DBNull.Value ? Convert.ToInt32(reader["appointment_id"]) : 0;
-            tokenId = reader["token_id"] != DBNull.Value ? Convert.ToInt32(reader["token_id"]) : 0;
-        }
+        await cmd.ExecuteNonQueryAsync();
+
+        string resultCode = outResultCode.Value?.ToString() ?? "UNKNOWN_ERROR";
+        int apptId = outApptId.Value != DBNull.Value ? Convert.ToInt32(outApptId.Value) : 0;
+        int tokenId = outTokenId.Value != DBNull.Value ? Convert.ToInt32(outTokenId.Value) : 0;
 
         return (apptId, tokenId, resultCode);
     }
