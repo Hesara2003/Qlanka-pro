@@ -125,9 +125,10 @@ function mapStatusUpdateError(error: unknown): Error & CounterApiError<StatusUpd
 
   if (error instanceof AxiosError) {
     if (!error.response) {
+      console.error("Status Update error:", error);
       return createCounterApiError(
         "NETWORK_ERROR",
-        "Network error. Please check your connection and try again."
+        `Network error: ${error.message}. Please check your connection and try again.`
       );
     }
 
