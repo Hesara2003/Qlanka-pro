@@ -121,11 +121,13 @@ export function useServiceCenters(
     };
   }, []);
 
+  const refreshCenters = useCallback(() => fetchCenters(true), [fetchCenters]);
+
   return {
     centers,
     loading,
     error,
-    refresh: () => fetchCenters(true), // Expose force-refresh override function
+    refresh: refreshCenters, // Expose force-refresh override function
     lastUpdated,
   };
 }
