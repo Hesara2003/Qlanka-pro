@@ -130,18 +130,18 @@ public class AppointmentRepository : IAppointmentRepository
             CommandType = System.Data.CommandType.StoredProcedure
         };
 
-        // Input Parameters
-        cmd.Parameters.AddWithValue("@CenterId", centerId);
-        cmd.Parameters.AddWithValue("@UserId", userId);
-        cmd.Parameters.AddWithValue("@Date", date.Date);
-        cmd.Parameters.AddWithValue("@Time", time);
-        cmd.Parameters.AddWithValue("@TokenNumber", tokenNumber);
-        cmd.Parameters.AddWithValue("@Capacity", capacity);
+        // Input Parameters (must match SP parameter names)
+        cmd.Parameters.AddWithValue("@p_center_id", centerId);
+        cmd.Parameters.AddWithValue("@p_user_id", userId);
+        cmd.Parameters.AddWithValue("@p_date", date.Date);
+        cmd.Parameters.AddWithValue("@p_time", time);
+        cmd.Parameters.AddWithValue("@p_token_number", tokenNumber);
+        cmd.Parameters.AddWithValue("@p_capacity", capacity);
 
         // Output Parameters
-        var pApptId = new MySqlParameter("@AppointmentId", MySqlDbType.Int32) { Direction = System.Data.ParameterDirection.Output };
-        var pTokenId = new MySqlParameter("@TokenId", MySqlDbType.Int32) { Direction = System.Data.ParameterDirection.Output };
-        var pResultCode = new MySqlParameter("@ResultCode", MySqlDbType.VarChar, 50) { Direction = System.Data.ParameterDirection.Output };
+        var pApptId = new MySqlParameter("@p_appointment_id", MySqlDbType.Int32) { Direction = System.Data.ParameterDirection.Output };
+        var pTokenId = new MySqlParameter("@p_token_id", MySqlDbType.Int32) { Direction = System.Data.ParameterDirection.Output };
+        var pResultCode = new MySqlParameter("@p_result_code", MySqlDbType.VarChar, 50) { Direction = System.Data.ParameterDirection.Output };
         
         cmd.Parameters.Add(pApptId);
         cmd.Parameters.Add(pTokenId);
