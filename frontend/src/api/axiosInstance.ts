@@ -15,7 +15,7 @@ export class AuthorizationError extends Error {
 }
 
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5000",
+  baseURL: "https://qlanka-gateway.redrock-2a740b8b.centralindia.azurecontainerapps.io",
   headers: {
     "Content-Type": "application/json",
   },
