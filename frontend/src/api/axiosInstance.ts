@@ -2,6 +2,13 @@
 
 import axios from "axios";
 
+const rawApiBaseUrl = (
+  import.meta.env.VITE_API_BASE_URL ??
+  "https://qlanka-gateway.redrock-2a740b8b.centralindia.azurecontainerapps.io"
+).replace(/\/+$/, "");
+
+const apiBaseUrl = rawApiBaseUrl.replace(/\/api$/i, "");
+
 export class AuthorizationError extends Error {
   public readonly code: string;
   public readonly status: number;
@@ -15,7 +22,7 @@ export class AuthorizationError extends Error {
 }
 
 const axiosInstance = axios.create({
-  baseURL: "https://qlanka-gateway.redrock-2a740b8b.centralindia.azurecontainerapps.io",
+  baseURL: apiBaseUrl,
   headers: {
     "Content-Type": "application/json",
   },
