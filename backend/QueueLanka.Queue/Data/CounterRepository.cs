@@ -781,7 +781,12 @@ public class CounterRepository : ICounterRepository
 
     public async Task<List<CounterResponseDto>> GetCountersByCenterAsync(int centerId)
     {
-        const string sql = @"
+        await using var conn = new MySqlConnection(_connectionString);
+        await conn.OpenAsync();
+
+        var (counterTable, tokenTable) = await ResolveCounterAndTokenTablesAsync(conn);
+
+        var sql = $@"
             SELECT
                 c.counter_id,
                 c.name,
@@ -798,13 +803,10 @@ public class CounterRepository : ICounterRepository
                 c.assigned_officer_user_id,
                 NULL AS assigned_officer_name,
                 c.created_at
-            FROM queue_counters c
-            LEFT JOIN queue_tokens t ON t.token_id = c.current_token_id
+            FROM `{counterTable}` c
+            LEFT JOIN `{tokenTable}` t ON t.token_id = c.current_token_id
             WHERE c.center_id = @CenterId
             ORDER BY c.name ASC";
-
-        await using var conn = new MySqlConnection(_connectionString);
-        await conn.OpenAsync();
 
         await using var cmd = new MySqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@CenterId", centerId);
@@ -821,7 +823,12 @@ public class CounterRepository : ICounterRepository
 
     public async Task<CounterResponseDto?> GetCounterByIdAsync(int counterId)
     {
-        const string sql = @"
+        await using var conn = new MySqlConnection(_connectionString);
+        await conn.OpenAsync();
+
+        var (counterTable, tokenTable) = await ResolveCounterAndTokenTablesAsync(conn);
+
+        var sql = $@"
             SELECT
                 c.counter_id,
                 c.name,
@@ -838,13 +845,10 @@ public class CounterRepository : ICounterRepository
                 c.assigned_officer_user_id,
                 NULL AS assigned_officer_name,
                 c.created_at
-            FROM queue_counters c
-            LEFT JOIN queue_tokens t ON t.token_id = c.current_token_id
+            FROM `{counterTable}` c
+            LEFT JOIN `{tokenTable}` t ON t.token_id = c.current_token_id
             WHERE c.counter_id = @CounterId
             LIMIT 1";
-
-        await using var conn = new MySqlConnection(_connectionString);
-        await conn.OpenAsync();
 
         await using var cmd = new MySqlCommand(sql, conn);
         cmd.Parameters.AddWithValue("@CounterId", counterId);
@@ -980,6 +984,49 @@ public class CounterRepository : ICounterRepository
     }
 
     // ─────────────────────── private helpers ───────────────────────
+
+    private static readonly string[] CounterTableCandidates =
+    {
+        "counters",
+        "queue_counters",
+        "tbl_counters"
+    };
+
+    private static readonly string[] TokenTableCandidates =
+    {
+        "tokens",
+        "queue_tokens",
+        "tbl_tokens"
+    };
+
+    private static async Task<(string CounterTable, string TokenTable)> ResolveCounterAndTokenTablesAsync(MySqlConnection conn)
+    {
+        var counterTable = await ResolveExistingTableAsync(conn, CounterTableCandidates);
+        var tokenTable = await ResolveExistingTableAsync(conn, TokenTableCandidates);
+        return (counterTable, tokenTable);
+    }
+
+    private static async Task<string> ResolveExistingTableAsync(MySqlConnection conn, IEnumerable<string> candidates)
+    {
+        const string sql = @"
+            SELECT COUNT(1)
+            FROM information_schema.tables
+            WHERE table_schema = DATABASE()
+              AND table_name = @TableName";
+
+        foreach (var tableName in candidates)
+        {
+            await using var cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@TableName", tableName);
+            var exists = Convert.ToInt32(await cmd.ExecuteScalarAsync()) > 0;
+            if (exists)
+            {
+                return tableName;
+            }
+        }
+
+        throw new InvalidOperationException($"None of the expected table names were found. Candidates: {string.Join(", ", candidates)}");
+    }
 
     private static CounterResponseDto MapCounterResponse(MySqlDataReader reader)
     {
