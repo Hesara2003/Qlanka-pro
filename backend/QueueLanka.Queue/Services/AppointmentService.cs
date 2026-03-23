@@ -114,7 +114,7 @@ public class AppointmentService : IAppointmentService
         var (apptId, tokenId, resultCode) = await _appointmentRepository.BookAtomicAsync(
             center.CenterId, userId, requestedDate, requestedTime, tokenNumber, center.Capacity);
 
-        switch (resultCode)
+        switch ((resultCode ?? string.Empty).Trim().ToUpperInvariant())
         {
             case "CENTER_NOT_FOUND":
                 throw new ArgumentException("Service center not found or is currently inactive.");
@@ -122,6 +122,7 @@ public class AppointmentService : IAppointmentService
                 throw new DuplicateBookingException();
             case "TIME_CONFLICT":
                 throw new InvalidOperationException("This time slot is already booked. Please select another time.");
+            case "SLOT_FULL":
             case "CENTER_FULL":
                 throw new CenterFullException();
             case "SUCCESS":
