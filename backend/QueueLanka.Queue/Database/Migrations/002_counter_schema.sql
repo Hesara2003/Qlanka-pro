@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS counters (
 -- This column may already exist if this migration was partially applied.
 
 ALTER TABLE tokens
-    ADD COLUMN IF NOT EXISTS called_at DATETIME NULL
+    ADD COLUMN called_at DATETIME NULL
         COMMENT 'UTC timestamp when the token was called by an officer'
         AFTER cancelled_at;
 

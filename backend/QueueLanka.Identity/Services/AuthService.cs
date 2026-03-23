@@ -94,13 +94,27 @@ public class AuthService : IAuthService
         var refreshToken = GenerateRefreshToken();
         var expiryMins   = _config.GetValue<int>("Jwt:AccessTokenExpiryMinutes");
 
+        int? counterId = null;
+        if (user.Role.Equals("officer", StringComparison.OrdinalIgnoreCase))
+        {
+            var identityConnStr = _config.GetConnectionString("Default");
+            if (!string.IsNullOrEmpty(identityConnStr))
+            {
+                var queueConnStr = identityConnStr.Replace("identity_db", "queue_db");
+                using var conn = new MySqlConnector.MySqlConnection(queueConnStr);
+                await conn.OpenAsync();
+                var sql = "SELECT counter_id FROM queue_db.counters WHERE assigned_officer_user_id = @UserId LIMIT 1";
+                counterId = await Dapper.SqlMapper.QueryFirstOrDefaultAsync<int?>(conn, sql, new { UserId = user.UserId });
+            }
+        }
+
         return new LoginResponseDto
         {
             Token        = accessToken,
             RefreshToken = refreshToken,
             ExpiresIn    = expiryMins * 60,
             Role         = user.Role.ToLowerInvariant(),
-            CounterId    = null
+            CounterId    = counterId
         };
     }
 
