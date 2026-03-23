@@ -6,7 +6,7 @@ builder.Services.AddReverseProxy()
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
-        policy.SetIsOriginAllowed(origin => true) // Adjust for production
+        policy.AllowAnyOrigin()
               .AllowAnyHeader()
               .AllowAnyMethod());
 });
