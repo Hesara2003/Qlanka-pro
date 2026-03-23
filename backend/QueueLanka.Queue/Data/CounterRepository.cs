@@ -514,7 +514,7 @@ public class CounterRepository : ICounterRepository
             SELECT c.counter_id,
                    c.name,
                    c.status,
-                   c.assigned_officer_id,
+                     c.assigned_officer_user_id,
                    t.token_id,
                    t.center_id,
                    t.user_id,
@@ -551,9 +551,9 @@ public class CounterRepository : ICounterRepository
         var status = reader.GetString(reader.GetOrdinal("status"));
         var isOpen = string.Equals(status, "Open", StringComparison.OrdinalIgnoreCase);
 
-        int? assignedOfficerUserId = reader.IsDBNull(reader.GetOrdinal("assigned_officer_id"))
+        int? assignedOfficerUserId = reader.IsDBNull(reader.GetOrdinal("assigned_officer_user_id"))
             ? (int?)null
-            : reader.GetInt32(reader.GetOrdinal("assigned_officer_id"));
+            : reader.GetInt32(reader.GetOrdinal("assigned_officer_user_id"));
 
         Token? currentToken = null;
         if (!reader.IsDBNull(reader.GetOrdinal("token_id")))
@@ -599,7 +599,7 @@ public class CounterRepository : ICounterRepository
             FROM tokens t
             WHERE t.status = 'Waiting'
               AND t.counter_id = @CounterId
-            ORDER BY t.number ASC";
+                        ORDER BY t.queue_position ASC, t.token_number ASC";
 
         await using var conn = new MySqlConnection(_connectionString);
         await conn.OpenAsync();
@@ -625,7 +625,7 @@ public class CounterRepository : ICounterRepository
             FROM tokens
             WHERE counter_id = @CounterId
               AND status IN ('Served', 'Completed')
-              AND DATE(served_at) = CURDATE()";
+                            AND DATE(COALESCE(served_time, completed_time)) = CURDATE()";
 
         await using var conn = new MySqlConnection(_connectionString);
         await conn.OpenAsync();
@@ -645,7 +645,7 @@ public class CounterRepository : ICounterRepository
             FROM tokens
             WHERE counter_id = @CounterId
               AND status = 'Skipped'
-              AND DATE(COALESCE(skipped_at, updated_at)) = CURDATE()";
+                            AND DATE(updated_at) = CURDATE()";
 
         await using var conn = new MySqlConnection(_connectionString);
         await conn.OpenAsync();
@@ -666,8 +666,8 @@ public class CounterRepository : ICounterRepository
             WHERE counter_id = @CounterId
               AND status IN ('Served', 'Completed')
               AND called_at IS NOT NULL
-              AND served_at IS NOT NULL
-              AND DATE(served_at) = CURDATE()";
+                            AND served_time IS NOT NULL
+                            AND DATE(served_time) = CURDATE()";
 
         await using var conn = new MySqlConnection(_connectionString);
         await conn.OpenAsync();
