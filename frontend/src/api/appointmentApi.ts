@@ -25,11 +25,11 @@ export interface AppointmentResponseDto {
 }
 
 export const bookToken = async (data: BookAppointmentRequestDto): Promise<AppointmentResponseDto> => {
-    const response = await axiosInstance.post<ApiResponse<AppointmentResponseDto>>('/api/Appointment/book', data);
+    const response = await axiosInstance.post<ApiResponse<AppointmentResponseDto>>('/api/appointment/book', data);
     return response.data.data;
 };
 
 export const getMyAppointments = async (): Promise<AppointmentResponseDto[]> => {
-    const response = await axiosInstance.get<ApiResponse<AppointmentResponseDto[]>>('/api/Appointment/my-bookings');
+    const response = await axiosInstance.get<ApiResponse<AppointmentResponseDto[]>>('/api/appointment/my-bookings');
     return response.data.data;
 };
