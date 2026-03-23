@@ -30,6 +30,14 @@ public class AppointmentService : IAppointmentService
         var center = await _serviceCenterClient.GetCenterAsync(requestDto.CenterId);
         if (center == null || !center.IsActive)
         {
+            _logger.LogWarning(
+                "BookToken center validation failed. UserId={UserId}, CenterId={CenterId}, CenterExists={CenterExists}, IsActive={IsActive}, Date={Date}, Time={Time}",
+                userId,
+                requestDto.CenterId,
+                center is not null,
+                center?.IsActive,
+                requestDto.AppointmentDate,
+                requestDto.AppointmentTime);
             throw new ArgumentException("Service center not found or is currently inactive.");
         }
 

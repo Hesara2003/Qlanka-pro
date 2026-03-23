@@ -19,11 +19,20 @@ public class ServiceCenterClient : IServiceCenterClient
         try
         {
             var response = await _httpClient.GetAsync($"/api/service-centers/{centerId}");
-            if (!response.IsSuccessStatusCode) return null;
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorBody = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning(
+                    "ServiceCenter lookup failed for CenterId={CenterId}. Status={StatusCode}. Body={Body}",
+                    centerId,
+                    (int)response.StatusCode,
+                    errorBody);
+                return null;
+            }
 
             var content = await response.Content.ReadAsStringAsync();
             var apiResponse = JsonSerializer.Deserialize<ApiResponse<JsonElement>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-            if (apiResponse?.Data.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null)
+            if (apiResponse is null || apiResponse.Data.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null)
             {
                 _logger.LogWarning("ServiceCenter {CenterId} response did not include a data payload", centerId);
                 return null;
@@ -48,7 +57,7 @@ public class ServiceCenterClient : IServiceCenterClient
                 return null;
             }
 
-            return new ServiceCenterDto
+            var mappedCenter = new ServiceCenterDto
             {
                 CenterId = data.TryGetProperty("centerId", out var centerIdProp) ? centerIdProp.GetInt32() : centerId,
                 Name = data.TryGetProperty("name", out var nameProp) ? (nameProp.GetString() ?? string.Empty) : string.Empty,
@@ -58,6 +67,15 @@ public class ServiceCenterClient : IServiceCenterClient
                 OpeningTime = openingTime,
                 ClosingTime = closingTime
             };
+
+            _logger.LogInformation(
+                "ServiceCenter lookup success for CenterId={CenterId}. Active={IsActive}. Open={Opening} Close={Closing}",
+                mappedCenter.CenterId,
+                mappedCenter.IsActive,
+                mappedCenter.OpeningTime,
+                mappedCenter.ClosingTime);
+
+            return mappedCenter;
         }
         catch (Exception ex)
         {
