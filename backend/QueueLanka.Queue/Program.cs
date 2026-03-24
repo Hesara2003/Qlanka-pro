@@ -74,7 +74,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("AdminOnly", policy => policy.RequireRole("admin"));
+    options.AddPolicy("AdminOnly", policy =>
+        policy.RequireAssertion(context =>
+            context.User.Claims.Any(claim =>
+                (string.Equals(claim.Type, ClaimTypes.Role, StringComparison.OrdinalIgnoreCase)
+                 || string.Equals(claim.Type, "role", StringComparison.OrdinalIgnoreCase)
+                 || string.Equals(claim.Type, "roles", StringComparison.OrdinalIgnoreCase)
+                 || string.Equals(claim.Type, "http://schemas.microsoft.com/ws/2008/06/identity/claims/role", StringComparison.OrdinalIgnoreCase))
+                && string.Equals(claim.Value, "admin", StringComparison.OrdinalIgnoreCase))));
     options.AddPolicy("OfficerOnly", policy => policy.RequireRole("officer"));
     options.AddPolicy("AdminOrOfficer", policy => policy.RequireRole("admin", "officer"));
 });
