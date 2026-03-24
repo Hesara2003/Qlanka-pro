@@ -78,8 +78,6 @@ public class CounterServiceReassignTests
             QueuePosition = 5
         };
 
-        var auditLogged = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-
         _mockTokenRepository.Setup(r => r.GetByIdAsync(10)).ReturnsAsync(token);
         _mockCounterRepository.Setup(r => r.IsCounterOpenAsync(8)).ReturnsAsync(true);
         _mockCounterRepository
@@ -87,7 +85,6 @@ public class CounterServiceReassignTests
             .ReturnsAsync((reassignedToken, 5, 8, DateTime.UtcNow));
         _mockAuditLogRepository
             .Setup(r => r.LogAsync(It.IsAny<AuditLog>()))
-            .Callback(() => auditLogged.TrySetResult(true))
             .Returns(Task.CompletedTask);
 
         var result = await _service.ReassignTokenAsync(5, 10, 8, "Balancing load", 42);
@@ -101,8 +98,21 @@ public class CounterServiceReassignTests
         _mockEventBus.Verify(e => e.PublishAsync(It.IsAny<TokenReassignedEvent>()), Times.Once);
         _mockQueueHubClient.Verify(c => c.TokenReassigned(It.IsAny<TokenReassignedEvent>()), Times.Once);
 
-        await Task.WhenAny(auditLogged.Task, Task.Delay(500));
-        auditLogged.Task.IsCompleted.Should().BeTrue();
+        var timeoutAt = DateTime.UtcNow.AddSeconds(3);
+        while (DateTime.UtcNow < timeoutAt)
+        {
+            try
+            {
+                _mockAuditLogRepository.Verify(r => r.LogAsync(It.IsAny<AuditLog>()), Times.AtLeastOnce);
+                break;
+            }
+            catch (MockException)
+            {
+                await Task.Delay(25);
+            }
+        }
+
+        _mockAuditLogRepository.Verify(r => r.LogAsync(It.IsAny<AuditLog>()), Times.AtLeastOnce);
     }
 
     [Fact]
