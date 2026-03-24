@@ -6,6 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { useCounter } from "../hooks/useCounter";
 import { useQueueHub } from "../hooks/useQueueHub";
 import type { WaitingTokenDto } from "../api/counterApi";
+import type { CounterStatsDto, DashboardCurrentTokenDto } from "../api/counterApi";
 import ConnectionStatusBanner from "../components/common/ConnectionStatusBanner";
 import CallNextButton from "../components/officer/CallNextButton";
 import CurrentTokenDisplay from "../components/officer/CurrentTokenDisplay";
@@ -14,6 +15,47 @@ import WaitingTokensList from "../components/officer/WaitingTokensList";
 import ReassignTokenModal from "../components/officer/ReassignTokenModal";
 import ServedCountCard from "../components/officer/ServedCountCard";
 import { useLastUpdated } from "../hooks/useLastUpdated";
+
+const DEMO_MOCK_CURRENT_TOKEN: DashboardCurrentTokenDto = {
+    tokenId: 9101,
+    tokenNumber: "A-117",
+    status: "Called",
+    calledAt: "2026-03-24T09:20:00Z",
+    waitedSeconds: 420,
+};
+
+const DEMO_MOCK_WAITING_TOKENS: WaitingTokenDto[] = [
+    {
+        tokenId: 9102,
+        tokenNumber: "A-118",
+        queuePosition: 1,
+        issuedAt: "2026-03-24T09:12:00Z",
+        estimatedWaitSeconds: 240,
+        status: "Waiting",
+    },
+    {
+        tokenId: 9103,
+        tokenNumber: "A-119",
+        queuePosition: 2,
+        issuedAt: "2026-03-24T09:13:00Z",
+        estimatedWaitSeconds: 360,
+        status: "Waiting",
+    },
+    {
+        tokenId: 9104,
+        tokenNumber: "A-120",
+        queuePosition: 3,
+        issuedAt: "2026-03-24T09:15:00Z",
+        estimatedWaitSeconds: 540,
+        status: "Waiting",
+    },
+];
+
+const DEMO_MOCK_STATS: CounterStatsDto = {
+    servedCount: 26,
+    skippedCount: 3,
+    averageServiceTimeSeconds: 192,
+};
 
 export default function OfficerDashboardPage() {
     const { user, logout } = useAuth();
@@ -77,6 +119,20 @@ export default function OfficerDashboardPage() {
         latestCancellation,
         latestQueueUpdate,
     });
+
+    const forceDemoMock = (import.meta.env.VITE_OFFICER_DEMO_MOCK ?? "false").toLowerCase() === "true";
+    const fallbackToMock = !dashboardLoading && !statsLoading && !dashboard && waitingTokens.length === 0;
+    const useDemoMockData = forceDemoMock || fallbackToMock;
+
+    const displayCurrentToken = useDemoMockData
+        ? DEMO_MOCK_CURRENT_TOKEN
+        : (dashboard?.currentToken ?? null);
+    const displayWaitingTokens = useDemoMockData
+        ? DEMO_MOCK_WAITING_TOKENS
+        : waitingTokens;
+    const displayStats = useDemoMockData
+        ? DEMO_MOCK_STATS
+        : stats;
     const { lastUpdatedText } = useLastUpdated(dashboardLastUpdatedAt ?? lastConnectedAt);
     const [selectedToken, setSelectedToken] = useState<WaitingTokenDto | null>(null);
     const [reassignmentBanner, setReassignmentBanner] = useState<string | null>(null);
@@ -254,6 +310,11 @@ export default function OfficerDashboardPage() {
                     <p className="text-gray-500 text-[14px] font-medium mt-1">
                         Call the next citizen in line at Counter #{user.counterId}.
                     </p>
+                    {useDemoMockData && (
+                        <div className="mt-2 inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-amber-700 border border-amber-200">
+                            Demo Mode · Using Mock Queue Data
+                        </div>
+                    )}
                     <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 border border-gray-200">
                         <span
                             className={`w-2.5 h-2.5 rounded-full ${connectionIndicatorClass} ${connectionStatus === "connected" ? "animate-pulse" : ""}`}
@@ -305,10 +366,10 @@ export default function OfficerDashboardPage() {
 
             <div className="mb-6">
                 <ServedCountCard
-                    servedCount={stats.servedCount}
-                    skippedCount={stats.skippedCount}
-                    averageServiceTimeSeconds={stats.averageServiceTimeSeconds}
-                    loading={statsLoading}
+                    servedCount={displayStats.servedCount}
+                    skippedCount={displayStats.skippedCount}
+                    averageServiceTimeSeconds={displayStats.averageServiceTimeSeconds}
+                    loading={!useDemoMockData && statsLoading}
                     connectionStatus={connectionStatus === "connecting" ? "reconnecting" : connectionStatus}
                 />
                 <p className="mt-2 text-xs font-medium text-gray-500">
@@ -361,7 +422,7 @@ export default function OfficerDashboardPage() {
 
                 <CurrentTokenDisplay
                     calledToken={calledToken}
-                    currentToken={dashboard?.currentToken ?? null}
+                    currentToken={displayCurrentToken}
                     loading={loading}
                     error={error}
                     errorCode={errorCode}
@@ -372,8 +433,8 @@ export default function OfficerDashboardPage() {
 
             <div className="mt-6">
                 <WaitingTokensList
-                    waitingTokens={waitingTokens}
-                    loading={dashboardLoading}
+                    waitingTokens={displayWaitingTokens}
+                    loading={!useDemoMockData && dashboardLoading}
                     onReassignClick={setSelectedToken}
                     latestCalledToken={latestCalledToken}
                     latestStatusUpdate={latestStatusUpdate}
