@@ -1,0 +1,174 @@
+Summary
+  Generated on: 3/24/2026 - 12:52:51 PM
+  Coverage date: 3/24/2026 - 12:52:11 PM
+  Parser: Cobertura
+  Assemblies: 3
+  Classes: 148
+  Files: 120
+  Line coverage: 25.2%
+  Covered lines: 1341
+  Uncovered lines: 3962
+  Coverable lines: 5303
+  Total lines: 9561
+  Branch coverage: 9.7% (158 of 1626)
+  Covered branches: 158
+  Total branches: 1626
+  Method coverage: 38.3% (314 of 818)
+  Full method coverage: 36.3% (297 of 818)
+  Covered methods: 314
+  Fully covered methods: 297
+  Total methods: 818
+
+QueueLanka.API                                                      17.8%
+  Program                                                              0%
+  QueueLanka.API.Controllers.AdminUserController                     100%
+  QueueLanka.API.Controllers.AppointmentController                   100%
+  QueueLanka.API.Controllers.AuthController                          100%
+  QueueLanka.API.Controllers.ServiceCenterController                 100%
+  QueueLanka.API.Controllers.TokenController                         100%
+  QueueLanka.API.Data.AppointmentRepository                            0%
+  QueueLanka.API.Data.EmailVerificationRepository                      0%
+  QueueLanka.API.Data.ServiceCenterRepository                          0%
+  QueueLanka.API.Data.TokenRepository                                  0%
+  QueueLanka.API.Data.UserRepository                                   0%
+  QueueLanka.API.DTOs.Appointment.AppointmentResponseDto            55.5%
+  QueueLanka.API.DTOs.Appointment.BookAppointmentRequestDto          100%
+  QueueLanka.API.DTOs.Auth.LoginRequestDto                           100%
+  QueueLanka.API.DTOs.Auth.LoginResponseDto                           80%
+  QueueLanka.API.DTOs.Auth.RegisterRequestDto                         80%
+  QueueLanka.API.DTOs.Auth.RegisterResponseDto                       100%
+  QueueLanka.API.DTOs.Auth.VerifyEmailResponseDto                    100%
+  QueueLanka.API.DTOs.Common.ApiResponse<T>                         62.5%
+  QueueLanka.API.DTOs.Common.ErrorResponse                          64.2%
+  QueueLanka.API.DTOs.Common.ResponseMetadata                         60%
+  QueueLanka.API.DTOs.Common.ValidationError                           0%
+  QueueLanka.API.DTOs.ServiceCenter.CenterLocationDto               27.2%
+  QueueLanka.API.DTOs.ServiceCenter.CreateServiceCenterRequestDto   42.8%
+  QueueLanka.API.DTOs.ServiceCenter.ServiceCenterDto                  60%
+  QueueLanka.API.DTOs.ServiceCenter.UpsertLocationRequestDto          20%
+  QueueLanka.API.DTOs.Token.UserTokenResponseDto                    33.3%
+  QueueLanka.API.DTOs.User.AdminUserDto                             45.4%
+  QueueLanka.API.Exceptions.AccountDisabledException                 100%
+  QueueLanka.API.Exceptions.AppException                            71.4%
+  QueueLanka.API.Exceptions.CannotDeleteAdminException               100%
+  QueueLanka.API.Exceptions.CenterFullException                      100%
+  QueueLanka.API.Exceptions.DataAccessException                      100%
+  QueueLanka.API.Exceptions.DuplicateBookingException                100%
+  QueueLanka.API.Exceptions.DuplicateEmailException                  100%
+  QueueLanka.API.Exceptions.DuplicateServiceCenterException          100%
+  QueueLanka.API.Exceptions.DuplicateUsernameException               100%
+  QueueLanka.API.Exceptions.EmailNotVerifiedException                  0%
+  QueueLanka.API.Exceptions.InvalidCredentialsException              100%
+  QueueLanka.API.Exceptions.InvalidServiceCenterDataException        100%
+  QueueLanka.API.Exceptions.InvalidUserIdException                   100%
+  QueueLanka.API.Exceptions.InvalidUserRoleFilterException           100%
+  QueueLanka.API.Exceptions.InvalidVerificationTokenException        100%
+  QueueLanka.API.Exceptions.LocationNotFoundException                100%
+  QueueLanka.API.Exceptions.ServiceCenterNotFoundException            80%
+  QueueLanka.API.Exceptions.ServiceCenterUnavailableException          0%
+  QueueLanka.API.Exceptions.UserNotFoundException                    100%
+  QueueLanka.API.Extensions.ClaimsPrincipalExtensions               38.4%
+  QueueLanka.API.Filters.ValidationFilter                              0%
+  QueueLanka.API.Middleware.ExceptionMiddleware                        0%
+  QueueLanka.API.Middleware.JwtMiddleware                              0%
+  QueueLanka.API.Models.Appointment                                    0%
+  QueueLanka.API.Models.CenterAvailability                             0%
+  QueueLanka.API.Models.CenterCapacityLog                              0%
+  QueueLanka.API.Models.CenterLocation                                 0%
+  QueueLanka.API.Models.CenterOperatingDay                             0%
+  QueueLanka.API.Models.EmailVerificationToken                         0%
+  QueueLanka.API.Models.ServiceCenter                                  0%
+  QueueLanka.API.Models.Token                                          0%
+  QueueLanka.API.Models.User                                           0%
+  QueueLanka.API.Models.UserAuditLog                                   0%
+  QueueLanka.API.Services.AppointmentService                           0%
+  QueueLanka.API.Services.AuthService                                  0%
+  QueueLanka.API.Services.EmailVerificationService                     0%
+  QueueLanka.API.Services.NotificationService                          0%
+  QueueLanka.API.Services.ServiceCenterService                         0%
+  QueueLanka.API.Services.SmtpEmailService                             0%
+  QueueLanka.API.Services.TokenService                                 0%
+  QueueLanka.API.Services.UserManagementService                        0%
+
+QueueLanka.Queue                                                    32.1%
+  Program                                                           76.6%
+  QueueLanka.Queue.Controllers.AppointmentController                   0%
+  QueueLanka.Queue.Controllers.CounterController                      17%
+  QueueLanka.Queue.Controllers.ReportsController                       0%
+  QueueLanka.Queue.Controllers.TokenController                         0%
+  QueueLanka.Queue.Data.AppointmentRepository                          0%
+  QueueLanka.Queue.Data.AuditLogRepository                             0%
+  QueueLanka.Queue.Data.CounterRepository                              0%
+  QueueLanka.Queue.Data.ReportRepository                               0%
+  QueueLanka.Queue.Data.TokenRepository                                0%
+  QueueLanka.Queue.DTOs.Appointment.AppointmentResponseDto             0%
+  QueueLanka.Queue.DTOs.Appointment.BookAppointmentRequestDto          0%
+  QueueLanka.Queue.DTOs.Counter.CounterDashboardDto                  100%
+  QueueLanka.Queue.DTOs.Counter.CounterResponseDto                   100%
+  QueueLanka.Queue.DTOs.Counter.CreateCounterRequestDto              100%
+  QueueLanka.Queue.DTOs.Counter.CurrentTokenDto                      100%
+  QueueLanka.Queue.DTOs.Counter.ListCountersResponseDto              100%
+  QueueLanka.Queue.DTOs.Counter.UpdateCounterStatusRequestDto        100%
+  QueueLanka.Queue.DTOs.Counter.WaitingTokenDto                      100%
+  QueueLanka.Queue.DTOs.Reports.DailyCenterSummaryRequestDto         100%
+  QueueLanka.Queue.DTOs.Reports.DailyCenterSummaryRowDto             100%
+  QueueLanka.Queue.DTOs.Reports.DateRangeAttribute                     0%
+  QueueLanka.Queue.DTOs.Token.CallNextTokenResponseDto               100%
+  QueueLanka.Queue.DTOs.Token.ReassignTokenRequestDto                  0%
+  QueueLanka.Queue.DTOs.Token.ReassignTokenResponseDto               100%
+  QueueLanka.Queue.DTOs.Token.UpdateTokenStatusRequestDto              0%
+  QueueLanka.Queue.DTOs.Token.UpdateTokenStatusResponseDto           100%
+  QueueLanka.Queue.DTOs.Token.UserTokenResponseDto                     0%
+  QueueLanka.Queue.Events.CounterStatusEvent                         100%
+  QueueLanka.Queue.Events.QueueUpdatedEvent                          100%
+  QueueLanka.Queue.Events.TokenCalledEvent                           100%
+  QueueLanka.Queue.Events.TokenCancelledEvent                        100%
+  QueueLanka.Queue.Events.TokenReassignedEvent                       100%
+  QueueLanka.Queue.Events.TokenStatusUpdatedEvent                    100%
+  QueueLanka.Queue.Hubs.QueueHub                                     1.7%
+  QueueLanka.Queue.Integration.CenterAvailabilityDto                   0%
+  QueueLanka.Queue.Integration.CenterOperatingDayDto                   0%
+  QueueLanka.Queue.Integration.ServiceCenterClient                     0%
+  QueueLanka.Queue.Integration.ServiceCenterDto                     22.2%
+  QueueLanka.Queue.Models.Appointment                                  0%
+  QueueLanka.Queue.Models.AuditLog                                  87.5%
+  QueueLanka.Queue.Models.Token                                     62.5%
+  QueueLanka.Queue.Services.AppointmentService                         0%
+  QueueLanka.Queue.Services.CounterService                          83.5%
+  QueueLanka.Queue.Services.QueueBroadcastService                    100%
+  QueueLanka.Queue.Services.ReportService                           97.5%
+  QueueLanka.Queue.Services.TokenService                               0%
+  TokenCalledEventHandler                                              0%
+
+QueueLanka.Shared                                                   17.3%
+  QueueLanka.Shared.DTOs.Common.ApiResponse<T>                      56.2%
+  QueueLanka.Shared.DTOs.Common.ErrorResponse                       64.2%
+  QueueLanka.Shared.DTOs.Common.ResponseMetadata                       0%
+  QueueLanka.Shared.DTOs.Common.ValidationError                        0%
+  QueueLanka.Shared.Events.BookingConfirmedEvent                       0%
+  QueueLanka.Shared.Events.InMemoryEventBus                         37.8%
+  QueueLanka.Shared.Events.TokenCancelledEvent                         0%
+  QueueLanka.Shared.Events.UserRegisteredEvent                         0%
+  QueueLanka.Shared.Exceptions.AccountDisabledException                0%
+  QueueLanka.Shared.Exceptions.AppException                            0%
+  QueueLanka.Shared.Exceptions.CannotDeleteAdminException              0%
+  QueueLanka.Shared.Exceptions.CenterFullException                     0%
+  QueueLanka.Shared.Exceptions.DataAccessException                     0%
+  QueueLanka.Shared.Exceptions.DuplicateBookingException               0%
+  QueueLanka.Shared.Exceptions.DuplicateEmailException                 0%
+  QueueLanka.Shared.Exceptions.DuplicateServiceCenterException         0%
+  QueueLanka.Shared.Exceptions.DuplicateUsernameException              0%
+  QueueLanka.Shared.Exceptions.EmailNotVerifiedException               0%
+  QueueLanka.Shared.Exceptions.InvalidCredentialsException             0%
+  QueueLanka.Shared.Exceptions.InvalidServiceCenterDataException       0%
+  QueueLanka.Shared.Exceptions.InvalidUserIdException                  0%
+  QueueLanka.Shared.Exceptions.InvalidUserRoleFilterException          0%
+  QueueLanka.Shared.Exceptions.InvalidVerificationTokenException       0%
+  QueueLanka.Shared.Exceptions.LocationNotFoundException               0%
+  QueueLanka.Shared.Exceptions.ServiceCenterNotFoundException          0%
+  QueueLanka.Shared.Exceptions.ServiceCenterUnavailableException       0%
+  QueueLanka.Shared.Exceptions.UserNotFoundException                   0%
+  QueueLanka.Shared.Extensions.ClaimsPrincipalExtensions            38.4%
+  QueueLanka.Shared.Filters.ValidationFilter                        16.6%
+  QueueLanka.Shared.Middleware.ExceptionMiddleware                  19.7%
+  QueueLanka.Shared.Middleware.JwtMiddleware                           0%

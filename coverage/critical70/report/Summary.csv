@@ -1,0 +1,29 @@
+Summary
+Generated on:;3/24/2026 - 12:57:25 PM
+Parser:;Cobertura
+Assemblies:;3
+Classes:;9
+Files:;9
+Line coverage:;94.9%
+Covered lines:;131
+Uncovered lines:;7
+Coverable lines:;138
+Total lines:;1920
+
+QueueLanka.API;100%
+
+QueueLanka.API.Controllers.AdminUserController;100%
+QueueLanka.API.Controllers.AppointmentController;100%
+QueueLanka.API.Controllers.AuthController;100%
+QueueLanka.API.Controllers.ServiceCenterController;100%
+QueueLanka.API.Controllers.TokenController;100%
+
+QueueLanka.Queue;92.4%
+
+QueueLanka.Queue.Controllers.CounterController;100%
+QueueLanka.Queue.Services.CounterService;92.5%
+QueueLanka.Queue.Services.ReportService;90.9%
+
+QueueLanka.Shared;100%
+
+QueueLanka.Shared.Events.InMemoryEventBus;100%

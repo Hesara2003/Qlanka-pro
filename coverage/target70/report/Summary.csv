@@ -1,0 +1,55 @@
+Summary
+Generated on:;3/24/2026 - 12:56:30 PM
+Parser:;Cobertura
+Assemblies:;3
+Classes:;35
+Files:;35
+Line coverage:;23.6%
+Covered lines:;193
+Uncovered lines:;624
+Coverable lines:;817
+Total lines:;7036
+
+QueueLanka.API;7.8%
+
+QueueLanka.API.Controllers.AdminUserController;100%
+QueueLanka.API.Controllers.AppointmentController;100%
+QueueLanka.API.Controllers.AuthController;100%
+QueueLanka.API.Controllers.ServiceCenterController;100%
+QueueLanka.API.Controllers.TokenController;100%
+QueueLanka.API.Data.AppointmentRepository;0%
+QueueLanka.API.Data.EmailVerificationRepository;0%
+QueueLanka.API.Data.ServiceCenterRepository;0%
+QueueLanka.API.Data.TokenRepository;0%
+QueueLanka.API.Data.UserRepository;0%
+QueueLanka.API.Services.AppointmentService;0%
+QueueLanka.API.Services.AuthService;0%
+QueueLanka.API.Services.EmailVerificationService;0%
+QueueLanka.API.Services.NotificationService;0%
+QueueLanka.API.Services.ServiceCenterService;0%
+QueueLanka.API.Services.SmtpEmailService;0%
+QueueLanka.API.Services.TokenService;0%
+QueueLanka.API.Services.UserManagementService;0%
+
+QueueLanka.Queue;37.3%
+
+QueueLanka.Queue.Controllers.AppointmentController;0%
+QueueLanka.Queue.Controllers.CounterController;100%
+QueueLanka.Queue.Controllers.ReportsController;0%
+QueueLanka.Queue.Controllers.TokenController;0%
+QueueLanka.Queue.Data.AppointmentRepository;0%
+QueueLanka.Queue.Data.AuditLogRepository;0%
+QueueLanka.Queue.Data.CounterRepository;0%
+QueueLanka.Queue.Data.ReportRepository;0%
+QueueLanka.Queue.Data.TokenRepository;0%
+QueueLanka.Queue.Hubs.QueueHub;2.3%
+QueueLanka.Queue.Services.AppointmentService;0%
+QueueLanka.Queue.Services.CounterService;92.5%
+QueueLanka.Queue.Services.QueueBroadcastService;100%
+QueueLanka.Queue.Services.ReportService;90.9%
+QueueLanka.Queue.Services.TokenService;0%
+TokenCalledEventHandler;0%
+
+QueueLanka.Shared;100%
+
+QueueLanka.Shared.Events.InMemoryEventBus;100%

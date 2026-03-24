@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <Include>[QueueLanka.API*]*,[QueueLanka.Queue*]*,[QueueLanka.Shared*]*</Include>
+          <Exclude>[*.Tests]*,[*]Program,[*]*.DTOs.*,[*]*.Models.*,[*]*.Migrations.*,[*]*.Middleware.*,[*]*.Extensions.*,[*]*.Filters.*,[*]*.Exceptions.*,[*]*.Database.*,[*]*.Integration.*</Exclude>
+          <ExcludeByFile>**/*Designer.cs,**/*.g.cs,**/*.generated.cs</ExcludeByFile>
+          <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>
+          <IncludeTestAssembly>false</IncludeTestAssembly>
+          <SingleHit>false</SingleHit>
+          <UseSourceLink>false</UseSourceLink>
+          <DeterministicReport>true</DeterministicReport>
+          <SkipAutoProps>true</SkipAutoProps>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

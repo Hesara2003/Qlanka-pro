@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <Include>[QueueLanka.API]QueueLanka.API.Controllers.*,[QueueLanka.Queue]QueueLanka.Queue.Controllers.CounterController,[QueueLanka.Queue]QueueLanka.Queue.Services.CounterService,[QueueLanka.Queue]QueueLanka.Queue.Services.ReportService,[QueueLanka.Shared]QueueLanka.Shared.Events.InMemoryEventBus</Include>
+          <Exclude>[*.Tests]*</Exclude>
+          <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>
+          <IncludeTestAssembly>false</IncludeTestAssembly>
+          <SkipAutoProps>true</SkipAutoProps>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
