@@ -11,7 +11,7 @@ namespace QueueLanka.Queue.Controllers;
 
 [ApiController]
 [Route("api/reports")]
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "admin,Admin")]
 public class ReportsController : ControllerBase
 {
     private readonly IReportService _reportService;
