@@ -121,8 +121,7 @@ export default function OfficerDashboardPage() {
     });
 
     const forceDemoMock = (import.meta.env.VITE_OFFICER_DEMO_MOCK ?? "false").toLowerCase() === "true";
-    const fallbackToMock = !dashboardLoading && !statsLoading && !dashboard && waitingTokens.length === 0;
-    const useDemoMockData = forceDemoMock || fallbackToMock;
+    const useDemoMockData = forceDemoMock;
 
     const displayCurrentToken = useDemoMockData
         ? DEMO_MOCK_CURRENT_TOKEN
@@ -138,7 +137,6 @@ export default function OfficerDashboardPage() {
     const [reassignmentBanner, setReassignmentBanner] = useState<string | null>(null);
     const [manualRefreshing, setManualRefreshing] = useState(false);
     const isMountedRef = useRef(true);
-    const previousConnectionStatusRef = useRef(connectionStatus);
 
     useEffect(() => {
         isMountedRef.current = true;
@@ -146,10 +144,6 @@ export default function OfficerDashboardPage() {
             isMountedRef.current = false;
         };
     }, []);
-
-    useEffect(() => {
-        void fetchDashboard();
-    }, [fetchDashboard]);
 
     useEffect(() => {
         if (reconnectNonce <= 0) return;
@@ -163,16 +157,6 @@ export default function OfficerDashboardPage() {
             return acc;
         }, {});
     }, [availableCounters]);
-
-    useEffect(() => {
-        const previousStatus = previousConnectionStatusRef.current;
-        if (previousStatus !== "connected" && connectionStatus === "connected") {
-            void fetchDashboard();
-            void fetchStats();
-        }
-
-        previousConnectionStatusRef.current = connectionStatus;
-    }, [connectionStatus, fetchDashboard, fetchStats]);
 
     useEffect(() => {
         if (!latestReassignment || user?.counterId == null) return;
