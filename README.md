@@ -206,3 +206,23 @@ Configured scrape jobs include:
 - `notification:80`
 
 Each service is scraped at `/metrics` using job-specific intervals defined in `prometheus.yml`.
+
+## Grafana Dashboard
+
+Grafana is configured in repository and provisioned automatically with Prometheus as the default datasource.
+
+- Compose service: `docker-compose.yml` (`grafana` service on port `3001`)
+- Datasource provisioning: `deploy/infrastructure/monitoring/grafana/provisioning/datasources/prometheus.yml`
+- Dashboard provisioning: `deploy/infrastructure/monitoring/grafana/provisioning/dashboards/dashboard-provider.yml`
+- Dashboard JSON: `deploy/infrastructure/monitoring/grafana/dashboards/key-metrics-dashboard.json`
+- Grafana URL: `http://localhost:3001`
+- Default credentials: `admin / admin` (change for shared environments)
+
+### Included Key Metrics
+
+- API latency (P95)
+- API error rate (5xx)
+- Queue size
+- Target availability (up/down)
+
+The dashboard is designed to provide actionable thresholds for latency, errors, and queue growth.
