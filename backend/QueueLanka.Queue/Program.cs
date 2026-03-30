@@ -177,6 +177,7 @@ var app = builder.Build();
 var eventBus = app.Services.GetRequiredService<IEventBus>();
 eventBus.Subscribe<TokenCalledEvent, TokenCalledEventHandler>();
 
+app.UseMiddleware<RequestContextLoggingMiddleware>();
 app.UseMiddleware<ExceptionMiddleware>();
 app.MapHealthChecks("/health");
 

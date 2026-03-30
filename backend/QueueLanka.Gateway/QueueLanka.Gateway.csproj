@@ -13,4 +13,8 @@
     <PackageReference Include="Yarp.ReverseProxy" Version="2.1.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\QueueLanka.Shared\QueueLanka.Shared.csproj" />
+  </ItemGroup>
+
 </Project>

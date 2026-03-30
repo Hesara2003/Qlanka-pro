@@ -124,6 +124,7 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // ── Middleware pipeline ────────────────────────────────────────
+app.UseMiddleware<RequestContextLoggingMiddleware>();
 app.UseMiddleware<ExceptionMiddleware>();
 
 // Health check endpoint (used by CI/CD deployment verification)
