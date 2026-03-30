@@ -116,6 +116,29 @@ services:
     networks:
       - qlanka-net
 
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=15d"
+      - "--storage.tsdb.retention.size=2GB"
+      - "--web.enable-lifecycle"
+    volumes:
+      - ./deploy/infrastructure/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    depends_on:
+      - gateway
+      - identity
+      - service-center
+      - queue
+      - notification
+    networks:
+      - qlanka-net
+
   db-identity:
     image: mysql:8.0
     container_name: db-identity
@@ -171,6 +194,7 @@ volumes:
   db_identity_data:
   db_servicecenter_data:
   db_queue_data:
+  prometheus_data:
 
 secrets:
   db_password:
