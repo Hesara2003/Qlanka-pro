@@ -1,7 +1,9 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +34,33 @@ builder.Services.AddAuthorization(options =>
     options.FallbackPolicy = new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
         .Build();
+});
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+    {
+        var isBookingEndpoint = HttpMethods.IsPost(context.Request.Method)
+            && string.Equals(context.Request.Path.Value, "/api/appointment/book", StringComparison.OrdinalIgnoreCase);
+
+        if (!isBookingEndpoint)
+        {
+            return RateLimitPartition.GetNoLimiter("non-booking");
+        }
+
+        var clientIp = context.Connection.RemoteIpAddress?.ToString() ?? "unknown-ip";
+        var partitionKey = $"booking:{clientIp}";
+
+        return RateLimitPartition.GetFixedWindowLimiter(partitionKey, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 5,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0,
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+            AutoReplenishment = true
+        });
+    });
 });
 
 var frontendOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
@@ -94,6 +123,7 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 app.UseCors("AllowFrontend");
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
