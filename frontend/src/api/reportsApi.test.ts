@@ -47,27 +47,29 @@ describe('reportsApi', () => {
     Object.defineProperty(URL, 'createObjectURL', { value: createObjectURLSpy, configurable: true })
     Object.defineProperty(URL, 'revokeObjectURL', { value: revokeObjectURLSpy, configurable: true })
 
-    mockedAxios.get.mockResolvedValueOnce({
-      status: 200,
-      data: 'csv-data',
-      headers: { 'content-disposition': 'attachment; filename="daily.csv"' },
-    })
+    try {
+      mockedAxios.get.mockResolvedValueOnce({
+        status: 200,
+        data: 'csv-data',
+        headers: { 'content-disposition': 'attachment; filename="daily.csv"' },
+      })
 
-    await expect(downloadDailyCenterSummaryCsv(1, '2026-03-01', '2026-03-30')).resolves.toBeUndefined()
+      await expect(downloadDailyCenterSummaryCsv(1, '2026-03-01', '2026-03-30')).resolves.toBeUndefined()
 
-    expect(mockedAxios.get).toHaveBeenCalledWith('/api/reports/centers/1/summary', {
-      params: { format: 'csv', from: '2026-03-01', to: '2026-03-30' },
-      responseType: 'blob',
-    })
-    expect(anchor.setAttribute).toHaveBeenCalledWith('download', 'daily.csv')
-    expect(click).toHaveBeenCalled()
-    expect(createObjectURLSpy).toHaveBeenCalled()
-    expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:test')
-
-    createElementSpy.mockRestore()
-    appendChildSpy.mockRestore()
-    Object.defineProperty(URL, 'createObjectURL', { value: originalCreateObjectURL, configurable: true })
-    Object.defineProperty(URL, 'revokeObjectURL', { value: originalRevokeObjectURL, configurable: true })
+      expect(mockedAxios.get).toHaveBeenCalledWith('/api/reports/centers/1/summary', {
+        params: { format: 'csv', from: '2026-03-01', to: '2026-03-30' },
+        responseType: 'blob',
+      })
+      expect(anchor.setAttribute).toHaveBeenCalledWith('download', 'daily.csv')
+      expect(click).toHaveBeenCalled()
+      expect(createObjectURLSpy).toHaveBeenCalled()
+      expect(revokeObjectURLSpy).toHaveBeenCalledWith('blob:test')
+    } finally {
+      createElementSpy.mockRestore()
+      appendChildSpy.mockRestore()
+      Object.defineProperty(URL, 'createObjectURL', { value: originalCreateObjectURL, configurable: true })
+      Object.defineProperty(URL, 'revokeObjectURL', { value: originalRevokeObjectURL, configurable: true })
+    }
   })
 
   it('throws explicit no-data error for 204 response', async () => {
