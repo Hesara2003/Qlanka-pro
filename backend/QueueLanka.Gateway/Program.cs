@@ -10,6 +10,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
+var requireAuthByDefault = builder.Configuration.GetValue<bool?>("GatewayPolicies:Authentication:RequireAuthenticatedUserByDefault") ?? true;
+
+var bookingRateLimitPath = builder.Configuration["GatewayPolicies:RateLimiting:Booking:Path"] ?? "/api/appointment/book";
+var bookingRateLimitMethod = builder.Configuration["GatewayPolicies:RateLimiting:Booking:Method"] ?? HttpMethods.Post;
+var bookingPermitLimit = builder.Configuration.GetValue<int?>("GatewayPolicies:RateLimiting:Booking:PermitLimit") ?? 5;
+var bookingWindowMinutes = builder.Configuration.GetValue<int?>("GatewayPolicies:RateLimiting:Booking:WindowMinutes") ?? 1;
+var bookingRejectionStatusCode = builder.Configuration.GetValue<int?>("GatewayPolicies:RateLimiting:Booking:RejectionStatusCode")
+    ?? StatusCodes.Status429TooManyRequests;
+
 var jwtSecret = builder.Configuration["Jwt:Secret"] ?? "CHANGE_ME_USE_ENV_VAR_IN_PRODUCTION_MIN_32_CHARS";
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -30,19 +39,22 @@ builder.Services
 
 builder.Services.AddAuthorization(options =>
 {
-    // Enforce authentication by default for all endpoints unless explicitly marked anonymous.
-    options.FallbackPolicy = new AuthorizationPolicyBuilder()
-        .RequireAuthenticatedUser()
-        .Build();
+    if (requireAuthByDefault)
+    {
+        // Enforce authentication by default for all endpoints unless explicitly marked anonymous.
+        options.FallbackPolicy = new AuthorizationPolicyBuilder()
+            .RequireAuthenticatedUser()
+            .Build();
+    }
 });
 
 builder.Services.AddRateLimiter(options =>
 {
-    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.RejectionStatusCode = bookingRejectionStatusCode;
     options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
     {
-        var isBookingEndpoint = HttpMethods.IsPost(context.Request.Method)
-            && string.Equals(context.Request.Path.Value, "/api/appointment/book", StringComparison.OrdinalIgnoreCase);
+        var isBookingEndpoint = string.Equals(context.Request.Method, bookingRateLimitMethod, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(context.Request.Path.Value, bookingRateLimitPath, StringComparison.OrdinalIgnoreCase);
 
         if (!isBookingEndpoint)
         {
@@ -54,8 +66,8 @@ builder.Services.AddRateLimiter(options =>
 
         return RateLimitPartition.GetFixedWindowLimiter(partitionKey, _ => new FixedWindowRateLimiterOptions
         {
-            PermitLimit = 5,
-            Window = TimeSpan.FromMinutes(1),
+            PermitLimit = bookingPermitLimit,
+            Window = TimeSpan.FromMinutes(bookingWindowMinutes),
             QueueLimit = 0,
             QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
             AutoReplenishment = true
