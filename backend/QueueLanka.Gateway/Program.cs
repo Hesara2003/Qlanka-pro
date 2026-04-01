@@ -1,16 +1,59 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+
+    var trustedProxies = builder.Configuration.GetSection("ForwardedHeaders:TrustedProxies").Get<string[]>();
+    if (trustedProxies is { Length: > 0 })
+    {
+        options.KnownNetworks.Clear();
+        options.KnownProxies.Clear();
+        foreach (var proxyIp in trustedProxies)
+        {
+            if (System.Net.IPAddress.TryParse(proxyIp, out var ip))
+            {
+                options.KnownProxies.Add(ip);
+            }
+        }
+    }
+    else
+    {
+        // No trusted proxies configured: accept forwarded headers from any upstream source.
+        // In production, set ForwardedHeaders:TrustedProxies to restrict to known proxy IPs.
+        options.KnownNetworks.Clear();
+        options.KnownProxies.Clear();
+    }
+});
+
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
-var jwtSecret = builder.Configuration["Jwt:Secret"] ?? "CHANGE_ME_USE_ENV_VAR_IN_PRODUCTION_MIN_32_CHARS";
+var jwtSecret = builder.Configuration["Jwt:Secret"];
+
+if (string.IsNullOrWhiteSpace(jwtSecret))
+{
+    throw new InvalidOperationException("JWT signing key is not configured. Set 'Jwt:Secret' via configuration or environment variable.");
+}
+
+if (jwtSecret.Length < 32)
+{
+    throw new InvalidOperationException("JWT signing key is too short. 'Jwt:Secret' must be at least 32 characters long.");
+}
+
+if (string.Equals(jwtSecret, "CHANGE_ME_USE_ENV_VAR_IN_PRODUCTION_MIN_32_CHARS", StringComparison.Ordinal))
+{
+    throw new InvalidOperationException("JWT signing key is using the insecure placeholder value. Configure a strong, unique 'Jwt:Secret'.");
+}
+
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -122,6 +165,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+app.UseForwardedHeaders();
 app.UseCors("AllowFrontend");
 app.UseRateLimiter();
 app.UseAuthentication();
