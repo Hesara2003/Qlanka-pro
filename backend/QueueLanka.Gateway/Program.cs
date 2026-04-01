@@ -8,7 +8,27 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
-var jwtSecret = builder.Configuration["Jwt:Secret"] ?? "CHANGE_ME_USE_ENV_VAR_IN_PRODUCTION_MIN_32_CHARS";
+var jwtSecret = builder.Configuration["Jwt:Secret"];
+if (string.IsNullOrWhiteSpace(jwtSecret))
+{
+    if (builder.Environment.IsDevelopment())
+    {
+        jwtSecret = "DEV_ONLY_SECRET_CHANGE_ME_MIN_32_CHARS_X";
+        Console.WriteLine("WARNING: Jwt:Secret is not configured. Using an insecure development-only fallback. " +
+                          "Set Jwt:Secret via environment variable or user secrets before deploying.");
+    }
+    else
+    {
+        throw new InvalidOperationException(
+            "Jwt:Secret configuration is required. Set it via an environment variable or secret store.");
+    }
+}
+
+if (Encoding.UTF8.GetByteCount(jwtSecret) < 32)
+{
+    throw new InvalidOperationException("Jwt:Secret must be at least 32 bytes long.");
+}
+
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -32,6 +52,15 @@ builder.Services.AddAuthorization(options =>
     options.FallbackPolicy = new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
         .Build();
+
+    // Allow reverse proxy routes to opt into anonymous (unauthenticated) access via
+    // AuthorizationPolicy: "anonymous" in appsettings.json. Routes using this policy
+    // must not require authentication; downstream services should implement their own
+    // authorization if needed (e.g. /api/auth/** login/register endpoints).
+    options.AddPolicy("anonymous", policy =>
+    {
+        policy.RequireAssertion(_ => true);
+    });
 });
 
 var frontendOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
