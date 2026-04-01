@@ -19,7 +19,20 @@ var bookingWindowMinutes = builder.Configuration.GetValue<int?>("GatewayPolicies
 var bookingRejectionStatusCode = builder.Configuration.GetValue<int?>("GatewayPolicies:RateLimiting:Booking:RejectionStatusCode")
     ?? StatusCodes.Status429TooManyRequests;
 
-var jwtSecret = builder.Configuration["Jwt:Secret"] ?? "CHANGE_ME_USE_ENV_VAR_IN_PRODUCTION_MIN_32_CHARS";
+var jwtSecret = builder.Configuration["Jwt:Secret"];
+if (string.IsNullOrWhiteSpace(jwtSecret))
+{
+    throw new InvalidOperationException(
+        "JWT secret is not configured. Set the 'Jwt__Secret' environment variable (or 'Jwt:Secret' in user secrets / Key Vault) before starting the gateway.");
+}
+
+const int MinJwtSecretLength = 32;
+if (jwtSecret.Length < MinJwtSecretLength)
+{
+    throw new InvalidOperationException(
+        $"JWT secret does not meet the minimum length requirement of {MinJwtSecretLength} characters.");
+}
+
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -46,6 +59,14 @@ builder.Services.AddAuthorization(options =>
             .RequireAuthenticatedUser()
             .Build();
     }
+
+    // Policy used by the reverse-proxy to mark routes (e.g. /api/auth/**) as anonymous.
+    // This policy imposes no requirements, so authorization always succeeds, even
+    // when the global FallbackPolicy requires authenticated users.
+    options.AddPolicy("anonymous", policy =>
+    {
+        policy.RequireAssertion(_ => true);
+    });
 });
 
 builder.Services.AddRateLimiter(options =>
@@ -61,7 +82,29 @@ builder.Services.AddRateLimiter(options =>
             return RateLimitPartition.GetNoLimiter("non-booking");
         }
 
-        var clientIp = context.Connection.RemoteIpAddress?.ToString() ?? "unknown-ip";
+        // NOTE: X-Forwarded-For can be spoofed by clients. In production, configure
+        // ForwardedHeadersOptions (KnownProxies / KnownNetworks) via UseForwardedHeaders
+        // middleware so that only headers set by trusted proxies are accepted.
+        var xForwardedFor = context.Request.Headers["X-Forwarded-For"].ToString();
+        string? clientIp;
+
+        if (!string.IsNullOrWhiteSpace(xForwardedFor))
+        {
+            // X-Forwarded-For may contain multiple IPs: client, proxy1, proxy2, ...
+            var firstCommaIndex = xForwardedFor.IndexOf(',');
+            clientIp = firstCommaIndex >= 0
+                ? xForwardedFor.Substring(0, firstCommaIndex).Trim()
+                : xForwardedFor.Trim();
+        }
+        else
+        {
+            var xRealIp = context.Request.Headers["X-Real-IP"].ToString();
+            clientIp = !string.IsNullOrWhiteSpace(xRealIp)
+                ? xRealIp.Trim()
+                : context.Connection.RemoteIpAddress?.ToString();
+        }
+
+        clientIp ??= "unknown-ip";
         var partitionKey = $"booking:{clientIp}";
 
         return RateLimitPartition.GetFixedWindowLimiter(partitionKey, _ => new FixedWindowRateLimiterOptions
