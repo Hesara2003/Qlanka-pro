@@ -1,21 +1,50 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+
+    var trustedProxies = builder.Configuration.GetSection("ForwardedHeaders:TrustedProxies").Get<string[]>();
+    if (trustedProxies is { Length: > 0 })
+    {
+        options.KnownNetworks.Clear();
+        options.KnownProxies.Clear();
+        foreach (var proxyIp in trustedProxies)
+        {
+            if (System.Net.IPAddress.TryParse(proxyIp, out var ip))
+            {
+                options.KnownProxies.Add(ip);
+            }
+        }
+    }
+    else
+    {
+        // No trusted proxies configured: accept forwarded headers from any upstream source.
+        // In production, set ForwardedHeaders:TrustedProxies to restrict to known proxy IPs.
+        options.KnownNetworks.Clear();
+        options.KnownProxies.Clear();
+    }
+});
 
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
 var jwtSecret = builder.Configuration["Jwt:Secret"];
+
 if (string.IsNullOrWhiteSpace(jwtSecret))
 {
     if (builder.Environment.IsDevelopment())
     {
         jwtSecret = "DEV_ONLY_SECRET_CHANGE_ME_MIN_32_CHARS_X";
-        Console.WriteLine("WARNING: Jwt:Secret is not configured. Using an insecure development-only fallback. " +
-                          "Set Jwt:Secret via environment variable or user secrets before deploying.");
+        Console.WriteLine("WARNING: Jwt:Secret is not configured. Using a development-only fallback.");
     }
     else
     {
@@ -24,9 +53,17 @@ if (string.IsNullOrWhiteSpace(jwtSecret))
     }
 }
 
+// Ensure minimum length
 if (Encoding.UTF8.GetByteCount(jwtSecret) < 32)
 {
     throw new InvalidOperationException("Jwt:Secret must be at least 32 bytes long.");
+}
+
+// Prevent insecure placeholder in production
+if (!builder.Environment.IsDevelopment() &&
+    string.Equals(jwtSecret, "CHANGE_ME_USE_ENV_VAR_IN_PRODUCTION_MIN_32_CHARS", StringComparison.Ordinal))
+{
+    throw new InvalidOperationException("JWT signing key is using an insecure placeholder value.");
 }
 
 builder.Services
@@ -60,6 +97,33 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("anonymous", policy =>
     {
         policy.RequireAssertion(_ => true);
+    });
+});
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+    {
+        var isBookingEndpoint = HttpMethods.IsPost(context.Request.Method)
+            && string.Equals(context.Request.Path.Value, "/api/appointment/book", StringComparison.OrdinalIgnoreCase);
+
+        if (!isBookingEndpoint)
+        {
+            return RateLimitPartition.GetNoLimiter("non-booking");
+        }
+
+        var clientIp = context.Connection.RemoteIpAddress?.ToString() ?? "unknown-ip";
+        var partitionKey = $"booking:{clientIp}";
+
+        return RateLimitPartition.GetFixedWindowLimiter(partitionKey, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 5,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0,
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+            AutoReplenishment = true
+        });
     });
 });
 
@@ -122,7 +186,9 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+app.UseForwardedHeaders();
 app.UseCors("AllowFrontend");
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 

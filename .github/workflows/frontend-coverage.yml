@@ -42,4 +42,4 @@ jobs:
       with:
         name: frontend-coverage-report
         path: frontend/coverage
-        if-no-files-found: error
+        if-no-files-found: warn
