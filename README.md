@@ -177,3 +177,32 @@ Both `main` and `develop` are **protected branches**. Configure the following in
 | `sprint-3-demo` | End of Sprint 3 |
 | `sprint-4-demo` | End of Sprint 4 |
 | `v1.0-final` | Final production release |
+
+---
+
+## Prometheus Metrics Scraping
+
+Prometheus is configured in repository and can be started with the existing compose stack.
+
+- Compose service: `docker-compose.yml` (`prometheus` service on port `9090`)
+- Prometheus config: `deploy/infrastructure/monitoring/prometheus/prometheus.yml`
+- Data retention: `15d` and max `2GB` TSDB size
+- Persistent storage volume: `prometheus_data`
+
+### Start Stack With Prometheus
+
+```bash
+docker compose up -d
+```
+
+### Scrape Targets
+
+Configured scrape jobs include:
+
+- `gateway:80`
+- `identity:80`
+- `service-center:80`
+- `queue:80`
+- `notification:80`
+
+Each service is scraped at `/metrics` using job-specific intervals defined in `prometheus.yml`.
