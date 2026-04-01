@@ -31,6 +31,15 @@ jobs:
     - name: Run tests
       run: dotnet test Qlanka-pro.sln --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --logger "trx;LogFileName=test-results.trx" --results-directory ./TestResults
 
+    - name: Generate backend coverage report
+      if: always()
+      uses: danielpalme/ReportGenerator-GitHub-Action@5.3.8
+      with:
+        reports: ./TestResults/**/coverage.cobertura.xml
+        targetdir: ./TestResults/CoverageReport
+        reporttypes: HtmlInline;Cobertura;TextSummary
+        verbosity: Info
+
     - name: Upload test results
       if: always()
       uses: actions/upload-artifact@v4
@@ -42,8 +51,15 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: coverage-reports
+        name: backend-coverage-raw
         path: ./TestResults/**/coverage.cobertura.xml
+
+    - name: Upload generated backend coverage report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: backend-coverage-report
+        path: ./TestResults/CoverageReport/**
 
     # Deployments are handled by dedicated workflows:
     # - .github/workflows/deploy-microservices.yml
