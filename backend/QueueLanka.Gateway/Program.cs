@@ -41,17 +41,29 @@ var jwtSecret = builder.Configuration["Jwt:Secret"];
 
 if (string.IsNullOrWhiteSpace(jwtSecret))
 {
-    throw new InvalidOperationException("JWT signing key is not configured. Set 'Jwt:Secret' via configuration or environment variable.");
+    if (builder.Environment.IsDevelopment())
+    {
+        jwtSecret = "DEV_ONLY_SECRET_CHANGE_ME_MIN_32_CHARS_X";
+        Console.WriteLine("WARNING: Jwt:Secret is not configured. Using a development-only fallback.");
+    }
+    else
+    {
+        throw new InvalidOperationException(
+            "Jwt:Secret configuration is required. Set it via an environment variable or secret store.");
+    }
 }
 
-if (jwtSecret.Length < 32)
+// Ensure minimum length
+if (Encoding.UTF8.GetByteCount(jwtSecret) < 32)
 {
-    throw new InvalidOperationException("JWT signing key is too short. 'Jwt:Secret' must be at least 32 characters long.");
+    throw new InvalidOperationException("Jwt:Secret must be at least 32 bytes long.");
 }
 
-if (string.Equals(jwtSecret, "CHANGE_ME_USE_ENV_VAR_IN_PRODUCTION_MIN_32_CHARS", StringComparison.Ordinal))
+// Prevent insecure placeholder in production
+if (!builder.Environment.IsDevelopment() &&
+    string.Equals(jwtSecret, "CHANGE_ME_USE_ENV_VAR_IN_PRODUCTION_MIN_32_CHARS", StringComparison.Ordinal))
 {
-    throw new InvalidOperationException("JWT signing key is using the insecure placeholder value. Configure a strong, unique 'Jwt:Secret'.");
+    throw new InvalidOperationException("JWT signing key is using an insecure placeholder value.");
 }
 
 builder.Services
@@ -77,6 +89,15 @@ builder.Services.AddAuthorization(options =>
     options.FallbackPolicy = new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
         .Build();
+
+    // Allow reverse proxy routes to opt into anonymous (unauthenticated) access via
+    // AuthorizationPolicy: "anonymous" in appsettings.json. Routes using this policy
+    // must not require authentication; downstream services should implement their own
+    // authorization if needed (e.g. /api/auth/** login/register endpoints).
+    options.AddPolicy("anonymous", policy =>
+    {
+        policy.RequireAssertion(_ => true);
+    });
 });
 
 builder.Services.AddRateLimiter(options =>
