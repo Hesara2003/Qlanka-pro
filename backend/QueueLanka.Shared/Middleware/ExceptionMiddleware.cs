@@ -1,5 +1,6 @@
 using QueueLanka.Shared.DTOs.Common;
 using QueueLanka.Shared.Exceptions;
+using System.Diagnostics;
 using System.Text.Json;
 
 namespace QueueLanka.Shared.Middleware;
@@ -31,12 +32,28 @@ public class ExceptionMiddleware
         }
         catch (AppException ex)
         {
-            _logger.LogWarning(ex, "Application exception: {Code} - {Message}", ex.Code, ex.Message);
+            _logger.LogWarning(
+                ex,
+                "Application exception. RequestId={RequestId} TraceId={TraceId} Method={Method} Path={Path} Code={Code} Message={Message} ErrorTrace={ErrorTrace}",
+                context.TraceIdentifier,
+                Activity.Current?.TraceId.ToString() ?? context.TraceIdentifier,
+                context.Request.Method,
+                context.Request.Path.Value,
+                ex.Code,
+                ex.Message,
+                ex.ToString());
             await WriteErrorResponseAsync(context, ex.StatusCode, ex.Code, ex.Message, ex);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unhandled exception occurred");
+            _logger.LogError(
+                ex,
+                "Unhandled exception. RequestId={RequestId} TraceId={TraceId} Method={Method} Path={Path} ErrorTrace={ErrorTrace}",
+                context.TraceIdentifier,
+                Activity.Current?.TraceId.ToString() ?? context.TraceIdentifier,
+                context.Request.Method,
+                context.Request.Path.Value,
+                ex.ToString());
             await WriteErrorResponseAsync(
                 context, 
                 500, 
