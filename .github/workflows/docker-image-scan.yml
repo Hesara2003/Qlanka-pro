@@ -17,6 +17,7 @@ jobs:
     name: Scan ${{ matrix.service.name }}
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         service:
           - name: qlanka-gateway
@@ -42,11 +43,10 @@ jobs:
             backend
 
       - name: Trivy scan
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ matrix.service.name }}:${{ github.sha }}
           format: table
           severity: HIGH,CRITICAL
           ignore-unfixed: true
           exit-code: "1"
-
