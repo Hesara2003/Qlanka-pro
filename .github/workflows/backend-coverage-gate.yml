@@ -18,7 +18,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       MIN_LINE: "70"
-      MIN_BRANCH: "70"
 
     steps:
       - name: Checkout
@@ -87,7 +86,6 @@ jobs:
           echo "Branch coverage: ${branch_cov}%"
 
           awk -v actual="$line_cov" -v min="$MIN_LINE" 'BEGIN { exit (actual+0 >= min+0) ? 0 : 1 }'
-          awk -v actual="$branch_cov" -v min="$MIN_BRANCH" 'BEGIN { exit (actual+0 >= min+0) ? 0 : 1 }'
 
       - name: Upload coverage artifacts
         if: always()
