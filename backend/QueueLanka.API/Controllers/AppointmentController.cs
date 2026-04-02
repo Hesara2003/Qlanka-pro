@@ -4,14 +4,13 @@ using QueueLanka.API.DTOs.Appointment;
 using QueueLanka.API.DTOs.Common;
 using QueueLanka.API.Exceptions;
 using QueueLanka.API.Services;
-using System.Security.Claims;
 
 namespace QueueLanka.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class AppointmentController : ControllerBase
+public class AppointmentController : ApiControllerBase
 {
     private readonly IAppointmentService _appointmentService;
     private readonly ILogger<AppointmentController> _logger;
@@ -33,11 +32,10 @@ public class AppointmentController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> BookToken([FromBody] BookAppointmentRequestDto requestDto)
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+        if (!TryGetAuthenticatedUserId(out var userId, out var unauthorizedResult))
         {
             _logger.LogWarning("BookToken: missing or invalid NameIdentifier claim");
-            return Unauthorized(new ErrorResponse("INVALID_TOKEN", "Invalid user token."));
+            return unauthorizedResult;
         }
 
         try
@@ -82,11 +80,10 @@ public class AppointmentController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetMyAppointments()
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+        if (!TryGetAuthenticatedUserId(out var userId, out var unauthorizedResult))
         {
             _logger.LogWarning("GetMyAppointments: missing or invalid NameIdentifier claim");
-            return Unauthorized(new ErrorResponse("INVALID_TOKEN", "Invalid user token."));
+            return unauthorizedResult;
         }
 
         var appointments = await _appointmentService.GetUserAppointmentsAsync(userId);

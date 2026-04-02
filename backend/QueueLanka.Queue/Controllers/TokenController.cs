@@ -3,14 +3,14 @@ using Microsoft.AspNetCore.Mvc;
 using QueueLanka.Queue.DTOs.Token;
 using QueueLanka.Queue.Services;
 using QueueLanka.Shared.DTOs.Common;
-using System.Security.Claims;
+using QueueLanka.Shared.Extensions;
 
 namespace QueueLanka.Queue.Controllers;
 
 [ApiController]
 [Route("api/token")]
 [Authorize(Roles = "citizen,officer,admin")] // Allow all authenticated roles for now, usually citizens check tokens
-public class TokenController : ControllerBase
+public class TokenController : QueueControllerBase
 {
     private readonly ITokenService _tokenService;
 
@@ -23,16 +23,18 @@ public class TokenController : ControllerBase
     /// Gets all tokens for the currently authenticated user.
     /// </summary>
     [HttpGet("my-tokens")]
-    public async Task<ActionResult<IEnumerable<UserTokenResponseDto>>> GetMyTokens()
+    public async Task<IActionResult> GetMyTokens()
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+        if (!TryGetAuthenticatedUserId(out var userId, out var unauthorizedResult, "INVALID_USER"))
         {
-            return Unauthorized(new ErrorResponse("INVALID_USER", "User ID not found in token."));
+            return unauthorizedResult;
         }
 
         var tokens = await _tokenService.GetUserTokensAsync(userId);
-        return Ok(tokens);
+        return Ok(new ApiResponse<IEnumerable<UserTokenResponseDto>>(
+            tokens,
+            new ResponseMetadata { CorrelationId = HttpContext.TraceIdentifier },
+            "Tokens retrieved successfully."));
     }
 
     /// <summary>
@@ -41,21 +43,22 @@ public class TokenController : ControllerBase
     [HttpPut("{tokenId}/cancel")]
     public async Task<IActionResult> CancelMyToken(int tokenId)
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+        if (!TryGetAuthenticatedUserId(out var userId, out var unauthorizedResult, "INVALID_USER"))
         {
-            return Unauthorized(new ErrorResponse("INVALID_USER", "User ID not found in token."));
+            return unauthorizedResult;
         }
 
-        var roleClaim = User.FindFirst(ClaimTypes.Role)?.Value;
-        bool isAdmin = string.Equals(roleClaim, "admin", StringComparison.OrdinalIgnoreCase);
+        var isAdmin = string.Equals(User.GetRole(), "admin", StringComparison.OrdinalIgnoreCase);
 
         var result = await _tokenService.CancelTokenAsync(tokenId, userId, isAdmin);
 
         return result switch
         {
             CancellationResult.Success =>
-                Ok(new { message = "Token cancelled successfully." }),
+                Ok(new ApiResponse<object>(
+                    new { tokenId },
+                    new ResponseMetadata { CorrelationId = HttpContext.TraceIdentifier },
+                    "Token cancelled successfully.")),
 
             CancellationResult.AlreadyCancelled =>
                 Conflict(new ErrorResponse("TOKEN_ALREADY_CANCELLED", "This token has already been cancelled.")),

@@ -36,15 +36,7 @@ public class ReportsController : ControllerBase
     {
         try
         {
-            var parsedCenterIds = ParseCenterIds(centerIds);
-
-            var request = new DailyCenterSummaryRequestDto
-            {
-                FromDate = fromDate,
-                ToDate = toDate,
-                CenterIds = parsedCenterIds,
-                Format = string.IsNullOrWhiteSpace(format) ? "csv" : format
-            };
+            var request = _reportService.CreateDailyCenterSummaryRequest(fromDate, toDate, centerIds, format);
 
             if (!TryValidateModel(request))
             {
@@ -86,13 +78,7 @@ public class ReportsController : ControllerBase
     {
         try
         {
-            var request = new DailyCenterSummaryRequestDto
-            {
-                FromDate = fromDate,
-                ToDate = toDate,
-                CenterIds = new List<int> { id },
-                Format = string.IsNullOrWhiteSpace(format) ? "csv" : format
-            };
+            var request = _reportService.CreateCenterDailySummaryRequest(id, fromDate, toDate, format);
 
             if (!TryValidateModel(request))
             {
@@ -116,29 +102,5 @@ public class ReportsController : ControllerBase
         {
             return BadRequest(new ErrorResponse("INVALID_CENTER_FILTER", ex.Message));
         }
-    }
-
-    private static List<int> ParseCenterIds(string? centerIds)
-    {
-        if (string.IsNullOrWhiteSpace(centerIds))
-        {
-            return new List<int>();
-        }
-
-        var values = centerIds
-            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(value =>
-            {
-                if (!int.TryParse(value, out var parsed))
-                {
-                    throw new FormatException("centerIds must be a comma-separated list of integers.");
-                }
-
-                return parsed;
-            })
-            .Distinct()
-            .ToList();
-
-        return values;
     }
 }

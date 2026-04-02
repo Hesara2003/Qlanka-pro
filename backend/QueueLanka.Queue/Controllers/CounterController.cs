@@ -120,11 +120,9 @@ public class CounterController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ReassignToken(int counterId, [FromBody] ReassignTokenRequestDto request)
     {
-        var performedByUserId = User.GetUserId();
-        if (performedByUserId <= 0)
+        if (!TryGetUserId(out var performedByUserId, out var forbiddenResult))
         {
-            return StatusCode(StatusCodes.Status403Forbidden,
-                new ErrorResponse("FORBIDDEN", "User identity is invalid."));
+            return forbiddenResult;
         }
 
         try
@@ -173,11 +171,9 @@ public class CounterController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetDashboard(int counterId)
     {
-        var officerUserId = User.GetUserId();
-        if (officerUserId <= 0)
+        if (!TryGetUserId(out var officerUserId, out var forbiddenResult))
         {
-            return StatusCode(StatusCodes.Status403Forbidden,
-                new ErrorResponse("FORBIDDEN", "User identity is invalid."));
+            return forbiddenResult;
         }
 
         try
@@ -210,11 +206,9 @@ public class CounterController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetWaitingTokens(int counterId)
     {
-        var officerUserId = User.GetUserId();
-        if (officerUserId <= 0)
+        if (!TryGetUserId(out var officerUserId, out var forbiddenResult))
         {
-            return StatusCode(StatusCodes.Status403Forbidden,
-                new ErrorResponse("FORBIDDEN", "User identity is invalid."));
+            return forbiddenResult;
         }
 
         try
@@ -252,8 +246,7 @@ public class CounterController : ControllerBase
 
         if (string.Equals(role, "officer", StringComparison.OrdinalIgnoreCase) && officerUserId <= 0)
         {
-            return StatusCode(StatusCodes.Status403Forbidden,
-                new ErrorResponse("FORBIDDEN", "User identity is invalid."));
+            return ForbiddenIdentityResult();
         }
 
         try
@@ -288,11 +281,9 @@ public class CounterController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> CreateCounter(int centerId, [FromBody] CreateCounterRequestDto request)
     {
-        var adminUserId = User.GetUserId();
-        if (adminUserId <= 0)
+        if (!TryGetUserId(out var adminUserId, out var forbiddenResult))
         {
-            return StatusCode(StatusCodes.Status403Forbidden,
-                new ErrorResponse("FORBIDDEN", "User identity is invalid."));
+            return forbiddenResult;
         }
 
         request.CenterId = centerId;
@@ -323,11 +314,9 @@ public class CounterController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetCountersByCenter(int centerId)
     {
-        var adminUserId = User.GetUserId();
-        if (adminUserId <= 0)
+        if (!TryGetUserId(out var adminUserId, out var forbiddenResult))
         {
-            return StatusCode(StatusCodes.Status403Forbidden,
-                new ErrorResponse("FORBIDDEN", "User identity is invalid."));
+            return forbiddenResult;
         }
 
         try
@@ -347,11 +336,9 @@ public class CounterController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetCounterById(int centerId, int counterId)
     {
-        var adminUserId = User.GetUserId();
-        if (adminUserId <= 0)
+        if (!TryGetUserId(out var adminUserId, out var forbiddenResult))
         {
-            return StatusCode(StatusCodes.Status403Forbidden,
-                new ErrorResponse("FORBIDDEN", "User identity is invalid."));
+            return forbiddenResult;
         }
 
         try
@@ -372,11 +359,9 @@ public class CounterController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateCounterStatus(int centerId, int counterId, [FromBody] UpdateCounterStatusRequestDto request)
     {
-        var adminUserId = User.GetUserId();
-        if (adminUserId <= 0)
+        if (!TryGetUserId(out var adminUserId, out var forbiddenResult))
         {
-            return StatusCode(StatusCodes.Status403Forbidden,
-                new ErrorResponse("FORBIDDEN", "User identity is invalid."));
+            return forbiddenResult;
         }
 
         try
@@ -396,5 +381,24 @@ public class CounterController : ControllerBase
         {
             return NotFound(new ErrorResponse("COUNTER_NOT_FOUND", ex.Message));
         }
+    }
+
+    private bool TryGetUserId(out int userId, out IActionResult forbiddenResult)
+    {
+        userId = User.GetUserId();
+        if (userId > 0)
+        {
+            forbiddenResult = null!;
+            return true;
+        }
+
+        forbiddenResult = ForbiddenIdentityResult();
+        return false;
+    }
+
+    private ObjectResult ForbiddenIdentityResult()
+    {
+        return StatusCode(StatusCodes.Status403Forbidden,
+            new ErrorResponse("FORBIDDEN", "User identity is invalid."));
     }
 }

@@ -17,6 +17,41 @@ public class ReportService : IReportService
         _reportRepository = reportRepository;
     }
 
+    public DailyCenterSummaryRequestDto CreateDailyCenterSummaryRequest(
+        DateTime fromDate,
+        DateTime toDate,
+        string? centerIds,
+        string? format = "csv")
+    {
+        return new DailyCenterSummaryRequestDto
+        {
+            FromDate = fromDate,
+            ToDate = toDate,
+            CenterIds = ParseCenterIds(centerIds),
+            Format = string.IsNullOrWhiteSpace(format) ? "csv" : format
+        };
+    }
+
+    public DailyCenterSummaryRequestDto CreateCenterDailySummaryRequest(
+        int centerId,
+        DateTime fromDate,
+        DateTime toDate,
+        string? format = "csv")
+    {
+        if (centerId <= 0)
+        {
+            throw new ValidationException("Center id must be greater than zero.");
+        }
+
+        return new DailyCenterSummaryRequestDto
+        {
+            FromDate = fromDate,
+            ToDate = toDate,
+            CenterIds = new List<int> { centerId },
+            Format = string.IsNullOrWhiteSpace(format) ? "csv" : format
+        };
+    }
+
     public async Task<List<DailyCenterSummaryRowDto>> GetDailyCenterSummaryDataAsync(DailyCenterSummaryRequestDto request)
     {
         ValidateRequest(request);
@@ -115,5 +150,27 @@ public class ReportService : IReportService
         {
             throw new ValidationException("Date range cannot exceed 90 days.");
         }
+    }
+
+    private static List<int> ParseCenterIds(string? centerIds)
+    {
+        if (string.IsNullOrWhiteSpace(centerIds))
+        {
+            return new List<int>();
+        }
+
+        return centerIds
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(value =>
+            {
+                if (!int.TryParse(value, out var parsed))
+                {
+                    throw new FormatException("centerIds must be a comma-separated list of integers.");
+                }
+
+                return parsed;
+            })
+            .Distinct()
+            .ToList();
     }
 }
