@@ -1,5 +1,10 @@
 import { test, expect } from "@playwright/test";
 
+const TEST_USER = {
+  username: process.env.SMOKE_USERNAME ?? "healthcheck_citizen",
+  password: process.env.SMOKE_PASSWORD ?? "Health@Check1",
+};
+
 // ─────────────────────────────────────────────────────────────
 // Auth Smoke Tests — POST /api/auth/login
 // ─────────────────────────────────────────────────────────────
@@ -9,10 +14,7 @@ test.describe("Auth Smoke Tests", () => {
     request,
   }) => {
     const response = await request.post("/api/auth/login", {
-      data: {
-        username: "healthcheck_citizen",
-        password: "Health@Check1",
-      },
+      data: TEST_USER,
     });
 
     expect(response.status()).toBe(200);

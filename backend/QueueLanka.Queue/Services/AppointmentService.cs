@@ -1,6 +1,7 @@
 using QueueLanka.Queue.Data;
 using QueueLanka.Queue.DTOs.Appointment;
 using QueueLanka.Shared.Exceptions;
+using QueueLanka.Shared.Events;
 using QueueLanka.Queue.Models;
 using QueueLanka.Queue.Integration;
 
@@ -10,17 +11,20 @@ public class AppointmentService : IAppointmentService
     private readonly IAppointmentRepository _appointmentRepository;
     private readonly IServiceCenterClient _serviceCenterClient;
     private readonly ITokenRepository _tokenRepository;
+    private readonly IEventBus _eventBus;
     private readonly ILogger<AppointmentService> _logger;
 
     public AppointmentService(
         IAppointmentRepository appointmentRepository,
         IServiceCenterClient serviceCenterClient,
         ITokenRepository tokenRepository,
+        IEventBus eventBus,
         ILogger<AppointmentService> logger)
     {
         _appointmentRepository = appointmentRepository;
         _serviceCenterClient = serviceCenterClient;
         _tokenRepository = tokenRepository;
+        _eventBus = eventBus;
         _logger = logger;
     }
 
@@ -143,11 +147,21 @@ public class AppointmentService : IAppointmentService
         {
             try
             {
-                // var user = await _userRepository.GetByIdAsync(userId);
-                if (true)
+                var bookingConfirmedEvent = new BookingConfirmedEvent
                 {
-                    // TODO: Publish BookingConfirmedEvent to event bus
-                }
+                    UserId = createdAppointment.UserId,
+                    UserEmail = string.Empty,
+                    UserName = $"user-{createdAppointment.UserId}",
+                    AppointmentId = createdAppointment.AppointmentId,
+                    TokenId = createdToken.TokenId,
+                    TokenNumber = createdToken.TokenNumber,
+                    CenterId = createdAppointment.CenterId,
+                    CenterName = center.Name,
+                    AppointmentDate = createdAppointment.AppointmentDate,
+                    AppointmentTime = createdAppointment.AppointmentTime
+                };
+
+                await _eventBus.PublishAsync(bookingConfirmedEvent);
             }
             catch (Exception ex)
             {

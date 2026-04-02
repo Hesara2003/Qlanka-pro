@@ -67,5 +67,10 @@
 cd QueueLanka.SmokeTests
 npm install
 npx playwright install chromium
-npx playwright test --workers=1
+SMOKE_BASE_URL=https://your-running-api.example.com \
+SMOKE_USERNAME=healthcheck_citizen \
+SMOKE_PASSWORD='Health@Check1' \
+SMOKE_ADMIN_USERNAME=healthcheck_admin \
+SMOKE_ADMIN_PASSWORD='Health@Check1' \
+npx playwright test
 ```
