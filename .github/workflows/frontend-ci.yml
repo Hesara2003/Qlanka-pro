@@ -12,6 +12,7 @@ on:
       - 'frontend/**'
       - '.github/workflows/frontend-ci.yml'
       - '.github/workflows/deploy-frontend.yml'
+  workflow_dispatch:
 
 jobs:
   frontend-coverage:

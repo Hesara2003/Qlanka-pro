@@ -4,6 +4,7 @@ on:
   push:
     branches: [main, feature/microservices]
   pull_request:
+  workflow_dispatch:
   schedule:
     - cron: "0 3 * * 1"
 
@@ -59,4 +60,3 @@ jobs:
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
-

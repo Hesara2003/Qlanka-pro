@@ -2,6 +2,7 @@ name: PR Quality Gate
 
 on:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   quality-gate:
@@ -55,4 +56,3 @@ jobs:
       - name: Test frontend
         working-directory: frontend
         run: npm run test
-
