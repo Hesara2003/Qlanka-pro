@@ -9,7 +9,7 @@ vi.mock('./axiosInstance', () => ({
 }))
 
 import axiosInstance from './axiosInstance'
-import { CancelTokenError, tokenApi } from './tokenApi'
+import { tokenApi } from './tokenApi'
 
 const mockedAxios = axiosInstance as unknown as {
   get: ReturnType<typeof vi.fn>
