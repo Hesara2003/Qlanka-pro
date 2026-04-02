@@ -1,0 +1,45 @@
+name: Preview Environment
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+  workflow_dispatch:
+
+jobs:
+  create-preview:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.action != 'closed' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.19.0"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build preview artifact
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Upload preview build
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-preview-pr-${{ github.event.pull_request.number || github.run_number }}
+          path: frontend/dist/**
+          if-no-files-found: error
+
+  destroy-preview:
+    if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Preview cleanup marker
+        run: |
+          echo "PR #${{ github.event.pull_request.number }} closed."
+          echo "No hosted preview resource configured in this repository yet."
+          echo "Add provider-specific cleanup here when preview infra is introduced."
+

@@ -1,0 +1,91 @@
+name: Backend Coverage Gate
+
+on:
+  pull_request:
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-coverage-gate.yml"
+  push:
+    branches: [main, feature/microservices]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-coverage-gate.yml"
+  workflow_dispatch:
+
+jobs:
+  coverage-gate:
+    name: Enforce Backend Coverage
+    runs-on: ubuntu-latest
+    env:
+      MIN_LINE: "70"
+      MIN_BRANCH: "70"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore and build backend
+        run: |
+          dotnet restore Qlanka-pro.sln
+          dotnet build Qlanka-pro.sln --configuration Release --no-restore
+
+      - name: Run backend tests with coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t test_projects < <(find backend -name "*.Tests.csproj" | sort)
+          if [ ${#test_projects[@]} -eq 0 ]; then
+            echo "No backend test projects found."
+            exit 1
+          fi
+          mkdir -p TestResults
+
+          for project in "${test_projects[@]}"; do
+            project_name="$(basename "$project" .csproj)"
+            dotnet test "$project" \
+              --configuration Release \
+              --no-build \
+              --collect:"XPlat Code Coverage" \
+              --results-directory "./TestResults/${project_name}" \
+              --logger "trx;LogFileName=${project_name}.trx"
+          done
+
+      - name: Generate report
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.3.8
+        with:
+          reports: ./TestResults/**/coverage.cobertura.xml
+          targetdir: ./TestResults/CoverageReport
+          reporttypes: TextSummary;Cobertura
+          verbosity: Info
+
+      - name: Enforce thresholds
+        shell: bash
+        run: |
+          set -euo pipefail
+          summary="./TestResults/CoverageReport/Summary.txt"
+          if [ ! -f "$summary" ]; then
+            echo "Coverage summary not found at $summary"
+            exit 1
+          fi
+
+          line_cov="$(grep -Eo 'Line coverage: [0-9]+(\.[0-9]+)?%' "$summary" | head -n1 | sed -E 's/.*: ([0-9.]+)%.*/\1/')"
+          branch_cov="$(grep -Eo 'Branch coverage: [0-9]+(\.[0-9]+)?%' "$summary" | head -n1 | sed -E 's/.*: ([0-9.]+)%.*/\1/')"
+
+          echo "Line coverage: ${line_cov}%"
+          echo "Branch coverage: ${branch_cov}%"
+
+          awk -v actual="$line_cov" -v min="$MIN_LINE" 'BEGIN { exit (actual+0 >= min+0) ? 0 : 1 }'
+          awk -v actual="$branch_cov" -v min="$MIN_BRANCH" 'BEGIN { exit (actual+0 >= min+0) ? 0 : 1 }'
+
+      - name: Upload coverage artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage-gate-report
+          path: ./TestResults/CoverageReport/**
+

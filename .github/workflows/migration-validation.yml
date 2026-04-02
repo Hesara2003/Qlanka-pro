@@ -1,0 +1,67 @@
+name: Migration Validation
+
+on:
+  pull_request:
+    paths:
+      - "backend/**/Database/Migrations/**"
+      - ".github/workflows/migration-validation.yml"
+  workflow_dispatch:
+
+jobs:
+  validate-migrations:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install MySQL client
+        run: sudo apt-get update && sudo apt-get install -y mysql-client
+
+      - name: Wait for MySQL
+        run: |
+          for i in {1..30}; do
+            if mysql -h127.0.0.1 -uroot -proot -e "SELECT 1" > /dev/null 2>&1; then
+              echo "MySQL is ready"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "MySQL did not become ready in time"
+          exit 1
+
+      - name: Apply Identity migrations
+        run: |
+          mysql -h127.0.0.1 -uroot -proot -e "CREATE DATABASE IF NOT EXISTS identity_db;"
+          for f in $(find backend/QueueLanka.Identity/Database/Migrations -name "*.sql" | sort); do
+            echo "Applying $f"
+            mysql -h127.0.0.1 -uroot -proot identity_db < "$f"
+          done
+
+      - name: Apply Queue migrations
+        run: |
+          mysql -h127.0.0.1 -uroot -proot -e "CREATE DATABASE IF NOT EXISTS queue_db;"
+          for f in $(find backend/QueueLanka.Queue/Database/Migrations -name "*.sql" | sort); do
+            echo "Applying $f"
+            mysql -h127.0.0.1 -uroot -proot queue_db < "$f"
+          done
+
+      - name: Apply ServiceCenter migrations
+        run: |
+          mysql -h127.0.0.1 -uroot -proot -e "CREATE DATABASE IF NOT EXISTS servicecenters_db;"
+          for f in $(find backend/QueueLanka.ServiceCenter/Database/Migrations -name "*.sql" | sort); do
+            echo "Applying $f"
+            mysql -h127.0.0.1 -uroot -proot servicecenters_db < "$f"
+          done

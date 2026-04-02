@@ -1,0 +1,95 @@
+name: Dependency Audit
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 4 * * 1"
+  pull_request:
+    paths:
+      - "**/*.csproj"
+      - "**/package.json"
+      - "**/package-lock.json"
+      - ".github/workflows/dependency-audit.yml"
+
+jobs:
+  npm-audit:
+    name: NPM Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.19.0"
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            frontend/package-lock.json
+            QueueLanka.SmokeTests/package-lock.json
+
+      - name: Audit root npm dependencies
+        run: |
+          npm ci
+          npm audit --audit-level=critical
+
+      - name: Audit frontend npm dependencies
+        working-directory: frontend
+        run: |
+          npm ci
+          npm audit --audit-level=critical
+
+      - name: Audit smoke test npm dependencies
+        working-directory: QueueLanka.SmokeTests
+        run: |
+          npm ci
+          npm audit --audit-level=critical
+
+  dotnet-audit:
+    name: NuGet Vulnerability Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Audit NuGet dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p audit-reports
+          mapfile -t projects < <(find backend -name "*.csproj" | sort)
+          if [ ${#projects[@]} -eq 0 ]; then
+            echo "No .csproj files found in backend/"
+            exit 1
+          fi
+
+          found_high_or_critical=0
+          for project in "${projects[@]}"; do
+            name="$(basename "$project" .csproj)"
+            report="audit-reports/${name}.json"
+            dotnet list "$project" package --vulnerable --include-transitive --format json > "$report" || true
+
+            if grep -Eq '"severity"\s*:\s*"(High|Critical)"' "$report"; then
+              echo "High/Critical vulnerability found in $project"
+              found_high_or_critical=1
+            fi
+          done
+
+          if [ "$found_high_or_critical" -eq 1 ]; then
+            echo "Failing due to High/Critical NuGet vulnerabilities."
+            exit 1
+          fi
+
+      - name: Upload NuGet audit reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-audit-reports
+          path: audit-reports/**
+

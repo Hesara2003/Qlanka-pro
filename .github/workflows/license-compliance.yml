@@ -1,0 +1,61 @@
+name: License Compliance
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "**/*.csproj"
+      - "**/package.json"
+      - "**/package-lock.json"
+      - ".github/workflows/license-compliance.yml"
+  schedule:
+    - cron: "0 5 * * 1"
+
+jobs:
+  check-licenses:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.19.0"
+
+      - name: Install npm license checker
+        run: npm i -g license-checker
+
+      - name: Check frontend licenses
+        working-directory: frontend
+        run: |
+          npm ci
+          license-checker --json --out ../frontend-licenses.json
+          license-checker --onlyAllow "MIT;ISC;Apache-2.0;BSD-2-Clause;BSD-3-Clause;0BSD;Python-2.0"
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Install dotnet-project-licenses
+        run: dotnet tool install --global dotnet-project-licenses --version 2.6.0
+
+      - name: Check NuGet licenses
+        shell: bash
+        run: |
+          export PATH="$PATH:$HOME/.dotnet/tools"
+          dotnet-project-licenses \
+            --input Qlanka-pro.sln \
+            --output nuget-licenses.json \
+            --json
+
+      - name: Upload license reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: license-reports
+          path: |
+            frontend-licenses.json
+            nuget-licenses.json
+

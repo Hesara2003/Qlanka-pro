@@ -1,0 +1,58 @@
+name: PR Quality Gate
+
+on:
+  pull_request:
+
+jobs:
+  quality-gate:
+    name: Backend + Frontend Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore and build backend
+        run: |
+          dotnet restore Qlanka-pro.sln
+          dotnet build Qlanka-pro.sln --configuration Release --no-restore
+
+      - name: Run backend tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t test_projects < <(find backend -name "*.Tests.csproj" | sort)
+          if [ ${#test_projects[@]} -eq 0 ]; then
+            echo "No backend test projects found."
+            exit 1
+          fi
+
+          for project in "${test_projects[@]}"; do
+            echo "Testing $project"
+            dotnet test "$project" --configuration Release --no-build --verbosity normal
+          done
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.19.0"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Lint frontend
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Test frontend
+        working-directory: frontend
+        run: npm run test
+

@@ -1,0 +1,52 @@
+name: Rollback Container Apps
+
+on:
+  workflow_dispatch:
+    inputs:
+      resource_group:
+        description: "Azure resource group"
+        required: true
+        type: string
+      container_app:
+        description: "Container App name (e.g. qlanka-gateway)"
+        required: true
+        type: string
+      target_revision:
+        description: "Target revision name"
+        required: true
+        type: string
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Azure login (service principal JSON)
+        if: ${{ secrets.AZURE_CREDENTIALS != '' }}
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Azure login (OIDC)
+        if: ${{ secrets.AZURE_CREDENTIALS == '' }}
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Shift 100% traffic to selected revision
+        run: |
+          az containerapp ingress traffic set \
+            --name "${{ inputs.container_app }}" \
+            --resource-group "${{ inputs.resource_group }}" \
+            --revision-weight "${{ inputs.target_revision }}=100"
+
+      - name: Verify active traffic
+        run: |
+          az containerapp ingress traffic show \
+            --name "${{ inputs.container_app }}" \
+            --resource-group "${{ inputs.resource_group }}"
+

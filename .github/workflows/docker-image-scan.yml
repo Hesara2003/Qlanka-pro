@@ -1,0 +1,52 @@
+name: Docker Image Scan
+
+on:
+  push:
+    branches: [main, feature/microservices]
+    paths:
+      - "backend/**"
+      - ".github/workflows/docker-image-scan.yml"
+  pull_request:
+    paths:
+      - "backend/**"
+      - ".github/workflows/docker-image-scan.yml"
+  workflow_dispatch:
+
+jobs:
+  trivy-scan:
+    name: Scan ${{ matrix.service.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - name: qlanka-gateway
+            dockerfile: QueueLanka.Gateway/Dockerfile
+          - name: qlanka-identity
+            dockerfile: QueueLanka.Identity/Dockerfile
+          - name: qlanka-servicecenter
+            dockerfile: QueueLanka.ServiceCenter/Dockerfile
+          - name: qlanka-queue
+            dockerfile: QueueLanka.Queue/Dockerfile
+          - name: qlanka-notification
+            dockerfile: QueueLanka.Notification/Dockerfile
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build image
+        run: |
+          docker build \
+            -t "${{ matrix.service.name }}:${{ github.sha }}" \
+            -f "backend/${{ matrix.service.dockerfile }}" \
+            backend
+
+      - name: Trivy scan
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: ${{ matrix.service.name }}:${{ github.sha }}
+          format: table
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+

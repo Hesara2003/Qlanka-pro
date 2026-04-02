@@ -1,0 +1,47 @@
+name: Post-Deploy API Smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Base URL of API (e.g. https://example.com)"
+        required: true
+        type: string
+      smoke_username:
+        description: "Optional username for login smoke"
+        required: false
+        type: string
+      smoke_password:
+        description: "Optional password for login smoke"
+        required: false
+        type: string
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.19.0"
+          cache: npm
+          cache-dependency-path: QueueLanka.SmokeTests/package-lock.json
+
+      - name: Install smoke test dependencies
+        working-directory: QueueLanka.SmokeTests
+        run: npm ci
+
+      - name: Run smoke tests
+        working-directory: QueueLanka.SmokeTests
+        env:
+          SMOKE_BASE_URL: ${{ inputs.base_url }}
+          SMOKE_USERNAME: ${{ inputs.smoke_username }}
+          SMOKE_PASSWORD: ${{ inputs.smoke_password }}
+          SMOKE_ADMIN_USERNAME: ${{ secrets.SMOKE_ADMIN_USERNAME }}
+          SMOKE_ADMIN_PASSWORD: ${{ secrets.SMOKE_ADMIN_PASSWORD }}
+          SMOKE_REPORT_CENTER_ID: ${{ vars.SMOKE_REPORT_CENTER_ID }}
+        run: npm test
+
