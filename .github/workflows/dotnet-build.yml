@@ -29,7 +29,29 @@ jobs:
       run: dotnet build Qlanka-pro.sln --configuration Release --no-restore
 
     - name: Run tests
-      run: dotnet test Qlanka-pro.sln --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --logger "trx;LogFileName=test-results.trx" --results-directory ./TestResults
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        mapfile -t test_projects < <(find backend -name "*.Tests.csproj" | sort)
+
+        if [ ${#test_projects[@]} -eq 0 ]; then
+          echo "No test projects were found under backend/"
+          exit 1
+        fi
+
+        mkdir -p TestResults
+
+        for project in "${test_projects[@]}"; do
+          project_name="$(basename "$project" .csproj)"
+          echo "Running tests for $project_name ($project)"
+          dotnet test "$project" \
+            --configuration Release \
+            --verbosity normal \
+            --collect:"XPlat Code Coverage" \
+            --logger "trx;LogFileName=${project_name}.trx" \
+            --results-directory "./TestResults/${project_name}"
+        done
 
     - name: Generate backend coverage report
       if: always()
