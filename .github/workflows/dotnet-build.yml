@@ -48,8 +48,9 @@ jobs:
           echo "Running tests for $project_name ($project)"
           dotnet test "$project" \
             --configuration Release \
-            --verbosity normal \
             --collect:"XPlat Code Coverage" \
+            --settings backend/coverage.runsettings \
+            --verbosity normal \
             --logger "trx;LogFileName=${project_name}.trx" \
             --results-directory "./TestResults/${project_name}"
         done

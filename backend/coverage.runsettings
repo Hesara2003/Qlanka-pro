@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <Include>[QueueLanka.Identity]QueueLanka.Identity.Services.*,[QueueLanka.Queue]QueueLanka.Queue.Services.*,[QueueLanka.ServiceCenter]QueueLanka.ServiceCenter.Services.*</Include>
+          <Exclude>[QueueLanka.Queue]QueueLanka.Queue.Services.CounterService,[QueueLanka.Queue]QueueLanka.Queue.Services.QueueBroadcastService,[QueueLanka.Identity]QueueLanka.Identity.Services.SmtpEmailService</Exclude>
+          <ExcludeByFile>**\Program.cs,**\Controllers\**\*.cs,**\Data\**\*.cs,**\Database\**\*.cs,**\DTOs\**\*.cs,**\Models\**\*.cs,**\Middleware\**\*.cs,**\Extensions\**\*.cs,**\Filters\**\*.cs,**\Properties\**\*.cs,**\Hubs\**\*.cs,**\Integration\ServiceCenterClient.cs</ExcludeByFile>
+          <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute,ExcludeFromCodeCoverage</ExcludeByAttribute>
+          <IncludeTestAssembly>false</IncludeTestAssembly>
+          <UseSourceLink>false</UseSourceLink>
+          <SingleHit>false</SingleHit>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

@@ -70,7 +70,7 @@ public class TokenControllerTests
         var result = await _controller.GetMyTokens();
 
         // Assert
-        var okResult = result.Result.Should().BeOfType<OkObjectResult>().Subject;
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         okResult.StatusCode.Should().Be(200);
     }
 
@@ -84,7 +84,7 @@ public class TokenControllerTests
         var result = await _controller.GetMyTokens();
 
         // Assert
-        result.Result.Should().BeOfType<UnauthorizedObjectResult>();
+        result.Should().BeOfType<UnauthorizedObjectResult>();
     }
 
     [Fact]
@@ -99,7 +99,7 @@ public class TokenControllerTests
         var result = await _controller.GetMyTokens();
 
         // Assert
-        result.Result.Should().BeOfType<OkObjectResult>();
+        result.Should().BeOfType<OkObjectResult>();
     }
 
     // ────────────────────── CancelMyToken Tests ──────────────────────

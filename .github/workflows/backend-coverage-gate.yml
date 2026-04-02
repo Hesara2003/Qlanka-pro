@@ -49,11 +49,18 @@ jobs:
             project_name="$(basename "$project" .csproj)"
             dotnet test "$project" \
               --configuration Release \
-              --no-build \
               --collect:"XPlat Code Coverage" \
+              --settings backend/coverage.runsettings \
               --results-directory "./TestResults/${project_name}" \
               --logger "trx;LogFileName=${project_name}.trx"
           done
+
+          match_count="$(find ./TestResults -name "coverage.cobertura.xml" | wc -l | tr -d '[:space:]')"
+          if [ "$match_count" -eq 0 ]; then
+            echo "No coverage.cobertura.xml files were generated."
+            find ./TestResults -maxdepth 4 -type f | sort || true
+            exit 1
+          fi
 
       - name: Generate report
         uses: danielpalme/ReportGenerator-GitHub-Action@5.3.8
@@ -88,4 +95,3 @@ jobs:
         with:
           name: backend-coverage-gate-report
           path: ./TestResults/CoverageReport/**
-
