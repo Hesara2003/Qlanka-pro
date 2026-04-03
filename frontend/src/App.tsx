@@ -1,6 +1,8 @@
 // frontend/src/App.tsx
 
+import { useEffect } from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
+import Lenis from "lenis";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -21,6 +23,28 @@ import OfficerDashboardPage from "./pages/OfficerDashboardPage";
 import UserLayout from "./components/common/UserLayout";
 
 function App() {
+  useEffect(() => {
+    // Initialize Lenis Smooth Scroll
+    const lenis = new Lenis({
+      duration: 1.5,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+      wheelMultiplier: 0.8, // Reduced speed for premium feel
+      touchMultiplier: 2,
+    });
+
+    function raf(time: number) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+
+    requestAnimationFrame(raf);
+
+    return () => {
+      lenis.destroy();
+    };
+  }, []);
+
   return (
     <Routes>
       {/* ── Public routes ─────────────────────────────────── */}
