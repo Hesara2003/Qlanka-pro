@@ -7,6 +7,7 @@ import {
     HubConnection,
     HubConnectionBuilder,
     HubConnectionState,
+    HttpTransportType,
     LogLevel,
 } from "@microsoft/signalr";
 import { useAuth } from "../context/AuthContext";
@@ -412,6 +413,10 @@ export function useQueueHub(options: UseQueueHubOptions): UseQueueHubResult {
             connection = new HubConnectionBuilder()
                 .withUrl(hubUrl, {
                     accessTokenFactory: () => getAccessToken() ?? "",
+                    // Avoid negotiate->connect ID mismatch behind proxies/load balancers.
+                    // Direct WebSocket mode skips negotiate and stabilizes real-time connectivity.
+                    skipNegotiation: true,
+                    transport: HttpTransportType.WebSockets,
                     // JWT bearer auth is sent via accessTokenFactory; cookies are not required.
                     // Disabling credentials avoids cross-origin negotiate failures when ACA-Credentials is missing.
                     withCredentials: false,
