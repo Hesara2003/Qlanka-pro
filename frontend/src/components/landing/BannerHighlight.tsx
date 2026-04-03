@@ -2,101 +2,92 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 
 export default function BannerHighlight() {
+    const fadeUp = {
+        hidden: { opacity: 0, y: 30 },
+        visible: { opacity: 1, y: 0 }
+    };
+
     return (
-        <div className="w-full py-20 lg:py-24 px-4 sm:px-6 lg:px-8 font-sans relative overflow-hidden" style={{ background: "linear-gradient(160deg, #0f1117 0%, #111827 50%, #0d1f10 100%)" }}>
-            {/* Mesh glow blobs */}
+        <section className="w-full py-32 lg:py-48 px-4 sm:px-6 lg:px-8 font-sans relative overflow-hidden bg-[#07090d]">
+            
+            {/* Tactical Noise Overlay */}
+            <div className="absolute inset-0 noise-overlay pointer-events-none opacity-[0.4]" />
+            
+            {/* Subtle Gradient Bloom */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute bottom-[-30%] left-[20%] w-[500px] h-[500px] rounded-full opacity-20" style={{ background: "radial-gradient(circle, #78d64b 0%, transparent 70%)", filter: "blur(80px)" }} />
-                <div className="absolute top-[-20%] right-[10%] w-[400px] h-[400px] rounded-full opacity-10" style={{ background: "radial-gradient(circle, #4abe8e 0%, transparent 70%)", filter: "blur(100px)" }} />
+                <div className="absolute bottom-[-20%] left-[30%] w-[600px] h-[600px] rounded-full opacity-[0.08]" style={{ background: "radial-gradient(circle, #78d64b 0%, transparent 70%)", filter: "blur(120px)" }} />
             </div>
 
-            {/* Grid dots */}
-            <div className="absolute inset-0 bg-grid-dots opacity-20 pointer-events-none" />
-
-            {/* Top border glow */}
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#78d64b]/30 to-transparent" />
-            
-            <div className="max-w-[65rem] mx-auto text-center relative z-10">
+            <div className="max-w-[75rem] mx-auto text-center relative z-10">
+                
+                {/* Section Indicator */}
                 <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/5 text-gray-400 font-medium text-[11px] tracking-wider uppercase mb-8"
+                    initial="hidden" whileInView="visible" viewport={{ once: true }}
+                    variants={fadeUp} transition={{ duration: 0.7 }}
+                    className="inline-block px-3 py-1 bg-white/5 border border-white/5 rounded-full text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-12 shadow-soft"
                 >
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#78d64b] animate-pulse" /> Get Started Today
+                    Get Started Today
                 </motion.div>
                 
                 <motion.h2 
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.1 }}
-                    className="text-[2.75rem] md:text-[4.5rem] font-medium text-white tracking-tight leading-[1.02] mb-6"
+                    initial="hidden" whileInView="visible" viewport={{ once: true }}
+                    variants={fadeUp} transition={{ duration: 0.7, delay: 0.1 }}
+                    className="text-[3rem] md:text-[5rem] font-medium text-white tracking-tighter leading-[0.96] mb-10"
                 >
                     Ready to eliminate <br /> 
-                    <span 
-                        className="italic"
-                        style={{ 
-                            fontFamily: "'Playfair Display', Georgia, serif",
-                            background: "linear-gradient(135deg, #78d64b 0%, #4abe8e 50%, #a3e635 100%)",
-                            WebkitBackgroundClip: "text",
-                            WebkitTextFillColor: "transparent",
-                            backgroundClip: "text"
-                        }}
-                    >
-                        the waiting game?
+                    <span className="font-serif italic text-gray-500 underline decoration-white/10 decoration-[4px] underline-offset-[8px]">
+                        the waiting game
                     </span>
+                    <span className="text-[#78d64b]">?</span>
                 </motion.h2>
 
                 <motion.p
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.15 }}
-                    className="text-gray-400 text-[16px] mb-10 max-w-lg mx-auto leading-relaxed"
+                    initial="hidden" whileInView="visible" viewport={{ once: true }}
+                    variants={fadeUp} transition={{ duration: 0.7, delay: 0.2 }}
+                    className="text-gray-500 text-[18px] md:text-[21px] mb-14 max-w-xl mx-auto leading-relaxed"
                 >
-                    Join 2,300+ teams who've already transformed their customer experience. Setup takes under 5 minutes.
+                    Join the 2,300+ operational teams already transforming their customer experience. Setup takes under 5 minutes.
                 </motion.p>
                 
                 <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.2 }}
-                    className="flex flex-col sm:flex-row gap-3 justify-center"
+                    initial="hidden" whileInView="visible" viewport={{ once: true }}
+                    variants={fadeUp} transition={{ duration: 0.7, delay: 0.3 }}
+                    className="flex flex-col sm:flex-row gap-4 justify-center"
                 >
                     <Link
                         to="/register"
-                        className="inline-flex items-center justify-center gap-2 text-[14px] font-medium px-8 py-4 rounded-xl text-[#074b42] transition-all duration-200 shadow-lg shadow-[#78d64b]/25 hover:shadow-[#78d64b]/40 hover:scale-[1.02] active:scale-[0.98]"
-                        style={{ background: "linear-gradient(135deg, #78d64b 0%, #5ec941 100%)" }}
+                        className="h-14 px-10 rounded-full bg-[#78d64b] text-[#074b42] font-bold text-[15px] hover:scale-105 transition-transform flex items-center justify-center min-w-[200px]"
                     >
                         Start For Free
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                        <svg className="ml-2" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
                     </Link>
                     <Link
                         to="/login"
-                        className="inline-flex items-center justify-center gap-2 text-[14px] font-medium px-8 py-4 rounded-xl text-gray-300 bg-white/5 hover:bg-white/10 border border-white/10 transition-all duration-200"
+                        className="h-14 px-10 rounded-full bg-white/5 border border-white/10 text-white font-medium text-[15px] hover:bg-white/10 transition-all flex items-center justify-center min-w-[200px]"
                     >
                         Talk to Sales
                     </Link>
                 </motion.div>
 
-                {/* Trust badges */}
+                {/* Micro Trust badges */}
                 <motion.div
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
-                    transition={{ delay: 0.3 }}
-                    className="flex items-center justify-center gap-8 mt-10"
+                    transition={{ delay: 0.6 }}
+                    className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4 mt-16"
                 >
-                    {["No credit card", "14-day trial", "Cancel anytime"].map((txt, i) => (
-                        <div key={i} className="flex items-center gap-1.5 text-[12px] text-gray-500">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#78d64b" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    {["No credit card", "14-day trial", "Enterprise ready"].map((txt, i) => (
+                        <div key={i} className="flex items-center gap-2 text-[11px] font-bold text-gray-600 uppercase tracking-widest">
+                            <div className="w-1 h-1 rounded-full bg-[#78d64b]" />
                             {txt}
                         </div>
                     ))}
                 </motion.div>
             </div>
-        </div>
+
+            {/* Seamless Transition to Footer */}
+            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#07090d] via-[#07090d]/80 to-transparent pointer-events-none" />
+        </section>
     );
 }

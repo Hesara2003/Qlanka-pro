@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
 
 export default function Footer() {
     return (
@@ -12,28 +11,8 @@ export default function Footer() {
                 </span>
             </div>
 
-            <div className="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
+            <div className="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-12 relative z-10 pt-12">
                 
-                {/* Pre-Footer CTA */}
-                <div className="mb-32 text-center max-w-3xl mx-auto">
-                    <motion.h3 
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        className="text-[2.5rem] md:text-[3.5rem] font-medium text-white leading-[1.1] tracking-tighter mb-8"
-                    >
-                        Ready to transform <br className="hidden md:block" /> your branch experience?
-                    </motion.h3>
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <Link to="/register" className="h-12 px-8 rounded-full bg-[#78d64b] text-[#074b42] font-bold text-[14px] hover:scale-105 transition-transform flex items-center justify-center min-w-[160px]">
-                            Get Started
-                        </Link>
-                        <Link to="/contact" className="h-12 px-8 rounded-full bg-white/5 border border-white/10 text-white font-medium text-[14px] hover:bg-white/10 transition-all flex items-center justify-center min-w-[160px]">
-                            Book a Demo
-                        </Link>
-                    </div>
-                </div>
-
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-12 lg:gap-24 mb-24 pb-24 border-b border-white/5">
                     
                     {/* Brand Column */}
