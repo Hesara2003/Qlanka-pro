@@ -14,7 +14,7 @@ export default function DeveloperShowcase() {
         const tl = gsap.timeline({
             scrollTrigger: {
                 trigger: sectionRef.current,
-                start: "top 80%",
+                start: "top 75%",
                 toggleActions: "play none none reverse",
             }
         });
@@ -25,7 +25,16 @@ export default function DeveloperShowcase() {
             duration: 0.8,
             stagger: 0.1,
             ease: "power3.out"
-        });
+        })
+        .fromTo(".testimonial-card", 
+            { y: 50, opacity: 0 },
+            {
+                y: 0,
+                opacity: 1,
+                duration: 1.2,
+                stagger: 0.2,
+                ease: "expo.out",
+            }, "-=0.4");
 
         // Cinematic Zoom effect for images on scroll
         gsap.utils.toArray<HTMLElement>(".portrait-img").forEach((img) => {
@@ -43,20 +52,6 @@ export default function DeveloperShowcase() {
                 }
             );
         });
-
-        // Staggered reveal for testimonial cards
-        gsap.from(".testimonial-card", {
-            y: 50,
-            opacity: 0,
-            duration: 1,
-            stagger: 0.2,
-            ease: "expo.out",
-            scrollTrigger: {
-                trigger: ".testimonial-grid",
-                start: "top 75%",
-            }
-        });
-
     }, { scope: sectionRef });
 
     return (
