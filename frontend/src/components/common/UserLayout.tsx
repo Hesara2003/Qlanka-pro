@@ -57,7 +57,7 @@ export default function UserLayout() {
                  style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(74, 190, 142, 0.08) 0%, transparent 60%)" }} />
 
             {/* Sticky Sidebar */}
-            <aside className="w-24 hidden md:flex flex-col items-center py-8 border-r border-gray-100 sticky top-0 h-screen z-50 bg-white">
+            <aside className="w-24 hidden md:flex flex-col items-center py-8 border-r border-gray-100 sticky top-0 h-screen z-[150] bg-white">
                 <Link to="/dashboard" className="mb-12">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#78d64b] to-[#4abe8e] flex items-center justify-center shadow-lg shadow-[#78d64b]/20">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3">
@@ -68,7 +68,10 @@ export default function UserLayout() {
 
                 <nav className="flex-1 flex flex-col gap-8">
                     {navItems.map((item) => {
-                        const isCurrentPath = location.pathname === item.path;
+                        const isCurrentPath = item.path === '/dashboard' || item.path === '/service-centers' 
+                            ? location.pathname === item.path 
+                            : location.pathname.startsWith('/queue/');
+
                         return (
                             <Link 
                                 key={item.label} 
