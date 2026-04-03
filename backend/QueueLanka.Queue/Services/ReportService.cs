@@ -141,6 +141,11 @@ public class ReportService : IReportService
 
     private static void ValidateRequest(DailyCenterSummaryRequestDto request)
     {
+        if (request.FromDate == default || request.ToDate == default)
+        {
+            throw new ValidationException("from/to dates are required.");
+        }
+
         if (request.ToDate.Date < request.FromDate.Date)
         {
             throw new ValidationException("ToDate must be greater than or equal to FromDate.");
