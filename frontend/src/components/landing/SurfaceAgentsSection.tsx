@@ -55,16 +55,6 @@ export default function SurfaceAgentsSection() {
             }
         });
 
-        // Parallax for floating elements
-        gsap.to(".parallax-bg", {
-            y: 80, // More movement for depth
-            scrollTrigger: {
-                trigger: sectionRef.current,
-                start: "top bottom",
-                end: "bottom top",
-                scrub: 2,
-            }
-        });
     }, { scope: sectionRef });
 
     return (
@@ -143,12 +133,9 @@ export default function SurfaceAgentsSection() {
 
                             {/* Background Mesh Glow */}
                             <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" />
-                            <div className="absolute bottom-0 left-0 w-80 h-80 bg-emerald-500/15 rounded-full blur-[100px] pointer-events-none" />
+                            <div className="absolute bottom-0 left-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none" />
                         </motion.div>
 
-                        {/* Floating Decorative Elements */}
-                        <div className="parallax-bg absolute -top-10 -left-10 w-28 h-28 bg-white/40 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] z-0" />
-                        <div className="parallax-bg absolute -bottom-10 -right-10 w-24 h-24 bg-blue-500/5 backdrop-blur-xl border border-blue-500/10 rounded-full z-0 opacity-50" />
                     </div>
 
                 </div>

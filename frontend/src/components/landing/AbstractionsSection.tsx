@@ -43,16 +43,6 @@ export default function AbstractionsSection() {
                     ease: "expo.out"
                 }, "-=0.6");
 
-        // Parallax for floating decorative elements
-        gsap.to(".floating-accent", {
-            y: -100,
-            scrollTrigger: {
-                trigger: sectionRef.current,
-                start: "top bottom",
-                end: "bottom top",
-                scrub: 1,
-            }
-        });
     }, { scope: sectionRef });
 
     return (
@@ -129,12 +119,9 @@ export default function AbstractionsSection() {
                             </div>
 
                             {/* Background Mesh Glow */}
-                            <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-[#78d64b]/20 rounded-full blur-[100px] pointer-events-none" />
+                            <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-[#78d64b]/15 rounded-full blur-[100px] pointer-events-none" />
                         </motion.div>
 
-                        {/* Floating Decorative Elements */}
-                        <div className="reveal-text floating-accent absolute -top-8 -right-8 w-24 h-24 bg-white/40 backdrop-blur-2xl border border-white/20 rounded-[2rem] z-0" />
-                        <div className="reveal-text floating-accent absolute -bottom-10 -left-10 w-20 h-20 bg-[#78d64b]/10 backdrop-blur-xl border border-[#78d64b]/20 rounded-full z-0 opacity-50" />
                     </div>
 
                 </div>

@@ -7,17 +7,15 @@ const trusted = ["Stripe", "Linear", "Vercel", "Figma", "Loom", "Notion"];
 export default function HeroSection() {
     return (
         <section id="home" className="relative w-full overflow-hidden font-sans bg-transparent">
+            {/* Cinematic Stage Lighting */}
+            <div className="absolute top-0 left-0 w-full h-[120%] pointer-events-none z-0" 
+                 style={{ background: "radial-gradient(ellipse at 20% 0%, rgba(120,214,75,0.04) 0%, transparent 70%)" }} />
+
             {/* Mesh gradient blobs - forest theme */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-[-20%] left-[-10%] w-[700px] h-[700px] rounded-full opacity-35" style={{ background: "radial-gradient(circle, #78d64b 0%, transparent 70%)", filter: "blur(80px)" }} />
-                <div className="absolute bottom-[-30%] right-[-10%] w-[600px] h-[600px] rounded-full opacity-15" style={{ background: "radial-gradient(circle, #4abe8e 0%, transparent 70%)", filter: "blur(100px)" }} />
+                <div className="absolute top-[-20%] left-[-10%] w-[700px] h-[700px] rounded-full opacity-[0.06]" style={{ background: "radial-gradient(circle, #78d64b 0%, transparent 70%)", filter: "blur(80px)" }} />
+                <div className="absolute bottom-[-30%] right-[-10%] w-[600px] h-[600px] rounded-full opacity-[0.01]" style={{ background: "radial-gradient(circle, #4abe8e 0%, transparent 70%)", filter: "blur(100px)" }} />
             </div>
-
-            {/* Grid dot pattern overlay - subtle */}
-            <div className="absolute inset-0 bg-grid-dots opacity-[0.15] pointer-events-none" />
-
-            {/* Top border glow */}
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#78d64b]/20 to-transparent" />
 
             <div className="relative z-10 w-full max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-12 pt-32 pb-0">
                 

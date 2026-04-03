@@ -18,11 +18,11 @@ gsap.registerPlugin(ScrollTrigger);
 export default function LandingPage() {
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // Background morphing - now even more subtle forest depth
+    // Background morphing & Cinematic Lighting
     useGSAP(() => {
         // Main Background shift
         gsap.to(containerRef.current, {
-            backgroundColor: "#081b10", // Deeper forest shift
+            backgroundColor: "#050b07", // Darker subtle shift for cinematic contrast
             scrollTrigger: {
                 trigger: "#features",
                 start: "top 80%",
@@ -31,11 +31,21 @@ export default function LandingPage() {
             }
         });
 
-        // Slow Aurora movement
-        gsap.to(".aurora-mist", {
-            x: "10%",
-            y: "5%",
-            duration: 20,
+        // Cinematic Spotlight Movement - Follow the user down
+        gsap.to(".cinematic-spotlight", {
+            y: "70vh",
+            scrollTrigger: {
+                trigger: "main",
+                start: "top top",
+                end: "bottom bottom",
+                scrub: 2
+            }
+        });
+
+        // Slow Aurora pulse
+        gsap.to(".cinematic-spotlight", {
+            opacity: 0.08,
+            duration: 8,
             repeat: -1,
             yoyo: true,
             ease: "sine.inOut"
@@ -44,9 +54,13 @@ export default function LandingPage() {
 
     return (
         <div ref={containerRef} className="min-h-screen bg-[#0a1e14] font-sans text-white overflow-x-hidden selection:bg-[#78d64b]/30 selection:text-white transition-colors duration-1000">
-            {/* Emerald Mist - Living background layer */}
-            <div className="aurora-mist absolute top-[-20%] left-[-20%] w-[150%] h-[150%] pointer-events-none opacity-[0.08] z-0" 
-                 style={{ background: "radial-gradient(circle at center, #78d64b 0%, transparent 60%)", filter: "blur(120px)" }} />
+            {/* Global Grain Overlay - Balanced Matte Finish */}
+            <div className="fixed inset-0 pointer-events-none z-[100] opacity-[0.11] mix-blend-soft-light" 
+                 style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} />
+
+            {/* Cinematic Spotlight - Focused background beam */}
+            <div className="cinematic-spotlight fixed top-[-20%] left-[10%] w-[80vw] h-[80vw] pointer-events-none opacity-[0.05] z-0 rounded-full" 
+                 style={{ background: "radial-gradient(circle at center, #78d64b 0%, transparent 65%)", filter: "blur(120px)" }} />
 
             <Navbar />
 
