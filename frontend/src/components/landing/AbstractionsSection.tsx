@@ -21,7 +21,7 @@ export default function AbstractionsSection() {
         });
 
         // Text Content Sequence
-        tl.fromTo(".reveal-text", 
+        tl.fromTo(".reveal-text",
             { y: 40, opacity: 0 },
             {
                 y: 0,
@@ -31,21 +31,21 @@ export default function AbstractionsSection() {
                 ease: "power3.out"
             }
         )
-        .fromTo(cardRef.current, 
-            { x: 60, y: 40, rotateY: 15, opacity: 0, scale: 0.9 },
-            {
-                x: 0,
-                y: 0,
-                rotateY: 0,
-                opacity: 1,
-                scale: 1,
-                duration: 1.2,
-                ease: "expo.out"
-            }, "-=0.6");
+            .fromTo(cardRef.current,
+                { x: 60, y: 40, rotateY: 15, opacity: 0, scale: 0.9 },
+                {
+                    x: 0,
+                    y: 0,
+                    rotateY: 0,
+                    opacity: 1,
+                    scale: 1,
+                    duration: 1.2,
+                    ease: "expo.out"
+                }, "-=0.6");
 
-        // Subtle Parallax for the card
-        gsap.to(cardRef.current, {
-            y: -40,
+        // Parallax for floating decorative elements
+        gsap.to(".floating-accent", {
+            y: -100,
             scrollTrigger: {
                 trigger: sectionRef.current,
                 start: "top bottom",
@@ -56,27 +56,27 @@ export default function AbstractionsSection() {
     }, { scope: sectionRef });
 
     return (
-        <section ref={sectionRef} className="py-24 lg:py-48 bg-slate-50 overflow-hidden font-sans relative">
+        <section ref={sectionRef} className="py-24 lg:py-48 bg-transparent overflow-hidden font-sans relative">
             <div className="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
                 <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
-                    
+
                     {/* Left: Text Content */}
                     <div ref={textRef} className="flex-1 max-w-xl">
-                        <div className="reveal-text inline-block px-3 py-1 bg-white border border-gray-100 rounded-full text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-10 shadow-soft">
+                        <div className="reveal-text inline-block px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-10 shadow-soft">
                             System Oversight
                         </div>
-                        <h2 className="reveal-text text-[2.8rem] md:text-[4.2rem] font-medium text-[#1a1c23] leading-[0.98] tracking-tighter mb-10">
-                            Flow Control <br /> 
-                            <span className="font-serif italic text-gray-400">Abstractions</span>
+                        <h2 className="reveal-text text-[2.8rem] md:text-[4.2rem] font-medium text-white leading-[0.98] tracking-tighter mb-10">
+                            Flow Control <br />
+                            <span className="font-serif italic text-white/40">Abstractions</span>
                         </h2>
-                        <p className="reveal-text text-[17px] md:text-[20px] text-gray-500 leading-relaxed font-normal">
+                        <p className="reveal-text text-[17px] md:text-[20px] text-gray-400 leading-relaxed font-normal">
                             A more intuitive approach to monitoring branch activity, presenting managers with essential queue artifacts and verification results to build operational trust.
                         </p>
                     </div>
 
                     {/* Right: High-Fidelity Terminal Card */}
                     <div className="flex-1 w-full relative">
-                        <motion.div 
+                        <motion.div
                             ref={cardRef}
                             animate={{ y: [0, -12, 0] }}
                             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
@@ -120,21 +120,21 @@ export default function AbstractionsSection() {
                                         <span className="text-[14px] font-bold text-white/60">82%</span>
                                     </div>
                                     <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden p-[1px] border border-white/10">
-                                        <motion.div 
+                                        <motion.div
                                             initial={{ width: 0 }} whileInView={{ width: "82%" }} transition={{ duration: 1.5, delay: 0.5 }}
-                                            className="h-full bg-gradient-to-r from-[#78d64b] to-emerald-400 rounded-full shadow-[0_0_15px_rgba(120,214,75,0.4)]" 
+                                            className="h-full bg-gradient-to-r from-[#78d64b] to-emerald-400 rounded-full shadow-[0_0_15px_rgba(120,214,75,0.4)]"
                                         />
                                     </div>
                                 </div>
                             </div>
 
                             {/* Background Mesh Glow */}
-                            <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-[#78d64b]/10 rounded-full blur-[100px] pointer-events-none" />
+                            <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-[#78d64b]/20 rounded-full blur-[100px] pointer-events-none" />
                         </motion.div>
 
                         {/* Floating Decorative Elements */}
-                        <div className="reveal-text absolute -top-8 -right-8 w-24 h-24 bg-white/40 backdrop-blur-2xl border border-white/20 rounded-[2rem] z-0" />
-                        <div className="reveal-text absolute -bottom-10 -left-10 w-20 h-20 bg-[#78d64b]/10 backdrop-blur-xl border border-[#78d64b]/20 rounded-full z-0 opacity-50" />
+                        <div className="reveal-text floating-accent absolute -top-8 -right-8 w-24 h-24 bg-white/40 backdrop-blur-2xl border border-white/20 rounded-[2rem] z-0" />
+                        <div className="reveal-text floating-accent absolute -bottom-10 -left-10 w-20 h-20 bg-[#78d64b]/10 backdrop-blur-xl border border-[#78d64b]/20 rounded-full z-0 opacity-50" />
                     </div>
 
                 </div>
