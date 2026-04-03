@@ -63,7 +63,7 @@ export default function OfficerDashboardPage() {
 
     if (!user) return <Navigate to="/login" replace />;
 
-    const currentTokenId = calledToken?.tokenId;
+
 
     return (
         <div className="flex flex-col gap-8 py-4">
