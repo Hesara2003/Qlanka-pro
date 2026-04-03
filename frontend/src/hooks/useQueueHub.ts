@@ -157,6 +157,7 @@ export function useQueueHub(options: UseQueueHubOptions): UseQueueHubResult {
     const reconnectAttemptRef = useRef(0);
     const reconnectTimerRef = useRef<number | null>(null);
     const pageVisibilityReconnectRef = useRef(false);
+    const onReconnectedRef = useRef<UseQueueHubOptions["onReconnected"]>(onReconnected);
 
     const effectiveCenterId = (centerId ?? Number(sessionStorage.getItem(SESSION_CENTER_ID_KEY) || "")) || undefined;
     const effectiveCounterId = (counterId ?? Number(sessionStorage.getItem(SESSION_COUNTER_ID_KEY) || "")) || undefined;
@@ -179,6 +180,10 @@ export function useQueueHub(options: UseQueueHubOptions): UseQueueHubResult {
         sessionStorage.removeItem(SESSION_CENTER_ID_KEY);
         sessionStorage.removeItem(SESSION_COUNTER_ID_KEY);
     }, []);
+
+    useEffect(() => {
+        onReconnectedRef.current = onReconnected;
+    }, [onReconnected]);
 
     const resolveApiBaseUrl = useCallback(() => {
         const rawBaseUrl = (import.meta.env.VITE_API_BASE_URL ?? window.location.origin).replace(/\/+$/, "");
@@ -352,7 +357,12 @@ export function useQueueHub(options: UseQueueHubOptions): UseQueueHubResult {
     }, [effectiveCenterId, effectiveCounterId, isOfficer, shouldProcessEvent]);
 
     const handleConnected = useCallback(async (connection: HubConnection) => {
-        await joinGroups(connection);
+        try {
+            await joinGroups(connection);
+        } catch {
+            setConnectionStatus("reconnecting");
+            return;
+        }
 
         reconnectAttemptRef.current = 0;
         clearReconnectTimer();
@@ -368,10 +378,14 @@ export function useQueueHub(options: UseQueueHubOptions): UseQueueHubResult {
             sessionStorage.setItem(SESSION_COUNTER_ID_KEY, String(effectiveCounterId));
         }
 
-        if (onReconnected) {
-            await onReconnected();
+        const onReconnectedCallback = onReconnectedRef.current;
+        if (onReconnectedCallback) {
+            try {
+                await onReconnectedCallback();
+            } catch {
+            }
         }
-    }, [clearReconnectTimer, effectiveCenterId, effectiveCounterId, joinGroups, onReconnected]);
+    }, [clearReconnectTimer, effectiveCenterId, effectiveCounterId, joinGroups]);
 
     const scheduleReconnect = useCallback((reason: string) => {
         if (stopRequestedRef.current || !isMountedRef.current) {
