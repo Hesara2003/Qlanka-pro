@@ -17,14 +17,14 @@ export default function DeveloperShowcase() {
                         variants={fadeUp} transition={{ duration: 0.7 }}
                         className="text-[2.8rem] md:text-[3.8rem] font-medium text-[#1a1c23] leading-[1.02] tracking-tighter max-w-xl"
                     >
-                        Built for developers <br /> for the agent-first era
+                        Built for businesses <br /> for the digital-first era
                     </motion.h2>
                     <motion.p 
                         initial="hidden" whileInView="visible" viewport={{ once: true }}
                         variants={fadeUp} transition={{ duration: 0.7, delay: 0.1 }}
                         className="text-[15px] md:text-[17px] text-gray-500 leading-relaxed font-normal max-w-md lg:text-right"
                     >
-                        Google Antigravity is built for user trust, whether you're a professional developer working in a large enterprise codebase, a hobbyist vibe-coding in their spare time, or anyone in between.
+                        QueueLanka Pro is built for enterprise-grade trust, whether you're a small clinic managing daily arrivals or a large retail chain optimizing national branch operations.
                     </motion.p>
                 </div>
 

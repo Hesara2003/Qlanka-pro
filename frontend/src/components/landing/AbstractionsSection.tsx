@@ -18,14 +18,14 @@ export default function AbstractionsSection() {
                             variants={fadeUp} transition={{ duration: 0.7 }}
                             className="text-[2.8rem] md:text-[3.8rem] font-medium text-[#1a1c23] leading-[1.05] tracking-tighter mb-8"
                         >
-                            Higher-level <br /> Abstractions
+                            Flow Control <br /> Abstractions
                         </motion.h2>
                         <motion.p 
                             initial="hidden" whileInView="visible" viewport={{ once: true }}
                             variants={fadeUp} transition={{ duration: 0.7, delay: 0.1 }}
                             className="text-[17px] md:text-[19px] text-gray-500 leading-relaxed font-normal"
                         >
-                            A more intuitive task-based approach to monitoring agent activity, presenting you with essential artifacts and verification results to build trust.
+                            A more intuitive approach to monitoring branch activity, presenting managers with essential queue artifacts and verification results to build operational trust.
                         </motion.p>
                     </div>
 
@@ -42,13 +42,13 @@ export default function AbstractionsSection() {
                                 borderTop: "4px solid #78d64b"
                             }}
                         >
-                            {/* Card Content */}
+                            {/* Card Content: Queue Logic Setup */}
                             <div className="space-y-8">
                                 <div>
-                                    <h4 className="text-[18px] font-bold text-[#1a1c23] mb-2 tracking-tight">Setting up Dependencies</h4>
-                                    <p className="text-[13px] text-gray-400 font-medium">User approved plan. Starting execution by installing <span className="text-blue-500">recharts</span>,</p>
+                                    <h4 className="text-[18px] font-bold text-[#1a1c23] mb-2 tracking-tight">Activating Branch Terminals</h4>
+                                    <p className="text-[13px] text-gray-400 font-medium">Manager approved flow. Starting execution by syncing <span className="text-blue-500">Counter_A</span>,</p>
                                     <div className="flex flex-wrap gap-2 mt-3">
-                                        {['date-fns', 'lucide-react', 'clsx', 'tailwind-merge'].map((pkg) => (
+                                        {['Terminal_B', 'Live_Display', 'SMS_Gateway', 'Wait_Logger'].map((pkg) => (
                                             <span key={pkg} className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-500 text-[10px] font-bold border border-blue-100/50">
                                                 {pkg}
                                             </span>
@@ -58,28 +58,28 @@ export default function AbstractionsSection() {
 
                                 <div className="pt-6 border-t border-gray-100">
                                     <div className="flex items-center justify-between mb-4">
-                                        <span className="text-[11px] font-bold text-gray-300 uppercase tracking-widest">Files Edited</span>
+                                        <span className="text-[11px] font-bold text-gray-300 uppercase tracking-widest">Active Operations</span>
                                         <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-gray-50 border border-gray-100">
-                                            <div className="w-2.5 h-2.5 rounded-sm bg-gray-200" />
-                                            <span className="text-[10px] font-bold text-gray-500">Tasks</span>
+                                            <div className="w-2.5 h-2.5 rounded-sm bg-[#78d64b]" />
+                                            <span className="text-[10px] font-bold text-gray-500">Queues</span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div className="pt-2">
                                     <div className="flex items-center justify-between mb-4">
-                                        <span className="text-[11px] font-bold text-gray-300 uppercase tracking-widest">Progress updates</span>
+                                        <span className="text-[11px] font-bold text-gray-300 uppercase tracking-widest">Sync progress</span>
                                         <span className="text-[10px] font-bold text-gray-400">Expand all &lt;</span>
                                     </div>
                                     <div className="space-y-3">
                                         <div className="flex items-center gap-3">
                                             <span className="text-[12px] font-bold text-[#1a1c23]">1</span>
-                                            <span className="text-[13px] font-medium text-[#1a1c23]">Installing packages</span>
+                                            <span className="text-[13px] font-medium text-[#1a1c23]">Establishing WebSocket link</span>
                                         </div>
                                         <div className="h-1.5 w-full bg-gray-50 rounded-full overflow-hidden">
                                             <motion.div 
-                                                initial={{ width: 0 }} whileInView={{ width: "65%" }} transition={{ duration: 1.5, delay: 0.5 }}
-                                                className="h-full bg-blue-400 rounded-full" 
+                                                initial={{ width: 0 }} whileInView={{ width: "82%" }} transition={{ duration: 1.5, delay: 0.5 }}
+                                                className="h-full bg-[#78d64b] rounded-full" 
                                             />
                                         </div>
                                     </div>

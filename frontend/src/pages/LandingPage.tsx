@@ -5,6 +5,8 @@ import SurfaceAgentsSection from "../components/landing/SurfaceAgentsSection";
 import DeveloperShowcase from "../components/landing/DeveloperShowcase";
 import TestimonialsSection from "../components/landing/TestimonialsSection";
 import BannerHighlight from "../components/landing/BannerHighlight";
+import BannerMarquee from "../components/landing/BannerMarquee";
+import BannerStats from "../components/landing/BannerStats";
 import Footer from "../components/landing/Footer";
 
 export default function LandingPage() {
@@ -17,6 +19,8 @@ export default function LandingPage() {
 
             {/* Main Content Area */}
             <main>
+                <BannerMarquee />
+                <BannerStats />
                 <AbstractionsSection />
                 <SurfaceAgentsSection />
                 <DeveloperShowcase />
