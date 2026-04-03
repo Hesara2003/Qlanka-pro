@@ -116,7 +116,7 @@ export default function HeroSection() {
                     className="flex items-center justify-center gap-3 mb-16"
                 >
                     <div className="flex -space-x-2">
-                        {["33","47","12","55","68"].map((id, i) => (
+                        {["33","47","12","55","68"].map((id) => (
                             <img key={id} src={`https://i.pravatar.cc/100?img=${id}`} alt="" className="w-8 h-8 rounded-full border-2 border-[#08120a] shadow-sm object-cover" />
                         ))}
                     </div>

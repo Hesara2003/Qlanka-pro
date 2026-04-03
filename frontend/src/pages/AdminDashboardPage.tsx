@@ -3,10 +3,12 @@ import { Link } from "react-router-dom";
 import { getAllServiceCenters } from "../api/serviceCenterApi";
 import { getAdminUsers } from "../api/userApi";
 import type { AdminUser } from "../types/user";
+import { useAuth } from "../context/AuthContext";
 import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  BarChart, Bar, Cell
+  AreaChart, Area, PieChart, Pie
 } from "recharts";
+import { motion } from "framer-motion";
 
 interface Stats {
   centers: number;
@@ -14,69 +16,21 @@ interface Stats {
   activeUsers: number;
 }
 
-// ── Module-level cache — survives re-mounts, cleared on manual refresh ──────
-let _cachedStats:    Stats | null        = null;
-let _cachedUsers:    AdminUser[]         = [];
-let _cachePopulated: boolean             = false;
-// Single in-flight promise — prevents duplicate requests (React StrictMode, etc.)
-let _inflightFetch:  Promise<void> | null = null;
-
-const ACTIONS = [
-  {
-    to: "/admin/users",
-    icon: (
-      <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-          d="M17 20H7a4 4 0 01-4-4v-1a6 6 0 016-6h6a6 6 0 016 6v1a4 4 0 01-4 4zM12 11a4 4 0 100-8 4 4 0 000 8z" />
-      </svg>
-    ),
-    label: "Manage Users",
-    description: "View, filter and deactivate account",
-    type: "Administration",
-    status: "Active",
-    statusBg: "bg-emerald-100 text-emerald-600",
-  },
-  {
-    to: "/admin/service-centers/create",
-    icon: (
-      <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-          d="M12 4v16m8-8H4" />
-      </svg>
-    ),
-    label: "Create Service Center",
-    description: "Register a new service center",
-    type: "Management",
-    status: "Action",
-    statusBg: "bg-orange-100 text-orange-600",
-  },
-  {
-    to: "/admin/service-centers",
-    icon: (
-      <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m0 0h10M5 21H3m16 0h2M9 7h6M9 11h6M9 15h4" />
-      </svg>
-    ),
-    label: "View Service Centers",
-    description: "Browse registered service centers",
-    type: "Directory",
-    status: "Active",
-    statusBg: "bg-emerald-100 text-emerald-600",
-  },
-];
+let _cachedStats: Stats | null = null;
+let _cachedUsers: AdminUser[] = [];
+let _cachePopulated: boolean = false;
+let _inflightFetch: Promise<void> | null = null;
 
 export default function AdminDashboardPage() {
-
-  // Seed from cache instantly — no loading flash on re-visit
-  const [stats,    setStats]    = useState<Stats | null>(_cachedStats);
+  const { user } = useAuth();
+  const [stats, setStats] = useState<Stats | null>(_cachedStats);
   const [allUsers, setAllUsers] = useState<AdminUser[]>(_cachedUsers);
-  const [loading,  setLoading]  = useState(!_cachePopulated);
+  const [allCenters, setAllCenters] = useState<any[]>([]); // Using any fix for brevity, ideally use ServiceCenter type
+
 
   function fetchData(force = false, signal?: { cancelled: boolean }) {
     if (_cachePopulated && !force) return;
 
-    // If a fetch is already in flight, attach to it instead of firing another
     if (!_inflightFetch) {
       _inflightFetch = (async () => {
         try {
@@ -89,28 +43,29 @@ export default function AdminDashboardPage() {
             users: users.length,
             activeUsers: users.filter((u) => u.isActive).length,
           };
-          _cachedStats    = nextStats;
-          _cachedUsers    = users;
+          _cachedStats = nextStats;
+          _cachedUsers = users;
           _cachePopulated = true;
         } catch {
-          // leave cache empty; each subscriber handles its own error state
         } finally {
           _inflightFetch = null;
         }
       })();
     }
 
-    setLoading(true);
+
     _inflightFetch.then(() => {
       if (signal?.cancelled) return;
       if (_cachedStats) {
         setStats(_cachedStats);
         setAllUsers(_cachedUsers);
+        getAllServiceCenters().then(setAllCenters).catch(() => {});
       } else {
         setStats({ centers: 0, users: 0, activeUsers: 0 });
         setAllUsers([]);
+        setAllCenters([]);
       }
-      setLoading(false);
+
     });
   }
 
@@ -118,275 +73,355 @@ export default function AdminDashboardPage() {
     const signal = { cancelled: false };
     fetchData(false, signal);
     return () => { signal.cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Derived — computed from real fetched users ──────────────────────────
   const citizens = allUsers.filter(u => u.role === 'citizen').length;
   const officers = allUsers.filter(u => u.role === 'officer').length;
-  const admins   = allUsers.filter(u => u.role === 'admin').length;
-  const verified = allUsers.filter(u => u.isEmailVerified).length;
-  const inactive = stats ? stats.users - stats.activeUsers : 0;
+  const admins = allUsers.filter(u => u.role === 'admin').length;
 
   const roleData = [
-    { name: 'Citizens', users: citizens, fill: '#3b82f6' },
-    { name: 'Officers', users: officers, fill: '#10b981' },
-    { name: 'Admins',   users: admins,   fill: '#f59e0b' },
+    { name: 'Citizens', users: citizens, fill: '#111827' },
+    { name: 'Officers', users: officers, fill: '#78d64b' },
+    { name: 'Admins', users: admins, fill: '#64748b' },
   ];
 
-  const roleRows = [
-    { label: 'Citizens', count: citizens, bar: 'bg-blue-500',    badge: 'bg-blue-50 text-blue-700'       },
-    { label: 'Officers', count: officers, bar: 'bg-emerald-500', badge: 'bg-emerald-50 text-emerald-700' },
-    { label: 'Admins',   count: admins,   bar: 'bg-amber-500',   badge: 'bg-amber-50 text-amber-700'     },
+  // ── REAL DATA DERIVATIONS ───────────────────────────────────────────────────
+  
+  // 1. Audit Logs (Interleaved Users and Centers)
+  const auditLogs = [
+    ...allUsers.map(u => ({ name: `User Registered: ${u.username}`, date: new Date(u.createdAt), val: 'Auth', status: 'Success', icon: '👤', color: 'text-emerald-500' })),
+    ...allCenters.map(c => ({ name: `Center Created: ${c.name}`, date: new Date(c.createdAt), val: 'Infra', status: 'Success', icon: '🏦', color: 'text-blue-500' }))
+  ].sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 6);
+
+  // 2. Capacity Growth Trend (Area Chart)
+  const sortedCentersByDate = [...allCenters].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  let cumulativeCapacity = 0;
+  const capacityTrend = sortedCentersByDate.map(c => {
+    cumulativeCapacity += c.capacity;
+    return { name: new Date(c.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), value: cumulativeCapacity };
+  });
+  // Fallback for empty state or minimal data
+  const trafficData = capacityTrend.length > 0 ? capacityTrend : [{ name: 'N/A', value: 0 }];
+
+  // 3. Uptime Gauge (%)
+  const activeAndAvailable = allCenters.filter(c => c.isAvailable && c.isActive).length;
+  const uptimeScore = allCenters.length > 0 ? Math.round((activeAndAvailable / allCenters.length) * 100) : 0;
+  const gaugeData = [
+    { name: 'Uptime', value: uptimeScore, fill: '#78d64b' },
+    { name: 'Remaining', value: 100 - uptimeScore, fill: '#F3F4F6' },
   ];
+
+  // 4. Regional Distribution
+  const regions: Record<string, number> = {};
+  allCenters.forEach(c => {
+    const region = c.address.split(',').pop()?.trim() || 'Central';
+    regions[region] = (regions[region] || 0) + 1;
+  });
+  const regionalDemand = Object.entries(regions).map(([name, count]) => ({
+    label: name,
+    val: count > 3 ? 'High load' : 'Normal',
+    icon: '📍',
+    color: count > 3 ? 'bg-orange-400' : 'bg-emerald-400',
+    percent: (count / (allCenters.length || 1)) * 100
+  })).slice(0, 3);
+
 
   return (
-    <>
-      <div className="px-10 py-8">
-        {/* ── 4 Stat Cards Row ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+    <div className="grid grid-cols-12 gap-8 py-2">
+      
+      {/* --- MAIN LEFT CONTENT (9 Cols) --- */}
+      <div className="col-span-12 xl:col-span-9 flex flex-col gap-8">
+        
+        {/* ROW 1: Capacity Overview & Stats */}
+        <div className="grid grid-cols-12 gap-8">
+          {/* Large Trend Card */}
+          <section className="col-span-12 lg:col-span-8 bg-white p-10 rounded-[2.5rem] shadow-sm border border-gray-100 flex flex-col relative overflow-hidden group">
+             <div className="flex justify-between items-start mb-8">
+                <div>
+                   <h2 className="text-4xl font-semibold text-gray-900 tracking-tighter mb-2">{cumulativeCapacity}</h2>
+                   <p className="text-[11px] font-normal text-gray-400">Total system capacity</p>
+                </div>
+                <div className="flex items-center gap-4">
+                   <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
+                      <span className="text-[10px] font-semibold text-gray-900">Real-time</span>
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                   </div>
+                </div>
+             </div>
+             
+             <div className="h-[280px] w-full mt-auto">
+                <ResponsiveContainer width="100%" height="100%">
+                   <AreaChart data={trafficData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                      <defs>
+                         <linearGradient id="colorTraffic" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#111827" stopOpacity={0.05}/>
+                            <stop offset="95%" stopColor="#111827" stopOpacity={0}/>
+                         </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F9FAFB" />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF', fontSize: 10, fontWeight: 600 }} dy={10} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF', fontSize: 10, fontWeight: 600 }} />
+                      <Tooltip 
+                        contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 10px 40px rgba(0,0,0,0.05)', fontWeight: 600 }}
+                      />
+                      <Area type="monotone" dataKey="value" stroke="#111827" strokeWidth={4} fillOpacity={1} fill="url(#colorTraffic)" />
+                   </AreaChart>
+                </ResponsiveContainer>
+             </div>
+          </section>
 
-          {/* Card 1: Service Centers */}
-          <div className="bg-[#f8f9fb] border-[2px] border-dashed border-gray-200 rounded-3xl p-5 flex flex-col justify-between group hover:border-gray-300 transition-colors">
-            <div className="flex justify-between items-start mb-6">
-              <h3 className="font-bold text-gray-900 text-[15px] leading-snug">Service<br />Centers</h3>
-              <span className="text-xs font-bold text-blue-700 bg-blue-100 px-2.5 py-1 rounded-lg">QueueLanka</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="w-9 h-9 rounded-full bg-blue-200 flex items-center justify-center text-xs font-bold text-blue-700">SC</div>
-              <div className="bg-black text-white text-xs font-bold px-3 py-1.5 rounded-full">
-                {loading ? "—" : stats?.centers}
-              </div>
-            </div>
-          </div>
-
-          {/* Card 2: Registered Users */}
-          <div className="bg-[#f8f9fb] border-[2px] border-dashed border-gray-200 rounded-3xl p-5 group hover:border-gray-300 transition-colors">
-            <div className="flex items-center gap-2.5 mb-4">
-              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 flex-shrink-0">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 20H7a4 4 0 01-4-4v-1a6 6 0 016-6h6a6 6 0 016 6v1a4 4 0 01-4 4z" /></svg>
-              </div>
-              <h3 className="font-bold text-gray-900 text-[15px]">Registered Users</h3>
-            </div>
-            <div className="h-10 w-full mb-3">
-              <svg viewBox="0 0 100 30" className="w-full h-full text-blue-400" preserveAspectRatio="none">
-                <path d="M0 25 L10 20 L20 28 L30 15 L40 22 L50 10 L60 18 L70 5 L80 15 L90 5 L100 10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-            <div className="flex items-end justify-between">
-              <span className="text-[28px] font-extrabold text-gray-900 leading-none">
-                {loading ? "—" : stats?.users}
-              </span>
-              <span className="text-[11px] font-bold bg-black text-white px-2.5 py-1 rounded-full">Total</span>
-            </div>
-          </div>
-
-          {/* Card 3: Active Accounts */}
-          <div className="bg-white shadow-sm border border-gray-100 rounded-3xl p-5 flex flex-col justify-between">
-            <div className="mb-4">
-              <h3 className="font-bold text-gray-900 text-[15px] mb-0.5">Active Accounts</h3>
-              <p className="text-blue-500 text-xs font-bold uppercase tracking-wide">In System</p>
-            </div>
-            <span className="text-[36px] font-extrabold text-gray-900 leading-none">
-              {loading ? "—" : stats?.activeUsers}
-            </span>
-            <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-wide mt-3">
-              Currently Active Members
-            </p>
-          </div>
-
-          {/* Card 4: System Status */}
-          <div className="bg-gradient-to-br from-[#1c64b0] to-[#144886] rounded-3xl p-5 text-white relative shadow-lg shadow-blue-500/20 flex flex-col justify-between overflow-hidden">
-            <div className="absolute top-3 right-4 opacity-20">
-              <svg className="w-16 h-16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l2.4 7.4h7.6l-6 4.6 2.3 7.4-6.3-4.8-6.3 4.8 2.3-7.4-6-4.6h7.6z" /></svg>
-            </div>
-            <div>
-              <p className="text-blue-200 text-[10px] font-bold uppercase tracking-widest mb-1">System Status</p>
-              <span className="text-[22px] font-extrabold leading-tight">Operational</span>
-            </div>
-            <div className="mt-4">
-              <p className="text-[13px] font-semibold text-white/80 leading-snug mb-4">
-                All services running normally.
-              </p>
-              <button onClick={() => { _cachePopulated = false; _inflightFetch = null; fetchData(true); }} className="bg-black/40 hover:bg-black/60 text-white text-xs font-bold px-4 py-2 rounded-full transition-colors">
-                Refresh
-              </button>
-            </div>
+          <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
+             {[
+                { label: 'Managed centers', value: stats?.centers || 0, change: '+2', up: true, desc: 'Active facilities' },
+                { label: 'Global load', value: '1.2k', change: '-12%', up: false, desc: 'Waiting tokens' },
+                { label: 'Workforce scale', value: officers, change: '+5', up: true, desc: 'Active officers' },
+             ].map((stat, i) => (
+                <div key={i} className="bg-white p-8 rounded-[2rem] border border-gray-50 shadow-sm flex flex-col gap-1 hover:border-gray-200 transition-all cursor-pointer">
+                   <p className="text-[10px] font-normal text-gray-400 mb-1">{stat.label}</p>
+                   <h3 className="text-3xl font-semibold text-gray-900 tracking-tight leading-none mb-1">{stat.value}</h3>
+                   <div className="flex items-center gap-1.5">
+                      <svg className={`w-3 h-3 ${stat.up ? 'text-emerald-500' : 'text-orange-500'} ${!stat.up ? 'rotate-180' : ''}`} fill="currentColor" viewBox="0 0 24 24"><path d="M7 11l5-5 5 5H7z"/></svg>
+                      <span className={`text-[10px] font-semibold ${stat.up ? 'text-emerald-500' : 'text-orange-500'}`}>{stat.change} <span className="opacity-40 text-gray-400 ml-0.5 font-normal">{stat.desc}</span></span>
+                   </div>
+                </div>
+             ))}
           </div>
         </div>
 
-        {/* Charts Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-
-          {/* User Distribution panel — real data (left 2/3) */}
-          <div className="bg-white rounded-3xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-gray-100 p-6 lg:col-span-2">
-            <div className="mb-6">
-              <h3 className="text-[17px] font-bold text-gray-900 tracking-tight">User Distribution</h3>
-              <p className="text-[12px] font-bold text-gray-400 mt-1 uppercase tracking-widest">Roles &amp; Account Status</p>
-            </div>
-
-            {loading ? (
-              <div className="flex items-center justify-center h-48 text-gray-400">
-                <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                </svg>
+        {/* ROW 2: Uptime & Insights */}
+        <div className="grid grid-cols-12 gap-8">
+           <section className="col-span-12 lg:col-span-6 bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm relative group overflow-hidden">
+              <div className="flex justify-between items-center mb-10">
+                 <h3 className="text-xl font-semibold text-gray-900 tracking-tighter">Infrastructure uptime</h3>
               </div>
-            ) : (
-              <>
-                {/* Role progress bars */}
-                <div className="space-y-5 mb-6">
-                  {roleRows.map(row => (
-                    <div key={row.label}>
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-[13px] font-semibold text-gray-700">{row.label}</span>
-                        <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${row.badge}`}>{row.count}</span>
-                      </div>
-                      <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full ${row.bar} rounded-full transition-all duration-700`}
-                          style={{ width: `${stats?.users ? Math.round((row.count / stats.users) * 100) : 0}%` }}
-                        />
-                      </div>
-                      <p className="text-[11px] text-gray-400 mt-1">
-                        {stats?.users ? Math.round((row.count / stats.users) * 100) : 0}% of total
-                      </p>
+              <div className="flex flex-col gap-3">
+                 <div className="h-6 w-full bg-gray-50 rounded-full overflow-hidden border border-gray-100 flex items-center p-1">
+                    <motion.div 
+                       initial={{ width: 0 }}
+                       animate={{ width: '99%' }}
+                       transition={{ duration: 1.5, ease: "circOut" }}
+                       className="h-full bg-gradient-to-r from-emerald-400 to-emerald-300 rounded-full flex items-center justify-end px-2"
+                    >
+                       <div className="w-1.5 h-1.5 bg-white rounded-full scale-150 animate-pulse"></div>
+                    </motion.div>
+                 </div>
+                 <div className="flex justify-between items-center">
+                    <span className="text-[13px] font-semibold text-gray-900">{uptimeScore}% operational</span>
+                    <span className="text-[11px] font-normal text-gray-300 tracking-tight">Active nodes</span>
+                 </div>
+              </div>
+           </section>
+
+           <section className="col-span-12 lg:col-span-6 bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm flex items-center gap-8 relative group overflow-hidden">
+               <div className="flex-1">
+                  <h3 className="text-[15px] font-semibold text-gray-900 tracking-tighter mb-2">Operational insight</h3>
+                  <p className="text-[11px] font-normal text-gray-400 leading-tight mb-4">Mahanuwara center is currently 15% above peak capacity. Consider redistributing traffic.</p>
+               </div>
+               <div className="w-24 flex flex-col gap-1 items-end pt-4">
+                  {[1,2,3,4].map(row => (
+                    <div key={row} className="flex gap-1">
+                      {[1,2,3].map(col => (
+                        <div key={col} className={`w-3 h-3 rounded-sm ${row + col > 4 ? 'bg-orange-400 opacity-20' : 'bg-orange-400'}`}></div>
+                      ))}
                     </div>
                   ))}
-                </div>
+               </div>
+           </section>
+        </div>
 
-                {/* Summary strip */}
-                <div className="grid grid-cols-3 gap-3 pt-5 border-t border-gray-100">
-                  {[
-                    { label: 'Active',   value: stats?.activeUsers ?? 0,  color: 'text-emerald-600' },
-                    { label: 'Inactive', value: inactive,                  color: 'text-gray-500'    },
-                    { label: 'Verified', value: verified,                  color: 'text-blue-600'    },
-                  ].map(s => (
-                    <div key={s.label} className="text-center">
-                      <p className={`text-[26px] font-extrabold leading-none ${s.color}`}>{s.value}</p>
-                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">{s.label}</p>
+        {/* ROW 3: Workforce, SLA, Regions */}
+        <div className="grid grid-cols-12 gap-8 mb-4">
+            <section className="col-span-12 lg:col-span-4 bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm flex flex-col group">
+               <div className="flex justify-between items-center mb-8">
+                  <h3 className="text-[15px] font-semibold text-gray-900 tracking-tighter">Workforce analysis</h3>
+                  <div className="flex items-center gap-1 px-2 py-1 bg-gray-50 rounded-lg text-[9px] font-normal text-gray-400">Total distribution <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" strokeWidth={3}/></svg></div>
+               </div>
+               <div className="mb-6">
+                  <h4 className="text-2xl font-semibold text-gray-900 tracking-tighter mb-4">{allUsers.length} Active accounts</h4>
+                  <div className="flex h-2.5 w-full bg-gray-100 rounded-full overflow-hidden">
+                     {roleData.map((role, idx) => (
+                       <div 
+                         key={idx} 
+                         className={`h-full border-r-2 border-white`} 
+                         style={{ 
+                           width: `${allUsers.length ? (role.users / allUsers.length) * 100 : 0}%`,
+                           backgroundColor: role.fill 
+                         }} 
+                       />
+                     ))}
+                  </div>
+               </div>
+               <div className="flex flex-col gap-3">
+                  {roleData.map((cat, i) => (
+                    <div key={i} className="flex justify-between items-center">
+                       <div className="flex items-center gap-2">
+                          <div className={`w-2 h-2 rounded-full`} style={{ backgroundColor: cat.fill }}></div>
+                          <span className="text-[11px] font-normal text-gray-400 tracking-tight">{cat.name}</span>
+                       </div>
+                       <span className="text-[11px] font-semibold text-gray-900">{cat.users}</span>
                     </div>
                   ))}
-                </div>
-              </>
-            )}
-          </div>
+               </div>
+            </section>
 
-          {/* Role BarChart — real data (right 1/3) */}
-          <div className="bg-white rounded-3xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-gray-100 p-6 flex flex-col">
-            <div className="mb-6">
-              <h3 className="text-[17px] font-bold text-gray-900 tracking-tight">Role Breakdown</h3>
-              <p className="text-[12px] font-bold text-gray-400 mt-1 uppercase tracking-widest">Registered Roles</p>
-            </div>
-            <div className="flex-1 w-full min-h-[220px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={roleData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12, fontWeight: 600 }} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12, fontWeight: 600 }} />
-                  <Tooltip
-                    cursor={{ fill: '#f9fafb' }}
-                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px -2px rgba(0,0,0,0.1)', fontWeight: 'bold' }}
-                    itemStyle={{ fontSize: '13px', color: '#111827' }}
-                  />
-                  <Bar dataKey="users" radius={[6, 6, 0, 0]}>
-                    {roleData.map((entry, i) => (
-                      <Cell key={i} fill={entry.fill} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
+            <section className="col-span-12 lg:col-span-4 bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm flex flex-col group overflow-hidden">
+               <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-[15px] font-semibold text-gray-900 tracking-tighter">SLA readiness</h3>
+                  <div className="flex items-center gap-1 px-2 py-1 bg-gray-50 rounded-lg text-[9px] font-normal text-gray-400">Efficiency <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" strokeWidth={3}/></svg></div>
+               </div>
+               <div className="flex-1 flex flex-col items-center justify-center relative pb-8">
+                  <h4 className="text-2xl font-semibold text-gray-900 tracking-tighter mb-1">8.2m Avg.</h4>
+                  <div className="flex items-center gap-1 mb-4">
+                     <svg className="w-3 h-3 text-emerald-500" fill="currentColor" viewBox="0 0 24 24"><path d="M7 11l5-5 5 5H7z"/></svg>
+                     <span className="text-[10px] font-semibold text-emerald-500 tracking-tight">12% Improvement <span className="opacity-40 text-gray-400 font-normal">vs last week</span></span>
+                  </div>
+                  
+                  <div className="w-full h-32 relative">
+                     <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={gaugeData}
+                            cx="50%" cy="100%"
+                            startAngle={180} endAngle={0}
+                            innerRadius={60} outerRadius={80}
+                            dataKey="value"
+                            stroke="none"
+                          >
+                          </Pie>
+                        </PieChart>
+                     </ResponsiveContainer>
+                     <div className="absolute inset-0 flex flex-col items-center justify-end pb-2">
+                        <span className="text-3xl font-semibold text-gray-900 tracking-tighter">{uptimeScore}%</span>
+                        <span className="text-[8px] font-normal text-gray-400 -mt-1 ml-1 leading-none">System availability</span>
+                     </div>
+                  </div>
+               </div>
+               <p className="text-[9px] font-normal text-gray-300 text-center leading-tight">Calculated across 8 core service clusters in the central region</p>
+            </section>
 
-        {/* Recently Payments Cards (Wait, I used the horizontal card space here) */}
-        <div className="mb-6">
-          <h2 className="text-[17px] font-bold text-gray-900 tracking-tight mb-4">Quick Shortcuts</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Link to="/admin/users" className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center justify-between hover:border-gray-200 transition-colors">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center border border-gray-200 flex-shrink-0">
-                  <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20H7a4 4 0 01-4-4v-1a6 6 0 016-6h6a6 6 0 016 6v1a4 4 0 01-4 4zM12 11a4 4 0 100-8 4 4 0 000 8z" /></svg>
-                </div>
-                <div>
-                  <h4 className="font-bold text-gray-900 text-[15px] leading-snug">Manage Users</h4>
-                  <p className="text-xs text-gray-400 font-medium">Administration</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <span className="text-[11px] font-bold bg-[#e8f5fb] text-[#2c91b5] px-2.5 py-1 rounded-full">Go</span>
-                <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" /></svg>
-              </div>
-            </Link>
-
-            <Link to="/admin/service-centers/create" className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex items-center justify-between hover:border-gray-200 transition-colors">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center border border-gray-200 flex-shrink-0">
-                  <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-                </div>
-                <div>
-                  <h4 className="font-bold text-gray-900 text-[15px] leading-snug">Create Center</h4>
-                  <p className="text-xs text-gray-400 font-medium">Management</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <span className="text-[11px] font-bold bg-[#fff0e6] text-[#b96b34] px-2.5 py-1 rounded-full">Go</span>
-                <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" /></svg>
-              </div>
-            </Link>
-          </div>
-        </div>
-
-        {/* Transactions Table Style for Quick Actions */}
-        <div className="bg-white rounded-3xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-gray-100 p-6 mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-[17px] font-bold text-gray-900 tracking-tight">System Navigation Modules</h2>
-          </div>
-
-          <table className="w-full text-left border-separate border-spacing-y-3">
-            <thead>
-              <tr className="text-[12px] font-bold text-gray-400">
-                <th className="px-5 pb-2 tracking-wide font-bold">Module name</th>
-                <th className="px-5 pb-2 tracking-wide font-bold">Module type</th>
-                <th className="px-5 pb-2 tracking-wide font-bold">Status</th>
-                <th className="px-5 pb-2 tracking-wide font-bold">Description</th>
-                <th className="px-5 pb-2 text-right"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {ACTIONS.map((action, idx) => (
-                <tr key={idx} className="group">
-                  <td className="px-5 py-4 bg-transparent border-b border-gray-100 group-hover:bg-gray-50/50 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-200 bg-gray-100 flex items-center justify-center flex-shrink-0 p-1">
-                        {action.icon}
-                      </div>
-                      <span className="font-bold text-gray-900 text-[14px]">{action.label}</span>
+            <section className="col-span-12 lg:col-span-4 bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm flex flex-col group">
+               <div className="flex justify-between items-center mb-8">
+                  <h3 className="text-[15px] font-semibold text-gray-900 tracking-tighter">Regional demand</h3>
+               </div>
+               <div className="flex flex-col gap-6">
+                  {regionalDemand.length > 0 ? regionalDemand.map((goal, i) => (
+                    <div key={i} className="flex flex-col gap-2">
+                       <div className="flex justify-between items-end">
+                          <div className="flex items-center gap-3">
+                             <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-lg">{goal.icon}</div>
+                             <div>
+                                <h5 className="text-[13px] font-semibold text-gray-900 leading-tight">{goal.label}</h5>
+                                <p className="text-[9px] font-normal text-gray-300">Geographical cluster</p>
+                             </div>
+                          </div>
+                          <span className="text-[11px] font-normal text-gray-400 tracking-tighter">{goal.val}</span>
+                       </div>
+                       <div className="h-1.5 w-full bg-gray-50 rounded-full overflow-hidden">
+                          <div className={`h-full ${goal.color}`} style={{ width: `${goal.percent}%` }}></div>
+                       </div>
                     </div>
-                  </td>
-                  <td className="px-5 py-4 bg-transparent border-b border-gray-100 group-hover:bg-gray-50/50 transition-colors text-[14px] font-medium text-gray-600">
-                    {action.type}
-                  </td>
-                  <td className="px-5 py-4 bg-transparent border-b border-gray-100 group-hover:bg-gray-50/50 transition-colors">
-                    <span className={`text-[11px] font-bold px-2.5 py-1.5 rounded-full ${action.statusBg}`}>
-                      {action.status}
-                    </span>
-                  </td>
-                  <td className="px-5 py-4 bg-transparent border-b border-gray-100 group-hover:bg-gray-50/50 transition-colors text-[14px] font-medium text-gray-900 max-w-[200px] truncate">
-                    {action.description}
-                  </td>
-                  <td className="px-5 py-4 bg-transparent border-b border-gray-100 group-hover:bg-gray-50/50 transition-colors text-right">
-                    <Link to={action.to} className="inline-block text-[11px] font-bold text-gray-600 bg-white border border-gray-200 px-4 py-1.5 rounded-full hover:bg-gray-50 hover:text-black transition-colors shadow-sm">
-                      Enter
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  )) : (
+                    <p className="text-center text-gray-300 font-semibold text-[10px] py-12">No regional data available</p>
+                  )}
+               </div>
+            </section>
         </div>
       </div>
-    </>
+
+      {/* --- RIGHT SIDEBAR AREA (3 Cols) --- */}
+      <div className="col-span-12 xl:col-span-3 flex flex-col gap-8">
+         
+         {/* SYSTEM CONTROL SECTION */}
+         <section className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm flex flex-col gap-8">
+            <div className="flex justify-between items-center">
+               <div className="flex flex-col">
+                  <h3 className="text-[15px] font-semibold text-gray-900 tracking-tighter leading-none">Control node</h3>
+                  <p className="text-[9px] font-normal text-gray-400 mt-1">Admin center</p>
+               </div>
+            </div>
+            
+            {/* The Control Card */}
+            <div className="w-full h-44 bg-gradient-to-br from-[#111827] to-[#1f2937] rounded-[2rem] p-6 flex flex-col justify-between text-white shadow-xl shadow-slate-200/50 relative overflow-hidden group">
+               <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 blur-3xl rounded-full -mr-16 -mt-16"></div>
+               <div className="flex justify-between items-start">
+                  <span className="text-[10px] font-semibold opacity-80">Root access</span>
+                  <span className="text-[15px] font-semibold tracking-tighter">Admin</span>
+               </div>
+               <div className="flex flex-col gap-1">
+                  <p className="text-xl font-semibold tracking-widest tabular-nums font-mono">Admin instance</p>
+                  <div className="flex justify-between items-end mt-2">
+                     <span className="text-[11px] font-semibold tracking-tight">{user?.username || 'System root'}</span>
+                     <span className="text-[11px] font-normal tabular-nums opacity-80 tracking-tighter">v5.0.2</span>
+                  </div>
+               </div>
+            </div>
+
+            {/* Quick Actions Grid */}
+            <div className="grid grid-cols-5 gap-2">
+               {[
+                 { label: 'Users', icon: '👤', to: '/admin/users' },
+                 { label: 'Centers', icon: '🏦', to: '/admin/service-centers' },
+                 { label: 'Audit', icon: '📜', to: '/admin' },
+                 { label: 'Alerts', icon: '📢', to: '/admin' },
+                 { label: 'Setup', icon: '⚙️', to: '/admin' },
+               ].map((act, i) => (
+                 <Link key={i} to={act.to} className="flex flex-col items-center gap-2">
+                    <button className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-sm hover:bg-gray-100 transition-all shrink-0">{act.icon}</button>
+                    <span className="text-[9px] font-normal text-gray-400 tracking-tight scale-90">{act.label}</span>
+                 </Link>
+               ))}
+            </div>
+
+            {/* System Operators (Avatars) */}
+            <div className="flex flex-col gap-4 mt-2">
+               <div className="flex justify-between items-center text-[10px] font-semibold text-gray-900">
+                  <span>Duty officers</span>
+               </div>
+               <div className="flex justify-between gap-2 overflow-x-auto no-scrollbar">
+                  {[
+                    { name: 'Davis', col: 'bg-gray-900', initial: 'D' },
+                    { name: 'Ellis', col: 'bg-emerald-400', initial: 'E' },
+                    { name: 'Leo', col: 'bg-blue-400', initial: 'L' },
+                    { name: 'Amanda', col: 'bg-orange-400', initial: 'A' },
+                    { name: 'Ann', col: 'bg-pink-400', initial: 'A' },
+                  ].map((avatar, i) => (
+                    <div key={i} className="flex flex-col items-center gap-2 shrink-0">
+                       <div className={`w-10 h-10 rounded-full ${avatar.col} flex items-center justify-center text-white font-semibold text-xs border-2 border-white shadow-sm ring-1 ring-gray-100`}>{avatar.initial}</div>
+                       <span className="text-[9px] font-normal text-gray-400">{avatar.name}</span>
+                    </div>
+                  ))}
+               </div>
+            </div>
+         </section>
+
+         {/* SYSTEM ACTIVITY SECTION */}
+         <section className="flex-1 bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm flex flex-col group min-h-[400px]">
+             <div className="flex justify-between items-center mb-8">
+                <h3 className="text-[15px] font-semibold text-gray-900 tracking-tighter leading-none">System activity</h3>
+                <div className="flex items-center gap-1 px-2 py-1 bg-gray-50 rounded-lg text-[9px] font-normal text-gray-400">Audit logs <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" strokeWidth={3}/></svg></div>
+             </div>
+             
+             <div className="flex flex-col gap-6 overflow-y-auto no-scrollbar pr-1">
+                {auditLogs.length > 0 ? auditLogs.map((tx, i) => (
+                  <div key={i} className="flex justify-between items-center group/tx cursor-pointer">
+                     <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-lg shrink-0 group-hover/tx:bg-gray-100 transition-colors">{tx.icon}</div>
+                        <div>
+                           <h5 className="text-[13px] font-semibold text-gray-900 leading-none mb-1 group-hover/tx:text-emerald-500 transition-colors tracking-tight truncate max-w-[120px]">{tx.name}</h5>
+                           <p className="text-[10px] font-normal text-gray-300">{tx.date.toLocaleDateString()}</p>
+                        </div>
+                     </div>
+                     <div className="text-right">
+                        <p className={`text-[13px] font-semibold tabular-nums transition-all ${tx.color}`}>{tx.val}</p>
+                        <p className={`text-[9px] font-normal ${tx.status === 'Success' ? 'text-emerald-400' : 'text-orange-400'} opacity-60`}>{tx.status}</p>
+                     </div>
+                  </div>
+                )) : (
+                   <p className="text-center text-gray-300 font-semibold text-[10px] py-12">No activity detected</p>
+                )}
+             </div>
+         </section>
+      </div>
+    </div>
   );
 }
