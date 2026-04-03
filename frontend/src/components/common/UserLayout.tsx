@@ -101,10 +101,14 @@ export default function UserLayout() {
             </aside>
 
             {/* Main area - Fixed scrolling */}
-            <main className="flex-1 relative pb-20">
-                <div className="w-full max-w-[1400px] mx-auto px-6 py-8">
+            <main className={`flex-1 relative ${location.pathname.startsWith('/queue/') ? '' : 'pb-20'}`}>
+                {location.pathname.startsWith('/queue/') ? (
                     <Outlet />
-                </div>
+                ) : (
+                    <div className="w-full max-w-[1400px] mx-auto px-6 py-8">
+                        <Outlet />
+                    </div>
+                )}
             </main>
         </div>
     );
