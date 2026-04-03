@@ -39,6 +39,20 @@ BEGIN
 
     START TRANSACTION;
 
+    -- Legacy compatibility for environments where appointments.user_id has FK to users.user_id
+    INSERT INTO users (user_id, username, email, password_hash, role, is_active, is_email_verified, created_at)
+    VALUES (
+      p_user_id,
+      CONCAT('ext-user-', p_user_id),
+      CONCAT('ext-user-', p_user_id, '@queue.local'),
+      'external-auth',
+      'citizen',
+      1,
+      1,
+      UTC_TIMESTAMP()
+    )
+    ON DUPLICATE KEY UPDATE user_id = user_id;
+
     -- Duplicate booking check
     SELECT 1 INTO v_has_duplicate
     FROM tokens

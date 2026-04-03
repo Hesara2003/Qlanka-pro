@@ -1,5 +1,6 @@
 using MySqlConnector;
 using QueueLanka.Queue.Models;
+using System.Data;
 
 namespace QueueLanka.Queue.Data;
 
@@ -174,26 +175,27 @@ public class TokenRepository : ITokenRepository
 
     public async Task<bool> CancelAndShiftQueueAsync(int tokenId, int userId, bool isAdmin = false)
     {
-        const string sql = "CALL sp_cancel_token_shift_queue(@TokenId, @UserId, @IsAdmin, @Success)";
-
         await using var conn = new MySqlConnection(_connectionString);
         await conn.OpenAsync();
-        await using var cmd = new MySqlCommand(sql, conn);
-        cmd.Parameters.AddWithValue("@TokenId", tokenId);
-        cmd.Parameters.AddWithValue("@UserId", userId);
-        cmd.Parameters.AddWithValue("@IsAdmin", isAdmin ? (byte)1 : (byte)0);
 
-        // OUT parameter — MySQL sends it back as a result-set row.
-        var successParam = new MySqlParameter("@Success", MySqlDbType.Byte)
+        await using var cmd = new MySqlCommand("sp_cancel_token_shift_queue", conn)
         {
-            Direction = System.Data.ParameterDirection.Output
+            CommandType = CommandType.StoredProcedure
+        };
+
+        cmd.Parameters.AddWithValue("@p_token_id", tokenId);
+        cmd.Parameters.AddWithValue("@p_user_id", userId);
+        cmd.Parameters.AddWithValue("@p_is_admin", isAdmin ? (byte)1 : (byte)0);
+
+        var successParam = new MySqlParameter("@p_success", MySqlDbType.Byte)
+        {
+            Direction = ParameterDirection.Output
         };
         cmd.Parameters.Add(successParam);
 
         await cmd.ExecuteNonQueryAsync();
 
-        // The stored procedure sets @Success = 1 on success, 0 otherwise.
-        return Convert.ToByte(successParam.Value) == 1;
+        return successParam.Value != DBNull.Value && Convert.ToByte(successParam.Value) == 1;
     }
 
     private static Token MapToken(MySqlDataReader reader)

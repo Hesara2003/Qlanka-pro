@@ -75,6 +75,21 @@ BEGIN
 
     START TRANSACTION;
 
+    -- Legacy compatibility: some environments still enforce appointments.user_id -> users.user_id FK.
+    -- Ensure a placeholder user row exists for externally authenticated users.
+    INSERT INTO users (user_id, username, email, password_hash, role, is_active, is_email_verified, created_at)
+    VALUES (
+        p_user_id,
+        CONCAT('ext-user-', p_user_id),
+        CONCAT('ext-user-', p_user_id, '@queue.local'),
+        'external-auth',
+        'citizen',
+        1,
+        1,
+        UTC_TIMESTAMP()
+    )
+    ON DUPLICATE KEY UPDATE user_id = user_id;
+
     -- Validate center_id exists (via capacity param from ServiceCenter HTTP call)
     -- In microservice architecture, center validation is done via HTTP before calling this SP
     -- but we still check for duplicate bookings and conflicts locally
