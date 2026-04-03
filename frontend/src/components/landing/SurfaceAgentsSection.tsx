@@ -131,9 +131,6 @@ export default function SurfaceAgentsSection() {
                                 </div>
                             </div>
 
-                            {/* Background Mesh Glow */}
-                            <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" />
-                            <div className="absolute bottom-0 left-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none" />
                         </motion.div>
 
                     </div>

@@ -118,8 +118,6 @@ export default function AbstractionsSection() {
                                 </div>
                             </div>
 
-                            {/* Background Mesh Glow */}
-                            <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-[#78d64b]/15 rounded-full blur-[100px] pointer-events-none" />
                         </motion.div>
 
                     </div>
