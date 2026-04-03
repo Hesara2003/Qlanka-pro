@@ -1,12 +1,36 @@
+import { useRef } from "react";
 import { Link } from "react-router-dom";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+
+gsap.registerPlugin(ScrollTrigger);
 
 export default function Footer() {
+    const footerRef = useRef<HTMLElement>(null);
+    const watermarkRef = useRef<HTMLSpanElement>(null);
+
+    useGSAP(() => {
+        gsap.to(watermarkRef.current, {
+            x: -200,
+            scrollTrigger: {
+                trigger: footerRef.current,
+                start: "top bottom",
+                end: "bottom top",
+                scrub: 1,
+            }
+        });
+    }, { scope: footerRef });
+
     return (
-        <footer className="w-full bg-[#07090d] font-sans relative overflow-hidden pt-24 pb-12">
+        <footer ref={footerRef} className="w-full bg-[#07090d] font-sans relative overflow-hidden pt-24 pb-12">
             
             {/* Background Decorative Typography */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden select-none">
-                <span className="text-[22vw] font-black text-white/[0.02] tracking-tighter leading-none translate-y-24">
+                <span 
+                    ref={watermarkRef}
+                    className="text-[22vw] font-black text-white/[0.02] tracking-tighter leading-none translate-y-24 will-change-transform"
+                >
                     QUELANKA
                 </span>
             </div>

@@ -1,55 +1,92 @@
+import { useRef } from "react";
 import { motion } from "framer-motion";
 import { Monitor, Smartphone, Tv } from "lucide-react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+
+gsap.registerPlugin(ScrollTrigger);
 
 export default function SurfaceAgentsSection() {
-    const fadeUp = {
-        hidden: { opacity: 0, y: 30 },
-        visible: { opacity: 1, y: 0 }
-    };
+    const sectionRef = useRef<HTMLElement>(null);
+    const textRef = useRef<HTMLDivElement>(null);
+    const cardRef = useRef<HTMLDivElement>(null);
+
+    useGSAP(() => {
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: sectionRef.current,
+                start: "top 80%",
+                toggleActions: "play none none reverse",
+            }
+        });
+
+        // Text Content Sequence
+        tl.from(".reveal-item", {
+            x: 40,
+            opacity: 0,
+            duration: 0.8,
+            stagger: 0.15,
+            ease: "power3.out"
+        })
+        .from(cardRef.current, {
+            x: -60,
+            y: 40,
+            rotateY: -15,
+            opacity: 0,
+            scale: 0.9,
+            duration: 1.2,
+            ease: "expo.out"
+        }, "-=0.6");
+
+        // Subtle Parallax for the card
+        gsap.to(cardRef.current, {
+            y: -30,
+            scrollTrigger: {
+                trigger: sectionRef.current,
+                start: "top bottom",
+                end: "bottom top",
+                scrub: 1.5,
+            }
+        });
+
+        // Parallax for floating elements
+        gsap.to(".parallax-bg", {
+            y: 50,
+            scrollTrigger: {
+                trigger: sectionRef.current,
+                start: "top bottom",
+                end: "bottom top",
+                scrub: 2,
+            }
+        });
+    }, { scope: sectionRef });
 
     return (
-        <section className="py-24 lg:py-48 bg-slate-50 overflow-hidden font-sans relative">
+        <section ref={sectionRef} className="py-24 lg:py-48 bg-slate-50 overflow-hidden font-sans relative">
             <div className="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
                 <div className="flex flex-col lg:flex-row-reverse items-center gap-16 lg:gap-24">
                     
                     {/* Right: Text Content */}
-                    <div className="flex-1 max-w-xl">
-                        <motion.div 
-                            initial="hidden" whileInView="visible" viewport={{ once: true }}
-                            variants={fadeUp} transition={{ duration: 0.7 }}
-                            className="inline-block px-3 py-1 bg-white border border-gray-100 rounded-full text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-10 shadow-soft"
-                        >
+                    <div ref={textRef} className="flex-1 max-w-xl">
+                        <div className="reveal-item inline-block px-3 py-1 bg-white border border-gray-100 rounded-full text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-10 shadow-soft">
                             Inter-Device Sync
-                        </motion.div>
-                        <motion.h2 
-                            initial="hidden" whileInView="visible" viewport={{ once: true }}
-                            variants={fadeUp} transition={{ duration: 0.7, delay: 0.1 }}
-                            className="text-[2.8rem] md:text-[4.2rem] font-medium text-[#1a1c23] leading-[0.98] tracking-tighter mb-10"
-                        >
+                        </div>
+                        <h2 className="reveal-item text-[2.8rem] md:text-[4.2rem] font-medium text-[#1a1c23] leading-[0.98] tracking-tighter mb-10">
                             Seamless Cross-Device <br /> 
                             <span className="font-serif italic text-gray-400">Control</span>
-                        </motion.h2>
-                        <motion.p 
-                            initial="hidden" whileInView="visible" viewport={{ once: true }}
-                            variants={fadeUp} transition={{ duration: 0.7, delay: 0.2 }}
-                            className="text-[17px] md:text-[20px] text-gray-500 leading-relaxed font-normal"
-                        >
+                        </h2>
+                        <p className="reveal-item text-[17px] md:text-[20px] text-gray-500 leading-relaxed font-normal">
                             Synchronized queue management across your counter terminals, digital displays, and manager consoles for a unified branch experience.
-                        </motion.p>
+                        </p>
                     </div>
 
                     {/* Left: High-Fidelity Command Card */}
                     <div className="flex-1 w-full relative">
                         <motion.div 
-                            initial={{ opacity: 0, scale: 0.95, rotateY: -5 }}
-                            whileInView={{ opacity: 1, scale: 1, rotateY: 0 }}
+                            ref={cardRef}
                             animate={{ y: [0, 12, 0] }}
-                            viewport={{ once: true }}
-                            transition={{ 
-                                opacity: { duration: 0.8 },
-                                scale: { duration: 0.8 },
-                                y: { duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }
-                            }}
+                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
                             className="bg-gray-950 rounded-[2.5rem] border border-white/5 shadow-[0_50px_100px_-20px_rgba(30,58,138,0.3)] p-10 md:p-12 relative z-10 overflow-hidden noise-overlay"
                         >
                             {/* Command Header: Branch Sync Status */}
@@ -105,8 +142,8 @@ export default function SurfaceAgentsSection() {
                         </motion.div>
 
                         {/* Floating Decorative Elements */}
-                        <div className="absolute -top-10 -left-10 w-28 h-28 bg-white/40 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] z-0" />
-                        <div className="absolute -bottom-10 -right-10 w-24 h-24 bg-blue-500/5 backdrop-blur-xl border border-blue-500/10 rounded-full z-0 opacity-50" />
+                        <div className="parallax-bg absolute -top-10 -left-10 w-28 h-28 bg-white/40 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] z-0" />
+                        <div className="parallax-bg absolute -bottom-10 -right-10 w-24 h-24 bg-blue-500/5 backdrop-blur-xl border border-blue-500/10 rounded-full z-0 opacity-50" />
                     </div>
 
                 </div>

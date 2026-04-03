@@ -1,54 +1,80 @@
+import { useRef } from "react";
 import { motion } from "framer-motion";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+
+gsap.registerPlugin(ScrollTrigger);
 
 export default function AbstractionsSection() {
-    const fadeUp = {
-        hidden: { opacity: 0, y: 30 },
-        visible: { opacity: 1, y: 0 }
-    };
+    const sectionRef = useRef<HTMLElement>(null);
+    const textRef = useRef<HTMLDivElement>(null);
+    const cardRef = useRef<HTMLDivElement>(null);
+
+    useGSAP(() => {
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: sectionRef.current,
+                start: "top 80%",
+                toggleActions: "play none none reverse",
+            }
+        });
+
+        // Text Content Sequence
+        tl.from(".reveal-text", {
+            y: 40,
+            opacity: 0,
+            duration: 0.8,
+            stagger: 0.15,
+            ease: "power3.out"
+        })
+        .from(cardRef.current, {
+            x: 60,
+            y: 40,
+            rotateY: 15,
+            opacity: 0,
+            scale: 0.9,
+            duration: 1.2,
+            ease: "expo.out"
+        }, "-=0.6");
+
+        // Subtle Parallax for the card
+        gsap.to(cardRef.current, {
+            y: -40,
+            scrollTrigger: {
+                trigger: sectionRef.current,
+                start: "top bottom",
+                end: "bottom top",
+                scrub: 1,
+            }
+        });
+    }, { scope: sectionRef });
 
     return (
-        <section className="py-24 lg:py-48 bg-slate-50 overflow-hidden font-sans relative">
+        <section ref={sectionRef} className="py-24 lg:py-48 bg-slate-50 overflow-hidden font-sans relative">
             <div className="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
                 <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
                     
                     {/* Left: Text Content */}
-                    <div className="flex-1 max-w-xl">
-                        <motion.div 
-                            initial="hidden" whileInView="visible" viewport={{ once: true }}
-                            variants={fadeUp} transition={{ duration: 0.7 }}
-                            className="inline-block px-3 py-1 bg-white border border-gray-100 rounded-full text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-10 shadow-soft"
-                        >
+                    <div ref={textRef} className="flex-1 max-w-xl">
+                        <div className="reveal-text inline-block px-3 py-1 bg-white border border-gray-100 rounded-full text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-10 shadow-soft">
                             System Oversight
-                        </motion.div>
-                        <motion.h2 
-                            initial="hidden" whileInView="visible" viewport={{ once: true }}
-                            variants={fadeUp} transition={{ duration: 0.7, delay: 0.1 }}
-                            className="text-[2.8rem] md:text-[4.2rem] font-medium text-[#1a1c23] leading-[0.98] tracking-tighter mb-10"
-                        >
+                        </div>
+                        <h2 className="reveal-text text-[2.8rem] md:text-[4.2rem] font-medium text-[#1a1c23] leading-[0.98] tracking-tighter mb-10">
                             Flow Control <br /> 
                             <span className="font-serif italic text-gray-400">Abstractions</span>
-                        </motion.h2>
-                        <motion.p 
-                            initial="hidden" whileInView="visible" viewport={{ once: true }}
-                            variants={fadeUp} transition={{ duration: 0.7, delay: 0.2 }}
-                            className="text-[17px] md:text-[20px] text-gray-500 leading-relaxed font-normal"
-                        >
+                        </h2>
+                        <p className="reveal-text text-[17px] md:text-[20px] text-gray-500 leading-relaxed font-normal">
                             A more intuitive approach to monitoring branch activity, presenting managers with essential queue artifacts and verification results to build operational trust.
-                        </motion.p>
+                        </p>
                     </div>
 
                     {/* Right: High-Fidelity Terminal Card */}
                     <div className="flex-1 w-full relative">
                         <motion.div 
-                            initial={{ opacity: 0, scale: 0.95, rotateY: 5 }}
-                            whileInView={{ opacity: 1, scale: 1, rotateY: 0 }}
+                            ref={cardRef}
                             animate={{ y: [0, -12, 0] }}
-                            viewport={{ once: true }}
-                            transition={{ 
-                                opacity: { duration: 0.8 },
-                                scale: { duration: 0.8 },
-                                y: { duration: 4, repeat: Infinity, ease: "easeInOut" }
-                            }}
+                            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                             className="bg-gray-950 rounded-[2.5rem] border border-white/5 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] p-10 md:p-12 relative z-10 overflow-hidden noise-overlay"
                         >
                             {/* Terminal Header */}
@@ -102,8 +128,8 @@ export default function AbstractionsSection() {
                         </motion.div>
 
                         {/* Floating Decorative Elements */}
-                        <div className="absolute -top-8 -right-8 w-24 h-24 bg-white/40 backdrop-blur-2xl border border-white/20 rounded-[2rem] z-0" />
-                        <div className="absolute -bottom-10 -left-10 w-20 h-20 bg-[#78d64b]/10 backdrop-blur-xl border border-[#78d64b]/20 rounded-full z-0 opacity-50" />
+                        <div className="reveal-text absolute -top-8 -right-8 w-24 h-24 bg-white/40 backdrop-blur-2xl border border-white/20 rounded-[2rem] z-0" />
+                        <div className="reveal-text absolute -bottom-10 -left-10 w-20 h-20 bg-[#78d64b]/10 backdrop-blur-xl border border-[#78d64b]/20 rounded-full z-0 opacity-50" />
                     </div>
 
                 </div>
