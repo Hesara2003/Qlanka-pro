@@ -7,10 +7,12 @@ export default function Navbar() {
     const [menuOpen, setMenuOpen] = useState(false);
     const [activeNav, setActiveNav] = useState("Home");
     const navRef = useRef<HTMLDivElement>(null);
+    const innerRef = useRef<HTMLDivElement>(null);
 
     const navItems = ["Home", "Features", "Pricing", "Testimonials"];
 
     useGSAP(() => {
+        // Entrance animation
         gsap.from(navRef.current, {
             y: -20,
             opacity: 0,
@@ -18,12 +20,24 @@ export default function Navbar() {
             ease: "power4.out",
             delay: 0.2
         });
+
+        // Shrink on scroll animation
+        gsap.to(innerRef.current, {
+            maxWidth: "800px", // Shorter width when scrolled
+            ease: "power2.inOut",
+            scrollTrigger: {
+                trigger: "body",
+                start: "top -50", // Start shrinking slightly earlier
+                end: "top -400",  // Longer duration for smoother transition
+                scrub: 1.5,       // Added more inertia
+            }
+        });
     }, { scope: navRef });
 
     return (
         <div ref={navRef} className="fixed top-8 left-0 right-0 z-50 flex justify-center px-4 md:px-8 pointer-events-none">
-            <div className="relative w-full max-w-6xl pointer-events-auto">
-                <nav className="flex items-center justify-between px-8 py-3 bg-[#0b0c10] border border-white/5 rounded-full shadow-[0_25px_50px_-12px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.05)_inset]">
+            <div ref={innerRef} className="relative w-full max-w-6xl pointer-events-auto">
+                <nav className="flex items-center justify-between px-8 py-3 bg-[#0b0c10]/95 backdrop-blur-xl border border-white/5 rounded-full shadow-[0_25px_50px_-12px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.05)_inset]">
                     
                     {/* Logo (Left) */}
                     <Link to="/" className="flex items-center flex-shrink-0">
