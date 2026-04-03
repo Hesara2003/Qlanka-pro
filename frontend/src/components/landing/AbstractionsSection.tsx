@@ -21,22 +21,27 @@ export default function AbstractionsSection() {
         });
 
         // Text Content Sequence
-        tl.from(".reveal-text", {
-            y: 40,
-            opacity: 0,
-            duration: 0.8,
-            stagger: 0.15,
-            ease: "power3.out"
-        })
-        .from(cardRef.current, {
-            x: 60,
-            y: 40,
-            rotateY: 15,
-            opacity: 0,
-            scale: 0.9,
-            duration: 1.2,
-            ease: "expo.out"
-        }, "-=0.6");
+        tl.fromTo(".reveal-text", 
+            { y: 40, opacity: 0 },
+            {
+                y: 0,
+                opacity: 1,
+                duration: 0.8,
+                stagger: 0.15,
+                ease: "power3.out"
+            }
+        )
+        .fromTo(cardRef.current, 
+            { x: 60, y: 40, rotateY: 15, opacity: 0, scale: 0.9 },
+            {
+                x: 0,
+                y: 0,
+                rotateY: 0,
+                opacity: 1,
+                scale: 1,
+                duration: 1.2,
+                ease: "expo.out"
+            }, "-=0.6");
 
         // Subtle Parallax for the card
         gsap.to(cardRef.current, {

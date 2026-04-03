@@ -21,11 +21,17 @@ export default function LandingPage() {
             <main>
                 <BannerMarquee />
                 <BannerStats />
-                <AbstractionsSection />
+                <div id="features">
+                    <AbstractionsSection />
+                </div>
                 <SurfaceAgentsSection />
-                <DeveloperShowcase />
+                <div id="testimonials">
+                    <DeveloperShowcase />
+                </div>
                 <TestimonialsSection />
-                <BannerHighlight />
+                <div id="pricing">
+                    <BannerHighlight />
+                </div>
             </main>
 
             <Footer />

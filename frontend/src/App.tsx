@@ -45,9 +45,13 @@ function App() {
 
     gsap.ticker.lagSmoothing(0);
 
+    const refreshTimeout = setTimeout(() => {
+      ScrollTrigger.refresh();
+    }, 500);
+
     return () => {
       lenis.destroy();
-      gsap.ticker.remove(ScrollTrigger.update); // Cleanup
+      clearTimeout(refreshTimeout);
     };
   }, []);
 
