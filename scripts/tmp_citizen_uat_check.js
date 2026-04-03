@@ -3,7 +3,7 @@
 // Token View correctness, Real-time readiness (SignalR negotiate), Cancel status change,
 // Logout simulation (token removed -> protected endpoint denied)
 
-const API_BASE = (process.env.API_BASE || 'https://qlanka-gateway.redrock-2a740b8b.centralindia.azurecontainerapps.io').replace(/\/+$/, '');
+const API_BASE = (process.env.API_BASE || 'https://qlanka-gateway.redrock-2a740b8b.centralindia.azurecontainerapps.io').replace(/\/+$/, '').replace(/\/api$/i, '');
 const BASE_API = `${API_BASE}/api`;
 const REQUEST_TIMEOUT_MS = Number(process.env.REQUEST_TIMEOUT_MS || 30000);
 const SEARCH_DAYS = Number(process.env.SEARCH_DAYS || 14);

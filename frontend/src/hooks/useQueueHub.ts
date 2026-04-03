@@ -412,6 +412,9 @@ export function useQueueHub(options: UseQueueHubOptions): UseQueueHubResult {
             connection = new HubConnectionBuilder()
                 .withUrl(hubUrl, {
                     accessTokenFactory: () => getAccessToken() ?? "",
+                    // JWT bearer auth is sent via accessTokenFactory; cookies are not required.
+                    // Disabling credentials avoids cross-origin negotiate failures when ACA-Credentials is missing.
+                    withCredentials: false,
                 })
                 .configureLogging(LogLevel.Warning)
                 .build();

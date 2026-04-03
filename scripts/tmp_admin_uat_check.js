@@ -1,7 +1,7 @@
 // Admin E2E UAT checker
 // Flow: admin login -> centers list -> create center -> update/toggle checks -> users list/delete -> RBAC -> propagation -> logout
 
-const API_BASE = (process.env.API_BASE || 'https://qlanka-gateway.redrock-2a740b8b.centralindia.azurecontainerapps.io').replace(/\/+$/, '');
+const API_BASE = (process.env.API_BASE || 'https://qlanka-gateway.redrock-2a740b8b.centralindia.azurecontainerapps.io').replace(/\/+$/, '').replace(/\/api$/i, '');
 const BASE_API = `${API_BASE}/api`;
 const REQUEST_TIMEOUT_MS = Number(process.env.REQUEST_TIMEOUT_MS || 30000);
 

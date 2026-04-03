@@ -5,7 +5,7 @@
 //   $env:CITIZEN_PASS='Diabalo@666'
 //   node scripts/tmp_citizen_endpoint_matrix.js
 
-const API_BASE = (process.env.API_BASE || 'https://qlanka-gateway.redrock-2a740b8b.centralindia.azurecontainerapps.io').replace(/\/+$/, '');
+const API_BASE = (process.env.API_BASE || 'https://qlanka-gateway.redrock-2a740b8b.centralindia.azurecontainerapps.io').replace(/\/+$/, '').replace(/\/api$/i, '');
 const CITIZEN_USER = process.env.CITIZEN_USER || 'Uvin';
 const CITIZEN_PASS = process.env.CITIZEN_PASS || 'Diabalo@666';
 const REQUEST_TIMEOUT_MS = Number(process.env.REQUEST_TIMEOUT_MS || 30000);
