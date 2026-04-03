@@ -561,11 +561,7 @@ export function useQueueHub(options: UseQueueHubOptions): UseQueueHubResult {
             });
             return;
         }
-
-        if (connectionStatus === "connected" && onReconnected) {
-            void onReconnected();
-        }
-    }, [connectionStatus, isVisible, onReconnected, reconnect]);
+    }, [connectionStatus, isVisible, reconnect]);
 
     useEffect(() => {
         if (user) {
