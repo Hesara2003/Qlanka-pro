@@ -1,5 +1,5 @@
 import { Navigate, Link } from "react-router-dom";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTokens } from "../hooks/useTokens";
 import { useQueueHub } from "../hooks/useQueueHub";
@@ -18,6 +18,23 @@ export default function DashboardPage() {
   const { toasts, addToast, removeToast } = useToast();
 
   const activeToken = liveTokens.find((token) => ["Waiting", "Called", "Serving"].includes(token.status)) ?? null;
+
+  // SCRUM-74: Sort tokens to show cancelled/completed at the end
+  const sortedTokens = useMemo(() => {
+    return [...liveTokens].sort((a, b) => {
+        const inactiveStatuses = ['Cancelled', 'Completed', 'Skipped'];
+        const aInactive = inactiveStatuses.includes(a.status);
+        const bInactive = inactiveStatuses.includes(b.status);
+        
+        if (aInactive && !bInactive) return 1;
+        if (!aInactive && bInactive) return -1;
+        
+        // Secondary sort: newest first
+        const dateA = new Date(`${a.issuedDate}T${a.issuedTime}`).getTime();
+        const dateB = new Date(`${b.issuedDate}T${b.issuedTime}`).getTime();
+        return dateB - dateA;
+    });
+  }, [liveTokens]);
 
   const { latestCalledToken, latestStatusUpdate, latestCancellation, latestQueueUpdate } = useQueueHub({
     centerId: activeToken?.centerId,
@@ -233,11 +250,15 @@ export default function DashboardPage() {
               </div>
               <div className="flex gap-16 mr-8">
                 <div className="text-center">
-                  <p className="text-5xl font-black text-[#78d64b]">{liveTokens.length}</p>
+                  <p className="text-5xl font-black text-[#78d64b]">
+                    {liveTokens.filter(t => !['Cancelled', 'Completed', 'Skipped'].includes(t.status)).length}
+                  </p>
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2">Active</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-5xl font-black text-gray-100">0</p>
+                  <p className="text-5xl font-black text-gray-100 italic">
+                    {liveTokens.filter(t => ['Cancelled', 'Completed', 'Skipped'].includes(t.status)).length}
+                  </p>
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2">History</p>
                 </div>
               </div>
@@ -271,7 +292,7 @@ export default function DashboardPage() {
                 </thead>
                 <tbody className="text-base">
                   <AnimatePresence mode="popLayout">
-                    {liveTokens.map((token) => (
+                    {sortedTokens.map((token) => (
                       <motion.tr 
                         layout
                         initial={{ opacity: 0 }}
@@ -304,21 +325,27 @@ export default function DashboardPage() {
                           {token.eta ? new Date(token.eta).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Calculating...'}
                         </td>
                         <td className="py-8 text-center">
-                          <Link 
-                            to={`/queue/${token.centerId}`}
-                            className="inline-flex items-center gap-3 px-5 py-2.5 bg-gray-900 text-white hover:bg-black rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg active:scale-95"
-                          >
-                            <svg className="w-4 h-4 text-[#78d64b]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                            Open Queue
-                          </Link>
+                          {['Waiting', 'Called', 'Serving'].includes(token.status) ? (
+                            <Link 
+                              to={`/queue/${token.centerId}`}
+                              className="inline-flex items-center gap-3 px-5 py-2.5 bg-gray-900 text-white hover:bg-black rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all shadow-lg active:scale-95"
+                            >
+                              <svg className="w-4 h-4 text-[#78d64b]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                              Open Queue
+                            </Link>
+                          ) : (
+                            <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest italic">Session Ended</span>
+                          )}
                         </td>
                         <td className="py-8 text-right">
-                          <button 
-                            onClick={() => handleCancelToken(token.tokenId)}
-                            className="w-10 h-10 rounded-full bg-red-50 text-red-400 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center ml-auto border border-red-100"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={4}><path d="M6 18L18 6M6 6l12 12"/></svg>
-                          </button>
+                          {['Waiting', 'Called', 'Serving'].includes(token.status) && (
+                            <button 
+                              onClick={() => handleCancelToken(token.tokenId)}
+                              className="w-10 h-10 rounded-full bg-red-50 text-red-400 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center ml-auto border border-red-100"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={4}><path d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                          )}
                         </td>
                       </motion.tr>
                     ))}
