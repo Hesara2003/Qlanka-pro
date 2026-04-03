@@ -21,9 +21,19 @@ public class ReportRepository : IReportRepository
         DateTime toDate,
         List<int>? centerIds)
     {
+        await using var conn = new MySqlConnection(_connectionString);
+        await conn.OpenAsync();
+
+        var tokenColumns = await GetTokenColumnNamesAsync(conn);
+
+        var issuedExpr = ResolveDateTimeExpression(tokenColumns, "t");
+        var calledExpr = ResolveOptionalExpression(tokenColumns, "called_at", "t");
+        var servedExpr = ResolveOptionalExpression(tokenColumns, "served_at", "t", fallbackColumn: "served_time");
+        var subqueryIssuedExpr = ResolveDateTimeExpression(tokenColumns, "tp");
+
         var sqlBuilder = new StringBuilder(@"
             SELECT
-                DATE(t.issued_at) AS summary_date,
+                DATE(" + issuedExpr + @") AS summary_date,
                 t.center_id,
                 COALESCE(NULLIF((
                     SELECT MIN(c.name)
@@ -36,29 +46,29 @@ public class ReportRepository : IReportRepository
                 SUM(CASE WHEN t.status = 'Cancelled' THEN 1 ELSE 0 END) AS total_cancelled,
                 SUM(CASE WHEN t.status IN ('Waiting', 'Called') THEN 1 ELSE 0 END) AS no_show_count,
                 COALESCE(ROUND(AVG(CASE
-                    WHEN t.called_at IS NOT NULL THEN TIMESTAMPDIFF(SECOND, t.issued_at, t.called_at)
+                    WHEN " + calledExpr + @" IS NOT NULL THEN TIMESTAMPDIFF(SECOND, " + issuedExpr + @", " + calledExpr + @")
                     ELSE NULL
                 END)), 0) AS avg_wait_time_seconds,
                 COALESCE(ROUND(AVG(CASE
-                    WHEN t.called_at IS NOT NULL AND t.served_at IS NOT NULL THEN TIMESTAMPDIFF(SECOND, t.called_at, t.served_at)
+                    WHEN " + calledExpr + @" IS NOT NULL AND " + servedExpr + @" IS NOT NULL THEN TIMESTAMPDIFF(SECOND, " + calledExpr + @", " + servedExpr + @")
                     ELSE NULL
                 END)), 0) AS avg_service_time_seconds,
                 COALESCE((
-                    SELECT HOUR(tp.issued_at)
+                    SELECT HOUR(" + subqueryIssuedExpr + @")
                     FROM tokens tp
-                    WHERE DATE(tp.issued_at) = DATE(t.issued_at)
+                    WHERE DATE(" + subqueryIssuedExpr + @") = DATE(" + issuedExpr + @")
                       AND tp.center_id = t.center_id
-                    GROUP BY HOUR(tp.issued_at)
-                    ORDER BY COUNT(*) DESC, HOUR(tp.issued_at) ASC
+                    GROUP BY HOUR(" + subqueryIssuedExpr + @")
+                    ORDER BY COUNT(*) DESC, HOUR(" + subqueryIssuedExpr + @") ASC
                     LIMIT 1
                 ), 0) AS peak_hour,
                 COALESCE((
                     SELECT COUNT(*)
                     FROM tokens tp
-                    WHERE DATE(tp.issued_at) = DATE(t.issued_at)
+                    WHERE DATE(" + subqueryIssuedExpr + @") = DATE(" + issuedExpr + @")
                       AND tp.center_id = t.center_id
-                    GROUP BY HOUR(tp.issued_at)
-                    ORDER BY COUNT(*) DESC, HOUR(tp.issued_at) ASC
+                    GROUP BY HOUR(" + subqueryIssuedExpr + @")
+                    ORDER BY COUNT(*) DESC, HOUR(" + subqueryIssuedExpr + @") ASC
                     LIMIT 1
                 ), 0) AS peak_hour_token_count,
                 COUNT(DISTINCT CASE
@@ -66,10 +76,7 @@ public class ReportRepository : IReportRepository
                     ELSE NULL
                 END) AS active_counters
             FROM tokens t
-            WHERE DATE(t.issued_at) BETWEEN @FromDate AND @ToDate");
-
-        await using var conn = new MySqlConnection(_connectionString);
-        await conn.OpenAsync();
+            WHERE DATE(" + issuedExpr + @") BETWEEN @FromDate AND @ToDate");
 
         await using var cmd = new MySqlCommand(string.Empty, conn);
         cmd.Parameters.AddWithValue("@FromDate", fromDate.Date);
@@ -89,7 +96,7 @@ public class ReportRepository : IReportRepository
         }
 
         sqlBuilder.Append(@"
-            GROUP BY DATE(t.issued_at), t.center_id
+            GROUP BY DATE(" + issuedExpr + @"), t.center_id
             ORDER BY summary_date ASC, center_name ASC");
 
         cmd.CommandText = sqlBuilder.ToString();
@@ -118,5 +125,62 @@ public class ReportRepository : IReportRepository
         }
 
         return rows;
+    }
+
+    private static async Task<HashSet<string>> GetTokenColumnNamesAsync(MySqlConnection conn)
+    {
+        await using var cmd = new MySqlCommand(@"
+            SELECT COLUMN_NAME
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE()
+              AND TABLE_NAME = 'tokens'", conn);
+
+        var columns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        await using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            columns.Add(reader.GetString(0));
+        }
+
+        return columns;
+    }
+
+    private static string ResolveDateTimeExpression(HashSet<string> columns, string alias)
+    {
+        if (columns.Contains("issued_at"))
+        {
+            return $"{alias}.issued_at";
+        }
+
+        if (columns.Contains("issued_time"))
+        {
+            return $"{alias}.issued_time";
+        }
+
+        if (columns.Contains("issued_date"))
+        {
+            return $"CAST({alias}.issued_date AS DATETIME)";
+        }
+
+        throw new InvalidOperationException("tokens table does not contain a supported issue timestamp column.");
+    }
+
+    private static string ResolveOptionalExpression(
+        HashSet<string> columns,
+        string preferredColumn,
+        string alias,
+        string? fallbackColumn = null)
+    {
+        if (columns.Contains(preferredColumn))
+        {
+            return $"{alias}.{preferredColumn}";
+        }
+
+        if (!string.IsNullOrWhiteSpace(fallbackColumn) && columns.Contains(fallbackColumn))
+        {
+            return $"{alias}.{fallbackColumn}";
+        }
+
+        return "NULL";
     }
 }
