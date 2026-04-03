@@ -72,7 +72,7 @@ export interface QueuePositionDto {
 export const tokenApi = {
     getMyTokens: async (): Promise<UserToken[]> => {
         try {
-            const response = await axiosInstance.get(`/api/Token/my-tokens`);
+            const response = await axiosInstance.get(`/api/token/my-tokens`);
             // Unwrap API envelope { data: [...] } — same pattern as appointmentApi
             return response.data?.data ?? response.data;
         } catch (error) {
@@ -82,17 +82,38 @@ export const tokenApi = {
 
     getServiceCenterQueue: async (centerId: number): Promise<QueuePositionDto[]> => {
         try {
-            const response = await axiosInstance.get(`/api/Token/center/${centerId}/queue`);
+            const response = await axiosInstance.get(`/api/token/center/${centerId}/queue`);
             // Unwrap API envelope { data: [...] }
             return response.data?.data ?? response.data;
         } catch (error) {
+            // Fallback for environments where center queue endpoint is not exposed.
+            // We derive a minimal queue view from the caller's active tokens.
+            if (error instanceof AxiosError && error.response?.status === 404) {
+                const response = await axiosInstance.get(`/api/token/my-tokens`);
+                const myTokens = (response.data?.data ?? response.data ?? []) as UserToken[];
+
+                return myTokens
+                    .filter((token) =>
+                        token.centerId === centerId
+                        && ["waiting", "called", "serving"].includes(String(token.status).toLowerCase())
+                    )
+                    .sort((a, b) => (a.queuePosition ?? Number.MAX_SAFE_INTEGER) - (b.queuePosition ?? Number.MAX_SAFE_INTEGER))
+                    .map((token) => ({
+                        tokenId: token.tokenId,
+                        tokenNumber: token.tokenNumber,
+                        status: token.status,
+                        position: token.queuePosition ?? 0,
+                        eta: token.eta,
+                    }));
+            }
+
             throw new Error(extractErrorMessage(error));
         }
     },
 
     cancelToken: async (tokenId: number): Promise<void> => {
         try {
-            await axiosInstance.put(`/api/Token/${tokenId}/cancel`);
+            await axiosInstance.put(`/api/token/${tokenId}/cancel`);
         } catch (error) {
             if (error instanceof AxiosError) {
                 const status = error.response?.status;

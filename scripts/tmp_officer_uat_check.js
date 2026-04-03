@@ -36,11 +36,18 @@ async function call(path, { method = 'GET', token, body, base = BASE_API } = {})
   return { status: res.status, data };
 }
 
-async function bookTodayAtAvailableSlot(token, centerId, startHour = 9, startMinute = 30) {
-  for (let i = 0; i < 60; i += 1) {
-    const minute = (startMinute + i) % 60;
-    const hourCarry = Math.floor((startMinute + i) / 60);
-    const hour = startHour + hourCarry;
+async function bookNextAvailableSlot(token, centerId, startHour = 9, startMinute = 30) {
+  const now = new Date();
+  const firstCandidate = new Date(now.getTime() + 10 * 60 * 1000);
+  const minHour = Math.max(startHour, firstCandidate.getHours());
+  const minMinute = (minHour === firstCandidate.getHours())
+    ? firstCandidate.getMinutes()
+    : startMinute;
+
+  for (let i = 0; i < 120; i += 1) {
+    const minute = (minMinute + i) % 60;
+    const hourCarry = Math.floor((minMinute + i) / 60);
+    const hour = minHour + hourCarry;
 
     if (hour > 16) break;
 
@@ -170,7 +177,8 @@ function decodeJwtPayload(token) {
   // Determine center
   const centersRes = await call('/service-centers', { token: adminToken });
   const centers = Array.isArray(centersRes.data?.data) ? centersRes.data.data : (Array.isArray(centersRes.data) ? centersRes.data : []);
-  const center = centers.find((c) => c?.isActive !== false && c?.isAvailable !== false) || centers[0];
+  const preferredCenter = centers.find((c) => Number(c?.centerId ?? c?.id) === 1 && c?.isActive !== false);
+  const center = preferredCenter || centers.find((c) => c?.isActive !== false && c?.isAvailable !== false) || centers[0];
   const centerId = Number(center?.centerId ?? center?.id ?? 0);
   artifacts.centerId = centerId || null;
 
@@ -204,8 +212,8 @@ function decodeJwtPayload(token) {
   const tokenA = tokenFromLogin(loginA.data);
   const tokenB = tokenFromLogin(loginB.data);
 
-  const bookA = await bookTodayAtAvailableSlot(tokenA, centerId, 9, 30);
-  const bookB = await bookTodayAtAvailableSlot(tokenB, centerId, 10, 0);
+  const bookA = await bookNextAvailableSlot(tokenA, centerId, 9, 30);
+  const bookB = await bookNextAvailableSlot(tokenB, centerId, 10, 0);
 
   push(results, 'View Queue', 'Seed booking A created', bookA.status === 200 || bookA.status === 409, `status=${bookA.status}`);
   push(results, 'View Queue', 'Seed booking B created', bookB.status === 200 || bookB.status === 409, `status=${bookB.status}`);

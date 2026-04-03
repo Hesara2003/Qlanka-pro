@@ -88,8 +88,8 @@ function push(results, step, test, pass, details) {
   artifacts.registerStatus = registerRes.status;
 
   // 2) Login: JWT + redirect contract
-  const loginUser = process.env.CITIZEN_USER || 'Uvin';
-  const loginPass = process.env.CITIZEN_PASS || 'Diabalo@666';
+  const loginUser = process.env.CITIZEN_USER || regUser;
+  const loginPass = process.env.CITIZEN_PASS || regPass;
   const loginRes = await call('/auth/login', {
     method: 'POST',
     body: { username: loginUser, password: loginPass },
@@ -118,7 +118,8 @@ function push(results, step, test, pass, details) {
   push(results, 'View Centers', 'Centers API reachable', centersRes.status === 200, `status=${centersRes.status}`);
   push(results, 'View Centers', 'Center data renderable', hasRenderableFields, `count=${centerData.length}`);
 
-  const selectedCenter = centerData.find((c) => c?.isActive !== false && c?.isAvailable !== false) || sampleCenter;
+  const preferredCenter = centerData.find((c) => Number(c?.centerId ?? c?.id) === 1 && c?.isActive !== false);
+  const selectedCenter = preferredCenter || centerData.find((c) => c?.isActive !== false && c?.isAvailable !== false) || sampleCenter;
   const centerId = Number(selectedCenter?.centerId ?? selectedCenter?.id ?? 0);
   artifacts.centerId = centerId || null;
 

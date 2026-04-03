@@ -258,9 +258,26 @@ export const counterApi = {
 
     async getAvailableCounters(centerId: number): Promise<AvailableCounterDto[]> {
         try {
-            const response = await axiosInstance.get(`/api/service-centers/${centerId}/counters`);
-            const counters = (response.data?.data ?? response.data) as AvailableCounterDto[];
-            return counters;
+            const response = await axiosInstance.get(`/api/admin/centers/${centerId}/counters`);
+            const payload = response.data?.data ?? response.data;
+            const counters = Array.isArray(payload?.counters)
+                ? payload.counters
+                : (Array.isArray(payload) ? payload : []);
+
+            return counters.map((counter: {
+                counterId: number;
+                centerId: number;
+                name: string;
+                isOpen?: boolean;
+                status?: string;
+            }) => ({
+                counterId: counter.counterId,
+                centerId: counter.centerId,
+                name: counter.name,
+                status: typeof counter.status === "string"
+                    ? counter.status
+                    : (counter.isOpen ? "Open" : "Closed"),
+            }));
         } catch (error) {
             throw new Error(extractErrorMessage(error));
         }
