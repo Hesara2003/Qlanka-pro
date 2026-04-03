@@ -23,7 +23,6 @@ public class ReportsController : ControllerBase
 
     [HttpGet("daily-summary/csv")]
     [ResponseCache(NoStore = true)]
-    [Produces("text/csv")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -65,7 +64,6 @@ public class ReportsController : ControllerBase
     [HttpGet("/reports/centers/{id}/summary")]
     [HttpGet("centers/{id}/summary")]
     [ResponseCache(NoStore = true)]
-    [Produces("text/csv")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

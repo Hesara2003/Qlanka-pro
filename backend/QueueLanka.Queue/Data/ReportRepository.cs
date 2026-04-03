@@ -30,6 +30,7 @@ public class ReportRepository : IReportRepository
         var calledExpr = ResolveOptionalExpression(tokenColumns, "called_at", "t");
         var servedExpr = ResolveOptionalExpression(tokenColumns, "served_at", "t", fallbackColumn: "served_time");
         var subqueryIssuedExpr = ResolveDateTimeExpression(tokenColumns, "tp");
+        var groupedIssuedDateExpr = $"DATE(MIN({issuedExpr}))";
 
         var sqlBuilder = new StringBuilder(@"
             SELECT
@@ -56,7 +57,7 @@ public class ReportRepository : IReportRepository
                 COALESCE((
                     SELECT HOUR(" + subqueryIssuedExpr + @")
                     FROM tokens tp
-                    WHERE DATE(" + subqueryIssuedExpr + @") = DATE(" + issuedExpr + @")
+                                        WHERE DATE(" + subqueryIssuedExpr + @") = " + groupedIssuedDateExpr + @"
                       AND tp.center_id = t.center_id
                     GROUP BY HOUR(" + subqueryIssuedExpr + @")
                     ORDER BY COUNT(*) DESC, HOUR(" + subqueryIssuedExpr + @") ASC
@@ -65,7 +66,7 @@ public class ReportRepository : IReportRepository
                 COALESCE((
                     SELECT COUNT(*)
                     FROM tokens tp
-                    WHERE DATE(" + subqueryIssuedExpr + @") = DATE(" + issuedExpr + @")
+                                        WHERE DATE(" + subqueryIssuedExpr + @") = " + groupedIssuedDateExpr + @"
                       AND tp.center_id = t.center_id
                     GROUP BY HOUR(" + subqueryIssuedExpr + @")
                     ORDER BY COUNT(*) DESC, HOUR(" + subqueryIssuedExpr + @") ASC
