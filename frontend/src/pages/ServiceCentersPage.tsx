@@ -249,9 +249,9 @@ export default function ServiceCentersPage() {
         </div>
       )}
 
-      {/* Hub Grid */}
+      {/* Hub Directory List */}
       {!loading && !error && currentCenters.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+        <div className="flex flex-col gap-4">
           {currentCenters.map((center) => (
             <ServiceCenterCard key={center.centerId} center={center} />
           ))}
