@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Building2, Hospital } from "lucide-react";
 
 export default function DeveloperShowcase() {
     const fadeUp = {
@@ -28,10 +29,10 @@ export default function DeveloperShowcase() {
                     </motion.p>
                 </div>
 
-                {/* Developer Grid */}
+                {/* Testimonial Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10">
                     
-                    {/* Column 1: Frontend Developer */}
+                    {/* Card 1: Retail Operations */}
                     <motion.div 
                         initial={{ opacity: 0, y: 40 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -40,26 +41,37 @@ export default function DeveloperShowcase() {
                         className="group relative h-[500px] lg:h-[700px] rounded-[3rem] overflow-hidden shadow-2xl transition-all duration-700 hover:shadow-gray-300/30"
                     >
                         <img 
-                            src="frontend_developer_portrait_1775214543665.png" 
-                            alt="Frontend Developer"
+                            src="/retail_executive.png" 
+                            alt="Retail Operations Director"
                             className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-transparent to-transparent opacity-70 group-hover:opacity-60 transition-opacity" />
                         
-                        {/* Overlay Content */}
-                        <div className="absolute bottom-12 left-12 z-20">
+                        {/* Testimonial Overlay — Sleek Dark Mode */}
+                        <div className="absolute bottom-8 left-8 right-8 z-20">
                             <motion.div 
-                                initial={{ opacity: 0, x: -20 }}
-                                whileInView={{ opacity: 1, x: 0 }}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.4 }}
-                                className="text-[3rem] lg:text-[4rem] font-medium text-white leading-tight tracking-tighter"
+                                className="bg-black/90 backdrop-blur-sm border border-white/10 rounded-[2rem] p-6 lg:p-8 shadow-2xl"
                             >
-                                Frontend <br /> developer <span className="text-[#78d64b]">|</span>
+                                <div className="flex items-start gap-4 mb-4">
+                                    <div className="w-8 h-8 rounded-lg bg-[#78d64b] flex items-center justify-center shrink-0">
+                                        <Building2 size={16} className="text-[#074b42]" />
+                                    </div>
+                                    <p className="text-white text-[15px] lg:text-[17px] font-medium leading-snug">
+                                        "QueueLanka transformed our terminal traffic. We've seen a 30% increase in efficiency."
+                                    </p>
+                                </div>
+                                <div className="pl-12">
+                                    <div className="text-white font-bold text-[13px] uppercase tracking-wider">Global Retail Corp</div>
+                                    <div className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-0.5">Operations Director</div>
+                                </div>
                             </motion.div>
                         </div>
                     </motion.div>
 
-                    {/* Column 2: Backend Developer / Professional Era */}
+                    {/* Card 2: Healthcare Director */}
                     <motion.div 
                         initial={{ opacity: 0, y: 40 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -68,21 +80,32 @@ export default function DeveloperShowcase() {
                         className="group relative h-[500px] lg:h-[700px] rounded-[3rem] overflow-hidden shadow-2xl transition-all duration-700 hover:shadow-gray-300/30"
                     >
                         <img 
-                            src="backend_developer_portrait_1775214563399.png" 
-                            alt="Backend Developer"
+                            src="/healthcare_director.png" 
+                            alt="Clinical Services Director"
                             className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-transparent to-transparent opacity-70 group-hover:opacity-60 transition-opacity" />
                         
-                        {/* Overlay Content: Optional text from the user's screenshots but focusing on high fidelity visuals */}
-                        <div className="absolute bottom-12 left-12 z-20">
+                        {/* Testimonial Overlay — Sleek Dark Mode */}
+                        <div className="absolute bottom-8 left-8 right-8 z-20">
                             <motion.div 
-                                initial={{ opacity: 0, x: -20 }}
-                                whileInView={{ opacity: 1, x: 0 }}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.5 }}
-                                className="text-[3rem] lg:text-[4rem] font-medium text-white leading-tight tracking-tighter"
+                                className="bg-black/90 backdrop-blur-sm border border-white/10 rounded-[2rem] p-6 lg:p-8 shadow-2xl"
                             >
-                                Enterprise <br /> engineer <span className="text-blue-500">_</span>
+                                <div className="flex items-start gap-4 mb-4">
+                                    <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center shrink-0">
+                                        <Hospital size={16} className="text-white" />
+                                    </div>
+                                    <p className="text-white text-[15px] lg:text-[17px] font-medium leading-snug">
+                                        "Patient satisfaction has soared. Real-time updates reduced lobby crowding by 45%."
+                                    </p>
+                                </div>
+                                <div className="pl-12">
+                                    <div className="text-white font-bold text-[13px] uppercase tracking-wider">City Health Systems</div>
+                                    <div className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-0.5">Clinic Director</div>
+                                </div>
                             </motion.div>
                         </div>
                     </motion.div>

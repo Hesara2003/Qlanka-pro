@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Monitor, Smartphone, Tv } from "lucide-react";
 
 export default function SurfaceAgentsSection() {
     const fadeUp = {
@@ -7,68 +8,105 @@ export default function SurfaceAgentsSection() {
     };
 
     return (
-        <section className="py-24 lg:py-36 bg-[#f8fafc] overflow-hidden font-sans">
-            <div className="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-12">
+        <section className="py-24 lg:py-48 bg-slate-50 overflow-hidden font-sans relative">
+            <div className="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
                 <div className="flex flex-col lg:flex-row-reverse items-center gap-16 lg:gap-24">
                     
                     {/* Right: Text Content */}
                     <div className="flex-1 max-w-xl">
-                        <motion.h2 
+                        <motion.div 
                             initial="hidden" whileInView="visible" viewport={{ once: true }}
                             variants={fadeUp} transition={{ duration: 0.7 }}
-                            className="text-[2.8rem] md:text-[3.8rem] font-medium text-[#1a1c23] leading-[1.05] tracking-tighter mb-8"
+                            className="inline-block px-3 py-1 bg-white border border-gray-100 rounded-full text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-10 shadow-soft"
                         >
-                            Seamless Cross-Device <br /> Control
+                            Inter-Device Sync
+                        </motion.div>
+                        <motion.h2 
+                            initial="hidden" whileInView="visible" viewport={{ once: true }}
+                            variants={fadeUp} transition={{ duration: 0.7, delay: 0.1 }}
+                            className="text-[2.8rem] md:text-[4.2rem] font-medium text-[#1a1c23] leading-[0.98] tracking-tighter mb-10"
+                        >
+                            Seamless Cross-Device <br /> 
+                            <span className="font-serif italic text-gray-400">Control</span>
                         </motion.h2>
                         <motion.p 
                             initial="hidden" whileInView="visible" viewport={{ once: true }}
-                            variants={fadeUp} transition={{ duration: 0.7, delay: 0.1 }}
-                            className="text-[17px] md:text-[19px] text-gray-500 leading-relaxed font-normal"
+                            variants={fadeUp} transition={{ duration: 0.7, delay: 0.2 }}
+                            className="text-[17px] md:text-[20px] text-gray-500 leading-relaxed font-normal"
                         >
                             Synchronized queue management across your counter terminals, digital displays, and manager consoles for a unified branch experience.
                         </motion.p>
                     </div>
 
-                    {/* Left: Input Card */}
+                    {/* Left: High-Fidelity Command Card */}
                     <div className="flex-1 w-full relative">
                         <motion.div 
-                            initial={{ opacity: 0, scale: 0.95, x: -20 }}
-                            whileInView={{ opacity: 1, scale: 1, x: 0 }}
+                            initial={{ opacity: 0, scale: 0.95, rotateY: -5 }}
+                            whileInView={{ opacity: 1, scale: 1, rotateY: 0 }}
+                            animate={{ y: [0, 12, 0] }}
                             viewport={{ once: true }}
-                            transition={{ duration: 0.8, ease: "easeOut" }}
-                            className="bg-white/40 backdrop-blur-3xl rounded-[2.5rem] border border-white shadow-[0_50px_100px_-20px_rgba(0,0,0,0.06)] p-12 md:p-16 relative z-10 overflow-hidden"
+                            transition={{ 
+                                opacity: { duration: 0.8 },
+                                scale: { duration: 0.8 },
+                                y: { duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }
+                            }}
+                            className="bg-gray-950 rounded-[2.5rem] border border-white/5 shadow-[0_50px_100px_-20px_rgba(30,58,138,0.3)] p-10 md:p-12 relative z-10 overflow-hidden noise-overlay"
                         >
-                            {/* Card Content: Universal Command Box */}
-                            <div className="bg-white rounded-[1.8rem] shadow-[0_20px_50px_-10px_rgba(0,0,0,0.03)] border border-gray-100 p-8 md:p-10 relative z-20 group hover:shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] transition-all duration-500">
-                                <div className="space-y-6">
-                                    <div className="text-[18px] md:text-[20px] text-gray-400 font-medium">
-                                        Issue token, # for branch...
+                            {/* Command Header: Branch Sync Status */}
+                            <div className="flex items-center justify-between mb-10">
+                                <div className="flex items-center gap-4">
+                                    <div className="flex gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                                            <Monitor size={12} className="text-gray-400" />
+                                        </div>
+                                        <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                                            <Smartphone size={12} className="text-gray-400" />
+                                        </div>
+                                        <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                                            <Tv size={12} className="text-gray-400" />
+                                        </div>
                                     </div>
-                                    <div className="flex items-center justify-between pt-6 border-t border-gray-50">
+                                    <div className="h-4 w-px bg-white/10" />
+                                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Active Channels</span>
+                                </div>
+                                <div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_#3b82f6] animate-pulse" />
+                            </div>
+
+                            {/* Command Center Interaction */}
+                            <div className="bg-white/5 rounded-[2rem] border border-white/10 p-8 md:p-10 relative z-20 group hover:border-[#78d64b]/30 transition-all duration-500">
+                                <div className="space-y-8">
+                                    <div className="text-[18px] md:text-[22px] text-gray-500 font-medium">
+                                        Issue token, # for branch...<span className="animate-pulse">|</span>
+                                    </div>
+                                    <div className="flex items-center justify-between pt-8 border-t border-white/5">
                                         <div className="flex items-center gap-4">
-                                            <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100 text-gray-400 group-hover:text-[#78d64b] transition-colors">
+                                            <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-500 group-hover:text-[#78d64b] transition-colors">
                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14"/></svg>
                                             </div>
-                                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-50 border border-gray-100 text-[12px] font-bold text-gray-500">
-                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                                            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-[11px] font-bold text-gray-500">
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="6 9 12 15 18 9"/></svg>
                                                 Dispatch
                                             </div>
-                                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-50 border border-gray-100 text-[12px] font-bold text-gray-500">
-                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                                            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/10 border border-white/10 text-[11px] font-bold text-white">
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="6 9 12 15 18 9"/></svg>
                                                 Enterprise
                                             </div>
                                         </div>
-                                        <button className="w-10 h-10 rounded-full bg-[#78d64b] flex items-center justify-center text-white shadow-lg shadow-[#78d64b]/20 hover:scale-105 transition-transform active:scale-95">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                                        <button className="w-12 h-12 rounded-full bg-[#78d64b] flex items-center justify-center text-white shadow-lg shadow-[#78d64b]/20 hover:scale-105 transition-transform active:scale-95 group-hover:shadow-[0_0_20px_#78d64b55]">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                                         </button>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Background Mesh Blobs */}
-                            <div className="absolute top-0 right-0 w-80 h-80 bg-red-100/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                            <div className="absolute bottom-0 left-0 w-80 h-80 bg-blue-100/30 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+                            {/* Background Mesh Glow */}
+                            <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/5 rounded-full blur-[100px] pointer-events-none" />
+                            <div className="absolute bottom-0 left-0 w-80 h-80 bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none" />
                         </motion.div>
+
+                        {/* Floating Decorative Elements */}
+                        <div className="absolute -top-10 -left-10 w-28 h-28 bg-white/40 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] z-0" />
+                        <div className="absolute -bottom-10 -right-10 w-24 h-24 bg-blue-500/5 backdrop-blur-xl border border-blue-500/10 rounded-full z-0 opacity-50" />
                     </div>
 
                 </div>
