@@ -97,11 +97,28 @@ export default function HeroSection() {
                     </Link>
                 </motion.div>
 
-                {/* Social proof */}
+                {/* Trusted by section — moved up */}
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.8, delay: 0.4 }}
+                    className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-12 mb-16 border-y border-white/5 py-8"
+                >
+                    <span className="text-[10px] font-medium text-gray-500 uppercase tracking-[0.2em] whitespace-nowrap shrink-0">Trusted by teams at</span>
+                    <div className="flex flex-wrap items-center justify-center gap-8 lg:gap-12">
+                        {trusted.map((name, i) => (
+                            <span key={i} className="text-[14px] lg:text-[16px] font-medium tracking-tight text-gray-400 select-none hover:text-[#78d64b] transition-colors cursor-default">
+                                {name}
+                            </span>
+                        ))}
+                    </div>
+                </motion.div>
+
+                {/* Social proof */}
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.8, delay: 0.5 }}
                     className="flex items-center justify-center gap-3 mb-16"
                 >
                     <div className="flex -space-x-2">
@@ -116,72 +133,53 @@ export default function HeroSection() {
                     </div>
                 </motion.div>
 
-                {/* Phone mockup — positioned to bleed into next section */}
+                {/* Phone mockup section */}
                 <motion.div
                     initial={{ opacity: 0, y: 60, scale: 0.92 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{ duration: 1, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-                    className="flex justify-center relative"
+                    className="flex justify-center relative mt-16 lg:mt-20"
                 >
                     {/* Phone glow */}
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(120,214,75,0.2) 0%, transparent 70%)", filter: "blur(20px)" }} />
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[350px] pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(120,214,75,0.22) 0%, transparent 70%)", filter: "blur(60px)" }} />
                     
                     {/* Frame */}
-                    <div className="relative w-[300px] lg:w-[360px]">
+                    <div className="relative w-[360px] lg:w-[560px]">
                         {/* Floating stats card — top left */}
                         <motion.div
                             animate={{ y: [0, -6, 0] }}
                             transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-                            className="absolute -left-16 top-16 bg-white/10 backdrop-blur-xl border border-white/15 rounded-2xl px-4 py-3 shadow-xl z-20"
+                            className="absolute -left-20 lg:-left-40 top-32 lg:top-48 bg-white/10 backdrop-blur-xl border border-white/15 rounded-2xl px-5 py-4 shadow-2xl z-20"
                         >
-                            <div className="text-[10px] text-gray-400 font-medium uppercase tracking-widest mb-1">Wait Time</div>
-                            <div className="text-xl font-medium text-white">~12 <span className="text-[13px] text-gray-400">min</span></div>
-                            <div className="flex items-center gap-1 mt-1">
-                                <span className="text-[10px] text-[#78d64b] font-medium">↓ 40%</span>
-                                <span className="text-[10px] text-gray-500">vs last week</span>
+                            <div className="text-[10px] lg:text-[11px] text-gray-400 font-medium uppercase tracking-widest mb-1.5">Wait Time</div>
+                            <div className="text-xl lg:text-2xl font-medium text-white">~12 <span className="text-[14px] text-gray-400">min</span></div>
+                            <div className="flex items-center gap-1.5 mt-1.5">
+                                <span className="text-[11px] text-[#78d64b] font-medium">↓ 40%</span>
+                                <span className="text-[11px] text-gray-500">vs last week</span>
                             </div>
                         </motion.div>
-
+ 
                         {/* Floating stats card — top right */}
                         <motion.div
                             animate={{ y: [0, -8, 0] }}
                             transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 1 }}
-                            className="absolute -right-16 top-8 bg-white/10 backdrop-blur-xl border border-white/15 rounded-2xl px-4 py-3 shadow-xl z-20"
+                            className="absolute -right-20 lg:-right-44 top-20 lg:top-36 bg-white/10 backdrop-blur-xl border border-white/15 rounded-2xl px-5 py-4 shadow-2xl z-20"
                         >
-                            <div className="text-[10px] text-gray-400 font-medium uppercase tracking-widest mb-1">Tokens Today</div>
-                            <div className="text-xl font-medium text-white">1,248</div>
-                            <div className="flex items-center gap-1 mt-1">
-                                <span className="text-[10px] text-[#78d64b] font-medium">↑ 12%</span>
-                                <span className="text-[10px] text-gray-500">vs yesterday</span>
+                            <div className="text-[10px] lg:text-[11px] text-gray-400 font-medium uppercase tracking-widest mb-1.5">Tokens Today</div>
+                            <div className="text-xl lg:text-2xl font-medium text-white">1,248</div>
+                            <div className="flex items-center gap-1.5 mt-1.5">
+                                <span className="text-[11px] text-[#78d64b] font-medium">↑ 12%</span>
+                                <span className="text-[11px] text-gray-500">vs yesterday</span>
                             </div>
                         </motion.div>
-
+ 
                         <img 
                             src={phoneMockup} 
-                            alt="QueueLanka app showing queue management dashboard" 
-                            className="w-full h-auto relative z-10 drop-shadow-[0_40px_60px_rgba(0,0,0,0.5)]"
+                            alt="QueueLanka app dashboard mockup" 
+                            className="w-full h-auto relative z-10 drop-shadow-[0_45px_90px_rgba(0,0,0,0.65)]"
                         />
                     </div>
                 </motion.div>
-            </div>
-
-            {/* Bottom fade into white */}
-            <div className="relative z-10 h-24" style={{ background: "linear-gradient(to bottom, transparent, #fff)" }} />
-
-            {/* Trusted by section — overlapping */}
-            <div className="relative z-10 bg-white pb-12 pt-4 border-b border-gray-100">
-                <div className="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-12">
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-5 sm:gap-10">
-                        <span className="text-[11px] font-medium text-gray-300 uppercase tracking-[0.15em] whitespace-nowrap shrink-0">Trusted by teams at</span>
-                        <div className="flex flex-wrap items-center justify-center gap-8">
-                            {trusted.map((name, i) => (
-                                <span key={i} className="text-[15px] font-medium tracking-tight text-gray-300 select-none hover:text-gray-500 transition-colors cursor-default">
-                                    {name}
-                                </span>
-                            ))}
-                        </div>
-                    </div>
-                </div>
             </div>
         </section>
     );
