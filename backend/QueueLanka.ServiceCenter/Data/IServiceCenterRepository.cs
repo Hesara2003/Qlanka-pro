@@ -29,4 +29,10 @@ public interface IServiceCenterRepository
     /// for the given center. Returns the saved entity with its <c>LocationId</c> populated.
     /// </summary>
     Task<CenterLocation> UpsertLocationAsync(CenterLocation location);
+
+    /// <summary>
+    /// Updates center active status and returns the refreshed center row.
+    /// Returns <c>null</c> when center does not exist.
+    /// </summary>
+    Task<Models.ServiceCenter?> UpdateCenterStatusAsync(int centerId, bool isActive);
 }

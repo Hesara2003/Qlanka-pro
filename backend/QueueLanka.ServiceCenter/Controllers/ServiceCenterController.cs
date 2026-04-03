@@ -251,4 +251,51 @@ public class ServiceCenterController : ControllerBase
 
         return Ok(response);
     }
+
+    /// <summary>Enable or disable a service center.</summary>
+    /// <param name="id">The service center ID</param>
+    /// <param name="request">Center status change payload</param>
+    /// <remarks>
+    /// Sets the center's <c>is_active</c> flag which controls whether the center is available
+    /// for booking across integrated flows.
+    ///
+    /// **Requires Admin role.**
+    /// </remarks>
+    /// <response code="200">Center status updated successfully</response>
+    /// <response code="400">Invalid service center ID or request body</response>
+    /// <response code="401">Authentication required</response>
+    /// <response code="403">Admin role required</response>
+    /// <response code="404">Service center not found</response>
+    /// <response code="500">Internal server error occurred</response>
+    [HttpPatch("{id}/status")]
+    [Authorize(Roles = "admin")]
+    [ProducesResponseType(typeof(ApiResponse<ServiceCenterDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> UpdateCenterStatus(int id, [FromBody] UpdateCenterStatusRequestDto request)
+    {
+        if (id <= 0)
+            throw new InvalidServiceCenterDataException("Service center ID must be greater than zero.");
+
+        _logger.LogInformation(
+            "Admin updating center {CenterId} status to {IsActive}. Reason: {Reason}",
+            id,
+            request.IsActive,
+            request.Reason);
+
+        var updated = await _serviceCenterService.UpdateCenterStatusAsync(id, request.IsActive);
+
+        var response = new ApiResponse<ServiceCenterDto>(
+            updated,
+            new ResponseMetadata { CorrelationId = HttpContext.TraceIdentifier },
+            request.IsActive
+                ? "Service center enabled successfully."
+                : "Service center disabled successfully."
+        );
+
+        return Ok(response);
+    }
 }

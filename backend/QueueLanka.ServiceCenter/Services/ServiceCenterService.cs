@@ -139,6 +139,15 @@ public class ServiceCenterService : IServiceCenterService
         return MapLocationToDto(saved);
     }
 
+    public async Task<ServiceCenterDto> UpdateCenterStatusAsync(int centerId, bool isActive)
+    {
+        var updated = await _repo.UpdateCenterStatusAsync(centerId, isActive)
+            ?? throw new ServiceCenterNotFoundException(centerId);
+
+        var availability = await _repo.GetAvailabilityForDateAsync(centerId, DateTime.Today);
+        return MapToDto(updated, availability, updated.IsActive && (availability?.IsAvailable ?? true));
+    }
+
     // ── Helpers ──────────────────────────────────────────────────
 
     private static ServiceCenterDto MapToDto(

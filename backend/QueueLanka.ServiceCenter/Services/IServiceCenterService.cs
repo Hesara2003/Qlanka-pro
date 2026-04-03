@@ -30,4 +30,11 @@ public interface IServiceCenterService
     /// center does not exist.
     /// </summary>
     Task<CenterLocationDto> UpsertLocationAsync(int centerId, UpsertLocationRequestDto dto);
+
+    /// <summary>
+    /// Updates the active/inactive status of a service center.
+    /// Throws <see cref="QueueLanka.Shared.Exceptions.ServiceCenterNotFoundException"/> when the
+    /// center does not exist.
+    /// </summary>
+    Task<ServiceCenterDto> UpdateCenterStatusAsync(int centerId, bool isActive);
 }

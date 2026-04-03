@@ -259,6 +259,51 @@ public class ServiceCenterRepository : IServiceCenterRepository
         }
     }
 
+    public async Task<Models.ServiceCenter?> UpdateCenterStatusAsync(int centerId, bool isActive)
+    {
+        const string updateSql = @"
+            UPDATE centers
+            SET is_active = @IsActive,
+                updated_at = UTC_TIMESTAMP()
+            WHERE center_id = @CenterId";
+
+        const string readSql = @"
+            SELECT center_id, full_address AS address, name, phone, email, description, timezone,
+                   capacity, average_service_time_minutes, opening_time, closing_time,
+                   is_active, created_at, updated_at,
+                   location_id, street_address, city, district, province, postal_code,
+                   country, latitude, longitude, google_maps_url, landmark
+            FROM v_center_with_location
+            WHERE center_id = @CenterId
+            LIMIT 1";
+
+        try
+        {
+            await using var conn = new MySqlConnection(_connectionString);
+            await conn.OpenAsync();
+
+            await using (var updateCmd = new MySqlCommand(updateSql, conn))
+            {
+                updateCmd.Parameters.AddWithValue("@CenterId", centerId);
+                updateCmd.Parameters.AddWithValue("@IsActive", isActive);
+
+                var updatedRows = await updateCmd.ExecuteNonQueryAsync();
+                if (updatedRows <= 0)
+                    return null;
+            }
+
+            await using var readCmd = new MySqlCommand(readSql, conn);
+            readCmd.Parameters.AddWithValue("@CenterId", centerId);
+
+            await using var reader = await readCmd.ExecuteReaderAsync();
+            return await reader.ReadAsync() ? MapServiceCenter((MySqlDataReader)reader) : null;
+        }
+        catch (MySqlException ex)
+        {
+            throw new DataAccessException($"Database error while updating status for center {centerId}.", ex);
+        }
+    }
+
     /// <summary>
     /// Core INSERT … ON DUPLICATE KEY UPDATE. Can be called inside an existing
     /// transaction (pass <paramref name="tx"/>) or standalone (pass <c>null</c>).
