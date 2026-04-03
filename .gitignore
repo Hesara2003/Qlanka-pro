@@ -26,4 +26,8 @@ build/
 # OS
 .DS_Store
 Thumbs.db
+
+# Local observability runtime artifacts
+logs/
+data/
 migrate.js

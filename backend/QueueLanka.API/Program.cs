@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Prometheus;
 using QueueLanka.API.Data;
 using QueueLanka.API.Filters;
 using QueueLanka.API.Middleware;
@@ -126,9 +127,11 @@ var app = builder.Build();
 // ── Middleware pipeline ────────────────────────────────────────
 app.UseMiddleware<RequestContextLoggingMiddleware>();
 app.UseMiddleware<ExceptionMiddleware>();
+app.UseHttpMetrics();
 
 // Health check endpoint (used by CI/CD deployment verification)
 app.MapHealthChecks("/health");
+app.MapMetrics("/metrics").AllowAnonymous();
 
 app.UseSwagger();
 app.UseSwaggerUI();

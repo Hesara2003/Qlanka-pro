@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
+using Prometheus;
 using QueueLanka.Shared.Middleware;
 using System.Threading.RateLimiting;
 
@@ -99,7 +100,7 @@ builder.Services.AddAuthorization(options =>
             .Build();
     }
 
-    options.AddPolicy("anonymous", policy =>
+    options.AddPolicy("public-access", policy =>
     {
         policy.RequireAssertion(_ => true);
     });
@@ -211,6 +212,7 @@ app.UseForwardedHeaders();
 // Custom middleware (logging + error handling)
 app.UseMiddleware<RequestContextLoggingMiddleware>();
 app.UseMiddleware<ExceptionMiddleware>();
+app.UseHttpMetrics();
 
 app.UseCors("AllowFrontend");
 app.UseRateLimiter();
@@ -224,6 +226,7 @@ app.MapGet("/", () => Results.Ok(new
 })).AllowAnonymous();
 
 app.MapGet("/health", () => "Healthy").AllowAnonymous();
+app.MapMetrics("/metrics").AllowAnonymous();
 
 app.MapReverseProxy();
 

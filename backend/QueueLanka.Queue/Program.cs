@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Prometheus;
 using QueueLanka.Queue.Data;
 using QueueLanka.Queue.Events;
 using QueueLanka.Queue.Hubs;
@@ -179,12 +180,14 @@ eventBus.Subscribe<TokenCalledEvent, TokenCalledEventHandler>();
 
 app.UseMiddleware<RequestContextLoggingMiddleware>();
 app.UseMiddleware<ExceptionMiddleware>();
+app.UseHttpMetrics();
 app.MapGet("/", () => Results.Ok(new
 {
     service = "QueueLanka Queue",
     status = "Healthy"
 })).AllowAnonymous();
 app.MapHealthChecks("/health");
+app.MapMetrics("/metrics").AllowAnonymous();
 
 app.UseSwagger();
 app.UseSwaggerUI();

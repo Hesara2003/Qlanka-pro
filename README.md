@@ -336,6 +336,51 @@ Configured scrape jobs include:
 
 Each service is scraped at `/metrics` using job-specific intervals defined in `prometheus.yml`.
 
+### Run Prometheus Locally (No Docker)
+
+If you run Grafana as a locally installed app/service, use the localhost Prometheus config in this repo.
+
+- Local Prometheus config: `deploy/infrastructure/monitoring/prometheus/prometheus.local.yml`
+- Local helper script: `scripts/start-observability-local.ps1`
+- One-command local stack launcher: `scripts/start-local-observability-stack.ps1`
+- One-command local stack stopper: `scripts/stop-local-observability-stack.ps1`
+- Local scrape targets:
+	- `localhost:5012` (gateway)
+	- `localhost:5177` (identity)
+	- `localhost:5137` (service-center)
+	- `localhost:5239` (queue)
+	- `localhost:5000` (api)
+
+Run from repo root:
+
+```powershell
+./scripts/start-observability-local.ps1 -PrometheusExe C:\tools\prometheus\prometheus.exe
+```
+
+Then verify Prometheus targets at:
+
+```text
+http://localhost:9090/targets
+```
+
+Start everything (identity + service-center + queue + gateway + prometheus) with one command:
+
+```powershell
+./scripts/start-local-observability-stack.ps1 -PrometheusExe C:\tools\prometheus\prometheus.exe
+```
+
+If Prometheus is not installed yet, you can still start the backend services only:
+
+```powershell
+./scripts/start-local-observability-stack.ps1 -SkipPrometheus
+```
+
+Stop everything started by that launcher:
+
+```powershell
+./scripts/stop-local-observability-stack.ps1
+```
+
 ## Grafana Dashboard
 
 Grafana is configured in repository and provisioned automatically with Prometheus as the default datasource.
@@ -355,3 +400,13 @@ Grafana is configured in repository and provisioned automatically with Prometheu
 - Target availability (up/down)
 
 The dashboard is designed to provide actionable thresholds for latency, errors, and queue growth.
+
+### Use Grafana Installed on Windows (No Docker)
+
+When Grafana is installed directly on Windows:
+
+- Add datasource URL: `http://localhost:9090`
+- Optional local provisioning datasource file: `deploy/infrastructure/monitoring/grafana/provisioning/datasources/prometheus.local.yml`
+- Import dashboard JSON from: `deploy/infrastructure/monitoring/grafana/dashboards/key-metrics-dashboard.json`
+
+If provisioning is not configured in your Grafana install, add the datasource and import the dashboard through the UI.

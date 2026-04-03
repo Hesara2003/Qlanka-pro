@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Prometheus;
 using QueueLanka.ServiceCenter.Data;
 using QueueLanka.ServiceCenter.Services;
 using QueueLanka.Shared.Filters;
@@ -71,12 +72,14 @@ var app = builder.Build();
 
 app.UseMiddleware<RequestContextLoggingMiddleware>();
 app.UseMiddleware<ExceptionMiddleware>();
+app.UseHttpMetrics();
 app.MapGet("/", () => Results.Ok(new
 {
     service = "QueueLanka ServiceCenter",
     status = "Healthy"
 })).AllowAnonymous();
 app.MapHealthChecks("/health");
+app.MapMetrics("/metrics").AllowAnonymous();
 
 app.UseSwagger();
 app.UseSwaggerUI();

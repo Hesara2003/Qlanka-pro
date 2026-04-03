@@ -1,4 +1,9 @@
 {
+  "scripts": {
+    "load:test:gateway": "node scripts/load_test_local.js --url http://localhost:5012/health --duration 20 --concurrency 30",
+    "load:test:queue": "node scripts/load_test_local.js --url http://localhost:5239/health --duration 20 --concurrency 30",
+    "load:test:gateway-auth": "node scripts/load_test_local.js --url http://localhost:5012/api/auth/login --method POST --header Content-Type:application/json --body {\"email\":\"fake@example.com\",\"password\":\"wrong\"} --duration 20 --concurrency 20"
+  },
   "dependencies": {
     "framer-motion": "^12.34.5",
     "mysql2": "^3.19.1"
