@@ -88,6 +88,19 @@ public class CounterRepository : ICounterRepository
                 }
             }
 
+            const string updateCounterSql = @"
+                UPDATE counters
+                SET current_token_id = @TokenId,
+                    updated_at = UTC_TIMESTAMP()
+                WHERE counter_id = @CounterId";
+
+            await using (var counterUpdateCmd = new MySqlCommand(updateCounterSql, conn, transaction))
+            {
+                counterUpdateCmd.Parameters.AddWithValue("@TokenId", token.TokenId);
+                counterUpdateCmd.Parameters.AddWithValue("@CounterId", counterId);
+                await counterUpdateCmd.ExecuteNonQueryAsync();
+            }
+
             await transaction.CommitAsync();
 
             // Refresh the timestamp fields to what the DB actually wrote.

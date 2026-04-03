@@ -36,6 +36,39 @@ async function call(path, { method = 'GET', token, body, base = BASE_API } = {})
   return { status: res.status, data };
 }
 
+async function bookTodayAtAvailableSlot(token, centerId, startHour = 9, startMinute = 30) {
+  for (let i = 0; i < 60; i += 1) {
+    const minute = (startMinute + i) % 60;
+    const hourCarry = Math.floor((startMinute + i) / 60);
+    const hour = startHour + hourCarry;
+
+    if (hour > 16) break;
+
+    const hh = String(hour).padStart(2, '0');
+    const mm = String(minute).padStart(2, '0');
+    const time = `${hh}:${mm}:00`;
+
+    const day = new Date();
+    day.setHours(hour, minute, 0, 0);
+
+    const res = await call('/appointment/book', {
+      method: 'POST',
+      token,
+      body: { centerId, appointmentDate: day.toISOString(), appointmentTime: time },
+    });
+
+    if (res.status === 200) {
+      return { status: 200, time, data: res.data };
+    }
+
+    if (res.status !== 409) {
+      return { status: res.status, time, data: res.data };
+    }
+  }
+
+  return { status: 409, time: null, data: null };
+}
+
 function tokenFromLogin(body) {
   return body?.data?.accessToken || body?.accessToken || body?.token || null;
 }
@@ -171,23 +204,8 @@ function decodeJwtPayload(token) {
   const tokenA = tokenFromLogin(loginA.data);
   const tokenB = tokenFromLogin(loginB.data);
 
-  const now = new Date();
-  const day = now;
-  const slot1 = new Date(day);
-  slot1.setHours(9, 30, 0, 0);
-  const slot2 = new Date(day);
-  slot2.setHours(9, 31, 0, 0);
-
-  const bookA = await call('/appointment/book', {
-    method: 'POST',
-    token: tokenA,
-    body: { centerId, appointmentDate: slot1.toISOString(), appointmentTime: '09:30:00' },
-  });
-  const bookB = await call('/appointment/book', {
-    method: 'POST',
-    token: tokenB,
-    body: { centerId, appointmentDate: slot2.toISOString(), appointmentTime: '09:31:00' },
-  });
+  const bookA = await bookTodayAtAvailableSlot(tokenA, centerId, 9, 30);
+  const bookB = await bookTodayAtAvailableSlot(tokenB, centerId, 10, 0);
 
   push(results, 'View Queue', 'Seed booking A created', bookA.status === 200 || bookA.status === 409, `status=${bookA.status}`);
   push(results, 'View Queue', 'Seed booking B created', bookB.status === 200 || bookB.status === 409, `status=${bookB.status}`);
