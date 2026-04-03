@@ -66,6 +66,21 @@ public class ReportServiceTests
     }
 
     [Fact]
+    public async Task GetDailyCenterSummaryDataAsync_MissingDates_ThrowsValidationException()
+    {
+        var service = CreateService();
+        var request = new DailyCenterSummaryRequestDto
+        {
+            FromDate = default,
+            ToDate = default,
+            CenterIds = new List<int>()
+        };
+
+        Func<Task> act = async () => await service.GetDailyCenterSummaryDataAsync(request);
+        await act.Should().ThrowAsync<ValidationException>();
+    }
+
+    [Fact]
     public async Task GenerateDailyCenterSummaryCsvAsync_BuildsCsvTotals_AndUtf8Bom()
     {
         _repo.Setup(x => x.GetDailyCenterSummaryAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<int>?>()))
