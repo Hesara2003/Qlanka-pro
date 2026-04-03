@@ -36,57 +36,60 @@ export default function ServiceCenterCard({ center }: ServiceCenterCardProps) {
   };
 
   return (
-    <div className="group bg-white rounded-3xl p-6 sm:p-8 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.1)] border border-gray-100 transition-all duration-300 flex flex-col relative overflow-hidden">
+    <div className="group bg-white rounded-[2.5rem] p-8 shadow-premium hover:shadow-2xl border border-gray-100 transition-all duration-500 flex flex-col relative overflow-hidden h-full">
 
       {/* Status indicator ribbon */}
-      <div className={`absolute top-0 inset-x-0 h-1.5 ${isAvailable ? "bg-gradient-to-r from-emerald-400 to-emerald-500" : "bg-gradient-to-r from-red-400 to-red-500"}`} />
+      <div className={`absolute top-0 inset-x-0 h-1.5 transition-colors duration-500 ${isAvailable ? "bg-[#78d64b]" : "bg-red-400"}`} />
 
       {/* Header section with icon and title */}
-      <div className="flex gap-5 mb-6">
+      <div className="flex gap-6 mb-8">
         {/* Abstract Icon/Initial */}
-        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white text-xl font-extrabold shadow-sm shrink-0 ${isAvailable ? "bg-gradient-to-br from-blue-500 to-indigo-600" : "bg-gradient-to-br from-gray-400 to-gray-500"}`}>
+        <div className={`w-16 h-16 rounded-[1.5rem] flex items-center justify-center text-black text-2xl font-black shadow-inner shrink-0 transition-transform duration-500 group-hover:scale-110 ${isAvailable ? "bg-[#78d64b]" : "bg-gray-100 text-gray-400"}`}>
           {initial}
         </div>
 
-        <div className="flex-1 min-w-0 pt-1">
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="text-[19px] font-extrabold text-gray-900 tracking-tight leading-tight truncate">
+        <div className="flex-1 min-w-0 pt-2">
+          <div className="flex items-start justify-between gap-3">
+            <h3 className="text-2xl font-black text-gray-900 tracking-tighter leading-none truncate mb-2">
               {center.name}
             </h3>
             {/* Status Badge */}
-            <div className={`shrink-0 px-2.5 py-1 rounded-full text-[10px] uppercase tracking-widest font-bold flex items-center gap-1.5 ${isAvailable ? "bg-emerald-50 text-emerald-700 border border-emerald-100" : "bg-red-50 text-red-700 border border-red-100"
+            <div className={`shrink-0 px-3 py-1.5 rounded-full text-[9px] uppercase tracking-[0.2em] font-black flex items-center gap-2 border ${isAvailable ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-red-50 text-red-600 border-red-100"
               }`}>
               <span className={`w-1.5 h-1.5 rounded-full ${isAvailable ? "bg-emerald-500 animate-pulse" : "bg-red-500"}`} />
-              {isAvailable ? "Open" : "Closed"}
+              {isAvailable ? "Online" : "Offline"}
             </div>
           </div>
 
-          <p className="text-[13px] font-medium text-gray-500 flex items-center gap-1.5 mt-1.5 truncate">
-            <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+          <p className="text-xs font-bold text-gray-400 flex items-center gap-2 mt-1 uppercase tracking-widest">
+            <svg className="w-4 h-4 text-[#78d64b] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
             <span className="truncate">{center.address}</span>
           </p>
         </div>
       </div>
 
       {center.description && (
-        <p className="text-[14px] leading-relaxed text-gray-600 mb-6 line-clamp-2 min-h-[42px]">
-          {center.description}
+        <p className="text-sm leading-relaxed text-gray-500 mb-8 line-clamp-2 min-h-[40px] font-medium italic">
+          "{center.description}"
         </p>
       )}
 
-      {/* Metrics Row */}
-      <div className="flex flex-wrap gap-2 mb-8 mt-auto">
-        <div className="flex items-center gap-2 bg-gray-50 border border-gray-100 px-3 py-2 rounded-xl text-[12px] font-semibold text-gray-700">
-          <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          {center.openingTime} - {center.closingTime}
+      {/* Metrics Row - High Density */}
+      <div className="grid grid-cols-2 gap-3 mb-10 mt-auto">
+        <div className="flex flex-col gap-1 bg-gray-50/50 border border-gray-100 px-5 py-4 rounded-[1.5rem] shadow-inner">
+          <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none">Operating Hours</span>
+          <p className="text-xs font-black text-gray-900 mt-1">{center.openingTime} - {center.closingTime}</p>
         </div>
-        <div className="flex items-center gap-2 bg-gray-50 border border-gray-100 px-3 py-2 rounded-xl text-[12px] font-semibold text-gray-700 hover:border-gray-200 transition-colors">
-          <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-          Up to {center.capacity} / day
+        <div className="flex flex-col gap-1 bg-gray-50/50 border border-gray-100 px-5 py-4 rounded-[1.5rem] shadow-inner">
+          <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none">Daily Capacity</span>
+          <p className="text-xs font-black text-gray-900 mt-1">{center.capacity} Tickets</p>
         </div>
-        <div className="flex items-center gap-2 bg-amber-50/50 border border-amber-100/50 px-3 py-2 rounded-xl text-[12px] font-semibold text-amber-800">
-          <svg className="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-          ~{center.averageServiceTimeMinutes} min service
+        <div className="col-span-2 flex items-center justify-between bg-[#78d64b]/5 border border-[#78d64b]/10 px-6 py-4 rounded-[1.5rem]">
+           <div className="flex flex-col gap-1">
+             <span className="text-[9px] font-black text-[#78d64b] uppercase tracking-widest leading-none">Avg Latency</span>
+             <p className="text-sm font-black text-gray-900 mt-1">~{center.averageServiceTimeMinutes} Minutes</p>
+           </div>
+           <svg className="w-6 h-6 text-[#78d64b] opacity-40 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}><path d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
         </div>
       </div>
 
@@ -95,59 +98,56 @@ export default function ServiceCenterCard({ center }: ServiceCenterCardProps) {
         <button
           onClick={() => navigate(`/book/${center.centerId}`)}
           disabled={!isAvailable}
-          className={`w-full py-3.5 px-4 rounded-2xl font-bold text-[14px] flex items-center justify-center gap-2 transition-all duration-200 group-hover:scale-[1.02] active:scale-[0.98] ${isAvailable
-            ? "bg-black text-white hover:bg-gray-900 shadow-md hover:shadow-xl"
-            : "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
+          className={`w-full py-5 px-6 rounded-[2rem] font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 transition-all duration-300 group-hover:shadow-2xl active:scale-95 ${isAvailable
+            ? "bg-gray-900 text-white hover:bg-black"
+            : "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-50"
             }`}
         >
-          {isAvailable ? "Join Queue" : "Currently Unavailable"}
+          {isAvailable ? "Initialize Connection" : "Sector Offline"}
           {isAvailable && (
-            <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+            <svg className="w-4 h-4 text-[#78d64b] transition-transform group-hover:translate-x-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={4}><path d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
           )}
         </button>
       ) : (
-        <div className="flex flex-col gap-3 w-full bg-gray-50/50 p-4 border border-gray-100 rounded-2xl">
+        <div className="flex flex-col gap-4 w-full bg-gray-50/50 p-6 border border-gray-100 rounded-[2rem] shadow-inner">
             <div className="flex items-center justify-between">
-                <span className="text-[12px] font-bold text-gray-700">Export Summary</span>
-                {exportError && <span className="text-[11px] font-bold text-red-500">{exportError}</span>}
+                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest italic">Data Export</span>
+                {exportError && <span className="text-[9px] font-black text-red-500 uppercase">{exportError}</span>}
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
                 <input 
                     type="date" 
                     value={dateRange.from}
                     max={dateRange.to}
                     onChange={(e) => setDateRange(prev => ({ ...prev, from: e.target.value }))}
-                    className="flex-1 min-w-0 bg-white border border-gray-200 rounded-xl px-3 py-2 text-[12px] text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    className="flex-1 min-w-0 bg-white border border-gray-100 rounded-xl px-4 py-2.5 text-[10px] font-black text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#78d64b]/20 transition-all"
                 />
-                <span className="text-gray-400 text-[10px]">to</span>
+                <span className="text-gray-300 text-[10px] font-black uppercase">to</span>
                 <input 
                     type="date"
                     value={dateRange.to}
                     min={dateRange.from}
                     max={new Date().toISOString().split('T')[0]}
                     onChange={(e) => setDateRange(prev => ({ ...prev, to: e.target.value }))}
-                    className="flex-1 min-w-0 bg-white border border-gray-200 rounded-xl px-3 py-2 text-[12px] text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    className="flex-1 min-w-0 bg-white border border-gray-100 rounded-xl px-4 py-2.5 text-[10px] font-black text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#78d64b]/20 transition-all"
                 />
             </div>
             
             <button
                 onClick={handleExport}
                 disabled={isExporting}
-                className="w-full py-2.5 px-4 rounded-xl font-bold text-[13px] bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200/50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full py-4 px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest bg-white text-gray-900 hover:bg-gray-50 border border-gray-100 transition-all flex items-center justify-center gap-3 disabled:opacity-50 shadow-sm"
             >
                 {isExporting ? (
                     <>
-                        <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Exporting...
+                        <div className="w-3 h-3 border-2 border-gray-200 border-t-[#78d64b] rounded-full animate-spin" />
+                        Processing...
                     </>
                 ) : (
                     <>
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                        Download CSV
+                        <svg className="w-4 h-4 text-[#78d64b]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                        Export Summary
                     </>
                 )}
             </button>
