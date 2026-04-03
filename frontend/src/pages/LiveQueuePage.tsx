@@ -25,12 +25,9 @@ export default function LiveQueuePage() {
     const {
         latestCalledToken,
         latestStatusUpdate,
-        latestReassignment,
-        latestCancellation,
         latestQueueUpdate,
         connectionStatus,
         lastConnectedAt,
-        reconnectAttempt,
         reconnect,
     } = useQueueHub({
         centerId: centerIdNum || undefined,
@@ -186,7 +183,7 @@ export default function LiveQueuePage() {
                         <svg className="w-5 h-5 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}><path d="M15 18l-7-7 7-7" /></svg>
                     </button>
                     <div className="flex flex-col leading-none">
-                        <span className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] italic mb-1">Station Monitor</span>
+                        <span className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] italic mb-1">Live Queue</span>
                         <h1 className="text-xl font-bold tracking-tighter text-gray-900">{center?.name || "Service Center"}</h1>
                     </div>
                 </div>
@@ -206,7 +203,7 @@ export default function LiveQueuePage() {
 
                     <div className="flex items-center gap-2">
                          <div className={`w-1.5 h-1.5 rounded-full ${connectionStatus === "connected" ? "bg-[#78d64b] animate-pulse" : "bg-red-400"}`} />
-                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest italic">{connectionStatus}</span>
+                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest italic">Live Updates</span>
                     </div>
                 </div>
             </header>
@@ -222,10 +219,10 @@ export default function LiveQueuePage() {
                      <div className="relative z-10 flex flex-col h-full">
                         <div className="mb-auto">
                            <div className="flex items-center gap-3 mb-4">
-                              <span className="px-3 py-1 bg-gray-900 text-white text-[8px] font-black uppercase tracking-[0.3em] rounded-full">Active Unit</span>
+                              <span className="px-3 py-1 bg-gray-900 text-white text-[8px] font-black uppercase tracking-[0.3em] rounded-full">At the Counter</span>
                               <div className="h-px flex-1 bg-gray-100" />
                            </div>
-                           <h2 className="text-[13px] font-black text-gray-300 uppercase tracking-[0.4em] italic leading-tight">Current Synchronization</h2>
+                           <h2 className="text-[13px] font-black text-gray-300 uppercase tracking-[0.4em] italic leading-tight">Currently Serving</h2>
                         </div>
 
                         <div className="flex-1 flex flex-col items-center justify-center py-10 min-h-0">
@@ -244,31 +241,29 @@ export default function LiveQueuePage() {
                                     </span>
                                     <div className="flex items-center justify-center gap-6 mt-8">
                                         <div className="bg-[#78d64b]/10 px-6 py-2 rounded-2xl border border-[#78d64b]/20">
-                                            <span className="text-[10px] font-black text-[#78d64b] uppercase tracking-widest">Authorized</span>
+                                            <span className="text-[10px] font-black text-[#78d64b] uppercase tracking-widest">Verified visitor</span>
                                         </div>
-                                        <div className="h-px w-12 bg-gray-100" />
-                                        <span className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Protocol 404</span>
                                     </div>
                                 </motion.div>
                             ) : (
                                 <div className="text-center">
                                     <span className="text-4xl lg:text-6xl font-black tracking-tighter text-gray-200 uppercase">Station Idle</span>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-4">Awaiting next synchronization</p>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-4">Awaiting next visitor</p>
                                 </div>
                             )}
                         </div>
 
                         <div className="mt-auto pt-8 border-t border-gray-100 grid grid-cols-3 gap-8">
                             <div>
-                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-2 block italic">Throughput</span>
-                                <p className="text-lg lg:text-xl font-black text-gray-900 leading-none">{waitingList.length + (currentServing ? 1 : 0)} <span className="text-[10px] text-gray-400 ml-1">UNITS</span></p>
+                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-2 block italic">Total Today</span>
+                                <p className="text-lg lg:text-xl font-black text-gray-900 leading-none">{waitingList.length + (currentServing ? 1 : 0)} <span className="text-[10px] text-gray-400 ml-1">VISITS</span></p>
                             </div>
                             <div>
-                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-2 block italic">Efficiency</span>
-                                <p className="text-lg lg:text-xl font-black text-[#78d64b] leading-none">Optimal <span className="text-[10px] text-gray-400 ml-1">SYNC</span></p>
+                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-2 block italic">Hub Status</span>
+                                <p className="text-lg lg:text-xl font-black text-[#78d64b] leading-none">Optimal <span className="text-[10px] text-gray-400 ml-1">FLOW</span></p>
                             </div>
                             <div>
-                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-2 block italic">Latency</span>
+                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-2 block italic">Wait Time</span>
                                 <p className="text-lg lg:text-xl font-black text-gray-900 leading-none">~14 <span className="text-[10px] text-gray-400 ml-1">MINS</span></p>
                             </div>
                         </div>

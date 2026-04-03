@@ -278,10 +278,22 @@ export default function BookingPage() {
                                 </div>
                             </div>
 
+                            {/* SCRUM-70: Error Feedback */}
+                            {error && (
+                                <motion.div 
+                                    initial={{ opacity: 0, scale: 0.98 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-600 text-[10px] font-black uppercase tracking-widest shadow-sm"
+                                >
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+                                    {error}
+                                </motion.div>
+                            )}
+
                             <button
                                 onClick={() => handleSubmit()}
                                 disabled={isSubmitting || !date || !time}
-                                className="mt-6 w-full py-5 px-8 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.3em] text-white bg-gray-900 hover:bg-black transition-all shadow-2xl active:scale-95 disabled:opacity-30 flex items-center justify-center gap-4 group shrink-0"
+                                className="w-full py-5 px-8 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.3em] text-white bg-gray-900 hover:bg-black transition-all shadow-2xl active:scale-95 disabled:opacity-30 flex items-center justify-center gap-4 group shrink-0"
                             >
                                 {isSubmitting ? (
                                     <div className="w-5 h-5 border-2 border-white/20 border-t-[#78d64b] rounded-full animate-spin" />
