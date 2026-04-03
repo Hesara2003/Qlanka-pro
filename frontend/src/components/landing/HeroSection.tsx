@@ -7,8 +7,12 @@ const trusted = ["Stripe", "Linear", "Vercel", "Figma", "Loom", "Notion"];
 export default function HeroSection() {
     return (
         <section id="home" className="relative w-full overflow-hidden font-sans bg-transparent">
-            {/* Grid dot pattern overlay - subtle */}
-            <div className="absolute inset-0 bg-grid-dots opacity-[0.10] pointer-events-none" />
+            {/* Top-Center Emerald Bloom (Reference Match) */}
+            <div className="absolute top-0 left-0 w-full h-[130%] pointer-events-none z-0" 
+                 style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(74, 190, 142, 0.04) 0%, transparent 70%)" }} />
+
+            {/* Grid pattern overlay - subtle background texture */}
+            <div className="absolute inset-0 bg-grid-dots opacity-[0.05] pointer-events-none" />
 
             <div className="relative z-10 w-full max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-12 pt-32 pb-0">
                 
