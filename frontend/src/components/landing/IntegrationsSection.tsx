@@ -1,5 +1,14 @@
 import { motion } from "framer-motion";
 
+const features = [
+    { icon: "📊", title: "Advanced Analytics", desc: "Real-time queue performance insights and reporting dashboards." },
+    { icon: "🔔", title: "Smart Notifications", desc: "Automated SMS and in-app alerts that keep customers informed." },
+    { icon: "🏢", title: "Multi-Branch Control", desc: "Manage unlimited branches from a single unified dashboard." },
+    { icon: "🔐", title: "Enterprise Security", desc: "Role-based access control and audit logs for compliance." },
+    { icon: "🔗", title: "CRM Integration", desc: "Sync seamlessly with your existing CRM and workflow tools." },
+    { icon: "📋", title: "Custom Counters", desc: "Build custom service counter flows to match your workflow." },
+];
+
 export default function IntegrationsSection() {
     const fadeUp = {
         hidden: { opacity: 0, y: 30 },
@@ -7,91 +16,136 @@ export default function IntegrationsSection() {
     };
 
     return (
-        <section className="py-24 bg-white relative overflow-hidden font-sans">
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center">
+        <section className="py-20 lg:py-28 bg-white relative overflow-hidden font-sans">
+            <div className="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-12">
 
-                {/* Arch graphic with icons */}
-                <div className="relative w-full max-w-4xl h-64 md:h-80 mb-8 flex justify-center items-end overflow-hidden">
-                    {/* Dashed arch line */}
-                    <svg className="absolute bottom-0 w-full h-[200%] text-gray-200" viewBox="0 0 100 100" preserveAspectRatio="none">
-                        <path d="M 0 100 A 50 50 0 0 1 100 100" fill="none" stroke="currentColor" strokeWidth="0.5" strokeDasharray="2 2" />
-                    </svg>
-
-                    {/* Center Base Logo */}
+                {/* Header */}
+                <div className="text-center mb-14">
                     <motion.div 
-                        initial={{ scale: 0, opacity: 0 }}
-                        whileInView={{ scale: 1, opacity: 1 }}
-                        viewport={{ once: true, margin: "-50px" }}
-                        transition={{ type: "spring", bounce: 0.5, duration: 0.8 }}
-                        className="w-16 h-16 bg-[#0a5c4e] rounded-xl flex items-center justify-center shadow-lg relative z-20 mb-8"
+                        initial="hidden" whileInView="visible" viewport={{ once: true }}
+                        variants={fadeUp} transition={{ duration: 0.6 }}
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#78d64b]/20 bg-[#78d64b]/5 text-[#078d42] font-medium text-[11px] tracking-wider uppercase mb-5"
                     >
-                        <div className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center">
-                            <span className="w-3 h-3 bg-[#78d64b] rounded-full animate-pulse"></span>
-                        </div>
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#78d64b]" /> Everything Included
                     </motion.div>
-
-                    {/* Nodes along the arch */}
-                    <div className="absolute w-full h-full bottom-0">
-                        {/* 1 (Leftmost bottom) */}
-                        <motion.div initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.1 }} className="absolute bottom-[20%] left-[10%] w-10 h-10 bg-[#e0f5ff] rounded-full flex items-center justify-center text-[#0aa1e5] shadow-md font-black italic">c</motion.div>
-                        {/* 2 */}
-                        <motion.div initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.2 }} className="absolute bottom-[45%] left-[22%] w-12 h-12 bg-[#5d5bfc] rounded-full flex items-center justify-center text-white shadow-md">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
-                        </motion.div>
-                        {/* 3 */}
-                        <motion.div initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.3 }} className="absolute bottom-[70%] left-[35%] w-14 h-14 bg-[#2e8cf0] rounded-full flex items-center justify-center text-white shadow-md text-[10px] font-bold">zoom</motion.div>
-                        {/* 4 (Top center-ish) */}
-                        <motion.div initial={{ scale: 0, y: -20 }} whileInView={{ scale: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.4, type: "spring" }} className="absolute bottom-[85%] left-1/2 -translate-x-1/2 w-16 h-16 bg-[#007ebb] rounded-full flex items-center justify-center text-white shadow-md text-2xl font-bold">in</motion.div>
-                        {/* 5 */}
-                        <motion.div initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.5 }} className="absolute bottom-[70%] right-[35%] w-14 h-14 bg-[#0a5c4e] rounded-full flex items-center justify-center text-white shadow-md text-lg">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2"/></svg>
-                        </motion.div>
-                        {/* 6 */}
-                        <motion.div initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.6 }} className="absolute bottom-[45%] right-[22%] w-12 h-12 bg-[#5b5cc0] rounded-full flex items-center justify-center text-white shadow-md font-bold text-sm">
-                            <div className="bg-white text-[#5b5cc0] px-1 rounded-sm text-[8px]">T</div>
-                        </motion.div>
-                        {/* 7 (Rightmost bottom) */}
-                        <motion.div initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.7 }} className="absolute bottom-[20%] right-[10%] w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center text-gray-400 shadow-md font-bold">H</motion.div>
-                    </div>
-                    
-                    {/* Replaced gradient cover with flat base layer */}
-                    <div className="absolute bottom-0 w-full h-[15%] bg-white/80 backdrop-blur-[2px] z-10 pointer-events-none" />
-                </div>
-
-                {/* Text Content */}
-                <div className="text-center max-w-2xl relative z-30 mt-[-2rem]">
                     <motion.h2 
-                        initial="hidden"
-                        whileInView="visible"
-                        viewport={{ once: true }}
-                        variants={fadeUp}
-                        transition={{ duration: 0.6 }}
-                        className="text-[2.5rem] md:text-[3.2rem] font-bold text-[#1a1c23] tracking-tight leading-[1.1] mb-6"
+                        initial="hidden" whileInView="visible" viewport={{ once: true }}
+                        variants={fadeUp} transition={{ duration: 0.6, delay: 0.1 }}
+                        className="text-[2.5rem] md:text-[3.5rem] font-medium text-[#1a1c23] leading-[1.05] tracking-tight"
                     >
-                        Connect With The <br /> Tools <span className="text-[#a0a4ab]">You Already Use Daily</span>
+                        Built for Modern{" "}
+                        <span 
+                            className="italic"
+                            style={{ 
+                                fontFamily: "'Playfair Display', Georgia, serif",
+                                background: "linear-gradient(135deg, #78d64b 0%, #4abe8e 100%)",
+                                WebkitBackgroundClip: "text",
+                                WebkitTextFillColor: "transparent",
+                                backgroundClip: "text"
+                            }}
+                        >
+                            Operations
+                        </span>
                     </motion.h2>
-                    <motion.p 
-                        initial="hidden"
-                        whileInView="visible"
-                        viewport={{ once: true }}
-                        variants={fadeUp}
-                        transition={{ duration: 0.6, delay: 0.1 }}
-                        className="text-[#6b7280] text-base mb-10 max-w-lg mx-auto leading-relaxed"
+                    <motion.p
+                        initial="hidden" whileInView="visible" viewport={{ once: true }}
+                        variants={fadeUp} transition={{ duration: 0.6, delay: 0.15 }}
+                        className="text-gray-400 text-[15px] mt-4 max-w-md mx-auto leading-relaxed"
                     >
-                        Effortlessly integrate with your favorite platforms with all in one unified queueing experience.
+                        Everything you need to deliver exceptional customer experiences, right out of the box.
                     </motion.p>
-                    <motion.button 
-                        initial="hidden"
-                        whileInView="visible"
-                        viewport={{ once: true }}
-                        variants={fadeUp}
-                        transition={{ duration: 0.6, delay: 0.2 }}
-                        className="bg-[#78d64b] hover:bg-[#68c63b] text-[#074b42] font-bold px-8 py-3.5 rounded-full transition-colors shadow-sm"
-                    >
-                        Explore Integrations
-                    </motion.button>
                 </div>
 
+                {/* Feature Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto mb-24">
+                    {features.map((f, i) => (
+                        <motion.div
+                            key={i}
+                            initial="hidden" whileInView="visible" viewport={{ once: true }}
+                            variants={fadeUp} transition={{ duration: 0.5, delay: 0.1 * i }}
+                            className="group flex items-start gap-4 p-5 rounded-2xl border border-gray-100 hover:border-[#78d64b]/20 hover:bg-[#78d64b]/[0.02] hover:shadow-[0_4px_20px_rgba(120,214,75,0.06)] transition-all duration-300"
+                        >
+                            <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-lg shrink-0 group-hover:border-[#78d64b]/20 group-hover:bg-[#78d64b]/5 transition-all">
+                                {f.icon}
+                            </div>
+                            <div>
+                                <h4 className="font-medium text-[#1a1c23] text-[14px] mb-1">{f.title}</h4>
+                                <p className="text-[13px] text-gray-400 leading-relaxed">{f.desc}</p>
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
+
+                {/* "Experience The Future" — dark premium block */}
+                <motion.div
+                    initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }} transition={{ duration: 0.8 }}
+                    className="rounded-[2.5rem] overflow-hidden relative"
+                    style={{ background: "linear-gradient(145deg, #1a1c23 0%, #0f1117 100%)", border: "1px solid rgba(255,255,255,0.06)" }}
+                >
+                    {/* Glow blob */}
+                    <div className="absolute top-0 right-0 w-[400px] h-[400px] pointer-events-none" style={{ background: "radial-gradient(circle at top right, rgba(120,214,75,0.12) 0%, transparent 60%)" }} />
+                    <div className="absolute bottom-0 left-0 w-[300px] h-[300px] pointer-events-none" style={{ background: "radial-gradient(circle at bottom left, rgba(74,190,142,0.08) 0%, transparent 60%)" }} />
+                    <div className="absolute inset-0 bg-grid-dots opacity-20 pointer-events-none" />
+                    
+                    <div className="relative z-10 flex flex-col lg:flex-row items-center gap-12 p-10 lg:p-16">
+                        {/* Activity chart card */}
+                        <div className="lg:w-1/2 w-full">
+                            <div className="rounded-2xl p-6 border" style={{ background: "rgba(255,255,255,0.04)", borderColor: "rgba(255,255,255,0.08)" }}>
+                                <div className="flex items-center justify-between mb-6">
+                                    <div>
+                                        <h4 className="font-medium text-white text-[15px]">Queue Activity</h4>
+                                        <p className="text-gray-500 text-[12px] mt-0.5">Last 12 hours</p>
+                                    </div>
+                                    <span className="text-[12px] font-medium text-[#78d64b] bg-[#78d64b]/10 px-3 py-1 rounded-full border border-[#78d64b]/20">▲ 24%</span>
+                                </div>
+                                <div className="flex items-end gap-1.5 h-24">
+                                    {[30, 50, 42, 68, 55, 82, 65, 78, 60, 85, 70, 92].map((h, i) => (
+                                        <motion.div 
+                                            key={i} 
+                                            className="flex-1 rounded-t-md"
+                                            style={{ background: i >= 9 ? "linear-gradient(to top, #78d64b, #4abe8e)" : "rgba(120,214,75,0.12)", boxShadow: i >= 9 ? "0 0 12px rgba(120,214,75,0.3)" : "none" }}
+                                            initial={{ height: 0 }}
+                                            whileInView={{ height: `${h}%` }}
+                                            transition={{ duration: 0.7, delay: 0.4 + i * 0.05 }}
+                                        />
+                                    ))}
+                                </div>
+                                <div className="flex items-center justify-between mt-4">
+                                    <div className="flex items-center gap-2">
+                                        <span className="w-2 h-2 rounded-full bg-[#78d64b]" />
+                                        <span className="text-[11px] text-gray-500">Tokens served</span>
+                                    </div>
+                                    <span className="text-[11px] text-gray-500">1,248 today</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Text content */}
+                        <div className="lg:w-1/2">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#78d64b]/20 bg-[#78d64b]/5 text-[#78d64b] font-medium text-[11px] tracking-wider uppercase mb-6">
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#78d64b] animate-pulse" /> Live Data
+                            </div>
+                            <h3 className="text-[2rem] font-medium text-white tracking-tight leading-[1.15] mb-4">
+                                Experience The{" "}
+                                <span className="italic" style={{ fontFamily: "'Playfair Display', Georgia, serif", background: "linear-gradient(135deg, #78d64b, #4abe8e)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                                    Future of Queue Management
+                                </span>
+                            </h3>
+                            <p className="text-[14px] text-gray-400 leading-relaxed mb-8 max-w-md">
+                                Automate token issuance, track live wait times, and serve customers faster — all from one powerful platform.
+                            </p>
+                            <ul className="space-y-3 mb-8">
+                                {["Reduce wait times by up to 40%", "Real-time queue analytics", "Automated customer notifications"].map((txt, i) => (
+                                    <li key={i} className="flex items-center gap-3 text-[13px] text-gray-300">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#78d64b" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                        {txt}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+                </motion.div>
             </div>
         </section>
     );

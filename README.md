@@ -16,6 +16,65 @@ Qlanka-pro/
 
 ---
 
+## System Architecture
+
+QueueLanka Pro uses a microservices-based architecture with role-based frontend workflows, a central API gateway, domain services, and real-time queue updates.
+
+### Core Components
+
+- Frontend (React + Vite): citizen, officer, and admin user interfaces
+- Gateway (QueueLanka.Gateway): single entry point, routing, auth forwarding
+- Identity Service (QueueLanka.Identity): authentication, authorization, user management
+- Queue Service (QueueLanka.Queue): token lifecycle, counter actions, queue logic, realtime hub events
+- Service Center Service (QueueLanka.ServiceCenter): centers and center status management
+- Notification Service (QueueLanka.Notification): notification-related workflows
+- Shared Library (QueueLanka.Shared): shared contracts and common utilities
+- Data Layer (MySQL): persistent storage for users, centers, counters, tokens, appointments, and reports
+- Observability: Prometheus for metrics and Grafana for dashboards
+
+### High-Level Flow
+
+1. User actions originate in the frontend (citizen/officer/admin pages).
+2. Requests pass through the gateway to the correct backend service.
+3. Domain services execute business logic and persist data in MySQL.
+4. Queue-related changes emit SignalR hub events for live updates.
+5. Frontend clients subscribe to updates and refresh queue state in real time.
+6. Metrics are scraped by Prometheus and visualized in Grafana.
+
+### Architecture Diagram
+
+```mermaid
+flowchart LR
+	UI[Frontend: Citizen Officer Admin] --> GW[API Gateway]
+	GW --> ID[Identity Service]
+	GW --> Q[Queue Service]
+	GW --> SC[Service Center Service]
+	GW --> N[Notification Service]
+
+	ID --> DB[(MySQL)]
+	Q --> DB
+	SC --> DB
+	N --> DB
+
+	Q --> HUB[SignalR Queue Hub]
+	HUB --> UI
+
+	GW --> M[Metrics Endpoints]
+	M --> P[Prometheus]
+	P --> G[Grafana]
+```
+
+### Backend Service Layout
+
+- backend/QueueLanka.Gateway
+- backend/QueueLanka.Identity
+- backend/QueueLanka.Queue
+- backend/QueueLanka.ServiceCenter
+- backend/QueueLanka.Notification
+- backend/QueueLanka.Shared
+
+---
+
 ## Documentation
 
 See the [docs/](docs/) directory for comprehensive documentation including:
@@ -24,6 +83,76 @@ See the [docs/](docs/) directory for comprehensive documentation including:
 - **[Technical API Guide](docs/call-next-token-technical-guide.md)**: Developer documentation
 - **[API Contract](docs/call-next-token-api-contract.md)**: Detailed specification for Call Next Token endpoint
 - **[Branching Strategy](docs/branching-strategy.md)**: Git workflow guidelines
+
+---
+
+## System Options
+
+QueueLanka Pro supports role-based options across citizen, officer, and admin workflows.
+
+### Citizen Options
+
+- Register and login
+- View available/open service centers
+- Book appointments
+- View personal bookings
+- View personal tokens
+- Cancel waiting tokens
+- See live queue changes in real time
+
+### Officer Options
+
+- Login to the officer workstation
+- View assigned counter dashboard
+- View waiting tokens at assigned counter
+- Call next token (FIFO)
+- Mark called token as served
+- Mark called token as skipped
+- Reassign token to another open counter
+- View daily counter stats (served, skipped, average service time)
+- Manual refresh and reconnect controls for real-time sync
+
+### Admin Options
+
+- Login to admin portal
+- Manage users (citizen/officer/admin)
+- Manage service centers
+- Open/close service centers
+- Manage counters per center
+- Open/close counters
+- Assign officers to counters
+- View daily center summary reports
+
+### Realtime and Queueing Options
+
+- SignalR real-time updates for queue events
+- Counter-level and center-level queue synchronization
+- Token lifecycle states: Waiting, Called, Served, Skipped, Cancelled, Completed, NoShow
+- Queue position handling and live waiting-list updates
+
+### API and Integration Options
+
+- REST APIs via Gateway for auth, queue, service-center, and admin workflows
+- JWT-based authorization with role checks
+- Endpoint coverage for call-next, mark served/skip, reassign, counter management, and reports
+
+### Quality, DevOps, and Observability Options
+
+- CI/CD-ready repository structure for frontend and backend services
+- Automated health checks and validation scripts in scripts/
+- Smoke and integration test support (including Playwright smoke tests)
+- Prometheus metrics scraping
+- Grafana dashboards for latency, errors, queue size, and service availability
+
+### Feature Guides
+
+- **Officer dashboard**: [User Guide](docs/officer-dashboard-user-guide.md) | [Technical Guide](docs/officer-dashboard-technical-guide.md)
+- **Call next token**: [User Guide](docs/call-next-token-user-guide.md) | [Technical Guide](docs/call-next-token-technical-guide.md) | [API Contract](docs/call-next-token-api-contract.md)
+- **Mark served/skip token**: [User Guide](docs/mark-served-skip-token-user-guide.md) | [Technical Guide](docs/mark-served-skip-token-technical-guide.md)
+- **Reassign token**: [User Guide](docs/reassign-token-user-guide.md) | [Technical Guide](docs/reassign-token-technical-guide.md)
+- **Counter management**: [User Guide](docs/counter-management-user-guide.md) | [Technical Guide](docs/counter-management-technical-guide.md)
+- **Real-time queue update**: [User Guide](docs/real-time-queue-update-user-guide.md) | [Technical Guide](docs/real-time-queue-update-technical-guide.md)
+- **Daily center summary report**: [User Guide](docs/daily-center-summary-report-user-guide.md) | [Technical Guide](docs/daily-center-summary-report-technical-guide.md)
 
 ---
 

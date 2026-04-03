@@ -1,153 +1,195 @@
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
 export default function TestimonialsSection() {
+    const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
     const fadeUp = {
         hidden: { opacity: 0, y: 30 },
         visible: { opacity: 1, y: 0 }
     };
 
+    const plans = [
+        {
+            name: "Starter",
+            tag: "Free",
+            price: "$0",
+            sub: "Forever free",
+            desc: "Perfect for small branches getting started with queue management.",
+            features: ["Up to 100 tokens/day", "Basic queue tracking", "1 branch", "Email support", "3 months data retention"],
+            cta: "Get Started",
+            highlighted: false,
+            dark: false,
+        },
+        {
+            name: "Standard",
+            tag: "Most Popular",
+            price: billing === "monthly" ? "$50" : "$40",
+            sub: billing === "monthly" ? "/month, billed monthly" : "/month, billed yearly",
+            desc: "For growing teams that need real-time insights and multi-branch control.",
+            features: ["Unlimited tokens/day", "Advanced analytics", "Up to 10 branches", "Priority support", "Unlimited data"],
+            cta: "Get Started",
+            highlighted: true,
+            dark: false,
+        },
+        {
+            name: "Enterprise",
+            tag: "Best Value",
+            price: billing === "monthly" ? "$200" : "$160",
+            sub: billing === "monthly" ? "/month, billed monthly" : "/month, billed yearly",
+            desc: "For large organizations needing full control and dedicated infrastructure.",
+            features: ["Everything in Standard", "Unlimited branches", "Custom counter builder", "CRM & SMS integration", "Dedicated onboarding"],
+            cta: "Contact Sales",
+            highlighted: false,
+            dark: true,
+        },
+    ];
+
     return (
-        <section className="py-20 lg:py-28 bg-[#fcfcfc] overflow-hidden font-sans border-t border-gray-100">
-            <div className="max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-12">
+        <section id="pricing" className="py-20 lg:py-28 overflow-hidden font-sans" style={{ background: "linear-gradient(180deg, #fafafa 0%, #ffffff 100%)" }}>
+            <div className="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-12">
 
                 {/* Header */}
-                <div className="text-center mb-16">
+                <div className="text-center mb-14">
                     <motion.div 
-                        initial="hidden"
-                        whileInView="visible"
-                        viewport={{ once: true }}
-                        variants={fadeUp}
-                        transition={{ duration: 0.6 }}
-                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-gray-200 text-[#0a5c4e] font-semibold text-xs tracking-wider uppercase mb-6 shadow-sm"
+                        initial="hidden" whileInView="visible" viewport={{ once: true }}
+                        variants={fadeUp} transition={{ duration: 0.6 }}
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#78d64b]/20 bg-[#78d64b]/5 text-[#078d42] font-medium text-[11px] tracking-wider uppercase mb-5"
                     >
-                        <span className="w-2 h-2 rounded-full bg-[#78d64b]"></span> Our Pricing
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#78d64b]" /> Pricing
                     </motion.div>
                     <motion.h2 
-                        initial="hidden"
-                        whileInView="visible"
-                        viewport={{ once: true }}
-                        variants={fadeUp}
-                        transition={{ duration: 0.6, delay: 0.1 }}
-                        className="text-[2.5rem] md:text-[4rem] font-bold text-[#1a1c23] leading-[1.05] tracking-tight"
+                        initial="hidden" whileInView="visible" viewport={{ once: true }}
+                        variants={fadeUp} transition={{ duration: 0.6, delay: 0.1 }}
+                        className="text-[2.5rem] md:text-[3.5rem] font-medium text-[#1a1c23] leading-[1.05] tracking-tight mb-4"
                     >
-                        Flexible Plans That Scale <br />
-                        With <span className="text-gray-400 font-normal">Your Goals</span>
+                        Simple, Transparent{" "}
+                        <span 
+                            className="italic"
+                            style={{ 
+                                fontFamily: "'Playfair Display', Georgia, serif",
+                                background: "linear-gradient(135deg, #78d64b 0%, #4abe8e 100%)",
+                                WebkitBackgroundClip: "text",
+                                WebkitTextFillColor: "transparent",
+                                backgroundClip: "text"
+                            }}
+                        >
+                            Pricing
+                        </span>
                     </motion.h2>
+                    <motion.p
+                        initial="hidden" whileInView="visible" viewport={{ once: true }}
+                        variants={fadeUp} transition={{ duration: 0.6, delay: 0.15 }}
+                        className="text-gray-400 text-[15px] mb-8 max-w-md mx-auto leading-relaxed"
+                    >
+                        Start free. Scale as you grow. No hidden fees.
+                    </motion.p>
+
+                    {/* Billing Toggle */}
+                    <motion.div
+                        initial="hidden" whileInView="visible" viewport={{ once: true }}
+                        variants={fadeUp} transition={{ duration: 0.6, delay: 0.2 }}
+                        className="inline-flex items-center gap-0.5 bg-gray-100 border border-gray-200 rounded-xl p-1"
+                    >
+                        {["monthly", "yearly"].map((b) => (
+                            <button
+                                key={b}
+                                onClick={() => setBilling(b as "monthly" | "yearly")}
+                                className={`text-[13px] font-medium px-5 py-2 rounded-lg transition-all flex items-center gap-2 ${billing === b ? "bg-white shadow-sm text-[#1a1c23] border border-gray-100" : "text-gray-400 hover:text-gray-600"}`}
+                            >
+                                {b.charAt(0).toUpperCase() + b.slice(1)}
+                                {b === "yearly" && <span className="text-[10px] font-medium text-[#78d64b] bg-[#78d64b]/10 px-1.5 py-0.5 rounded-md">-20%</span>}
+                            </button>
+                        ))}
+                    </motion.div>
                 </div>
 
                 {/* Pricing Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 mb-20 max-w-5xl mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl mx-auto">
+                    {plans.map((plan, i) => (
+                        <motion.div
+                            key={plan.name}
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.6, delay: 0.2 + i * 0.1 }}
+                            className={`relative rounded-[2rem] p-8 flex flex-col transition-all duration-300 ${
+                                plan.highlighted 
+                                    ? "shadow-[0_20px_60px_rgba(120,214,75,0.2)] scale-[1.02]" 
+                                    : "hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]"
+                            } ${plan.dark ? "text-white" : "bg-white border border-gray-100"}`}
+                            style={plan.highlighted 
+                                ? { background: "linear-gradient(145deg, #78d64b 0%, #5ec941 50%, #4abe8e 100%)", border: "1px solid rgba(120,214,75,0.3)" }
+                                : plan.dark 
+                                ? { background: "linear-gradient(145deg, #1a1c23 0%, #0f1117 100%)", border: "1px solid rgba(255,255,255,0.06)" }
+                                : {}
+                            }
+                        >
+                            {plan.highlighted && (
+                                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                                    <span className="bg-[#1a1c23] text-white text-[11px] font-medium px-4 py-1 rounded-full shadow-lg">Most Popular</span>
+                                </div>
+                            )}
 
-                    {/* Starting Plan */}
-                    <motion.div 
-                        initial={{ opacity: 0, y: 30 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.6, delay: 0.2 }}
-                        className="bg-white rounded-[2rem] p-10 lg:p-12 border border-gray-200 shadow-sm flex flex-col hover:shadow-md transition-shadow relative overflow-hidden"
-                    >
-                        <div className="inline-flex items-center gap-2 bg-gray-100 text-[#1a1c23] text-sm font-bold px-4 py-2 rounded-full mb-8 w-max">
-                            Starting Plan
-                        </div>
-                        <div className="flex items-end gap-1 mb-4">
-                            <span className="text-5xl lg:text-6xl font-black text-[#1a1c23] tracking-tighter">$50</span>
-                            <span className="text-[#6b7280] pb-2 font-semibold">/Month</span>
-                        </div>
-                        <p className="text-[#6b7280] text-[17px] mb-10 leading-relaxed max-w-sm">
-                            For small branches who want to streamline their queuing with essential tools & simple automation.
-                        </p>
-                        
-                        <button className="w-full bg-white border-2 border-[#1a1c23] text-[#1a1c23] font-bold py-4 rounded-full hover:bg-[#1a1c23] hover:text-white transition-colors mb-10">
-                            Get Started
-                        </button>
+                            {/* Tag */}
+                            <div className={`inline-flex items-center gap-1.5 text-[11px] font-medium px-3 py-1.5 rounded-full w-max mb-6 ${
+                                plan.highlighted ? "bg-[#074b42]/15 text-[#074b42]" 
+                                : plan.dark ? "bg-white/5 text-gray-400 border border-white/10"
+                                : "bg-gray-50 text-gray-500 border border-gray-100"
+                            }`}>
+                                {plan.tag}
+                            </div>
 
-                        <ul className="space-y-4 text-[15px] text-[#4b5563] font-medium">
-                            {[
-                                "Unlimited token issuing",
-                                "Basic queue tracking",
-                                "Single branch sync",
-                                "In-app notifications",
-                                "Email support"
-                            ].map((feature, i) => (
-                                <li key={i} className="flex items-center gap-4">
-                                    <div className="w-6 h-6 rounded-full bg-[#f4f4f5] flex items-center justify-center text-[#1a1c23] shrink-0">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                                    </div>
-                                    {feature}
-                                </li>
-                            ))}
-                        </ul>
-                    </motion.div>
+                            {/* Price */}
+                            <div className="mb-1">
+                                <span className={`text-[3rem] font-medium tracking-tighter leading-none ${plan.highlighted ? "text-[#074b42]" : plan.dark ? "text-white" : "text-[#1a1c23]"}`}>
+                                    {plan.price}
+                                </span>
+                            </div>
+                            <p className={`text-[12px] mb-4 ${plan.highlighted ? "text-[#074b42]/60" : plan.dark ? "text-gray-500" : "text-gray-400"}`}>{plan.sub}</p>
+                            <p className={`text-[13px] leading-relaxed mb-7 ${plan.highlighted ? "text-[#074b42]/80" : plan.dark ? "text-gray-400" : "text-gray-500"}`}>{plan.desc}</p>
 
-                    {/* Enterprise Plan */}
-                    <motion.div 
-                        initial={{ opacity: 0, y: 30 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.6, delay: 0.3 }}
-                        className="bg-[#1a1c23] rounded-[2rem] p-10 lg:p-12 shadow-2xl flex flex-col text-white relative overflow-hidden"
-                    >
-                        <div className="inline-flex items-center gap-2 bg-[#272a35] text-white text-sm font-bold px-4 py-2 rounded-full mb-8 w-max">
-                            <span className="w-2 h-2 rounded-full bg-[#78d64b] animate-pulse"></span> Enterprise
-                        </div>
-                        <div className="flex items-end gap-1 mb-4 relative z-10">
-                            <span className="text-5xl lg:text-6xl font-black tracking-tighter text-white">$200</span>
-                            <span className="text-gray-400 pb-2 font-semibold">/Month</span>
-                        </div>
-                        <p className="text-gray-400 text-[17px] mb-10 leading-relaxed max-w-sm relative z-10">
-                            Growing organizations needing full control, advanced analytics, and powerful cross-branch features.
-                        </p>
-                        
-                        <button className="w-full bg-[#78d64b] text-[#074b42] font-bold py-4 rounded-full hover:bg-[#68c63b] transition-colors mb-10 relative z-10">
-                            Upgrade to Enterprise
-                        </button>
+                            {/* Divider */}
+                            <div className={`h-px mb-7 ${plan.highlighted ? "bg-[#074b42]/15" : plan.dark ? "bg-white/5" : "bg-gray-100"}`} />
 
-                        <ul className="space-y-4 text-[15px] text-gray-300 font-medium relative z-10">
-                            {[
-                                "Everything in Starting Plan",
-                                "Custom counter builder",
-                                "Advanced multi-branch dashboard",
-                                "Priority support & onboarding",
-                                "Integration with CRM & SMS"
-                            ].map((feature, i) => (
-                                <li key={i} className="flex items-center gap-4">
-                                    <div className="w-6 h-6 rounded-full bg-[#373b47] flex items-center justify-center text-[#78d64b] shrink-0">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                                    </div>
-                                    {feature}
-                                </li>
-                            ))}
-                        </ul>
-                    </motion.div>
+                            {/* Features */}
+                            <ul className="space-y-3 mb-8 flex-1">
+                                {plan.features.map((f, j) => (
+                                    <li key={j} className={`flex items-start gap-3 text-[13px] ${plan.highlighted ? "text-[#074b42]" : plan.dark ? "text-gray-300" : "text-gray-600"}`}>
+                                        <div className="mt-0.5 shrink-0">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={plan.highlighted ? "#074b42" : plan.dark ? "#78d64b" : "#78d64b"} strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                        </div>
+                                        {f}
+                                    </li>
+                                ))}
+                            </ul>
 
+                            {/* CTA */}
+                            <Link 
+                                to="/register"
+                                className={`w-full py-3.5 rounded-xl text-[14px] font-medium transition-all text-center inline-block ${
+                                    plan.highlighted 
+                                        ? "bg-[#1a1c23] text-white hover:bg-black shadow-sm" 
+                                        : plan.dark
+                                        ? "text-[#074b42] hover:opacity-90 shadow-sm"
+                                        : "bg-gray-50 border border-gray-200 text-[#1a1c23] hover:bg-gray-100"
+                                }`}
+                                style={plan.dark ? { background: "linear-gradient(135deg, #78d64b, #4abe8e)" } : {}}
+                            >
+                                {plan.cta}
+                            </Link>
+                        </motion.div>
+                    ))}
                 </div>
 
-                {/* Bottom Banner Image / Final CTA */}
-                <motion.div 
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true }}
-                    variants={fadeUp}
-                    transition={{ duration: 0.6, delay: 0.4 }}
-                    className="w-full bg-[#0a5c4e] rounded-[2rem] p-8 lg:p-14 flex flex-col md:flex-row items-center justify-between gap-10 shadow-xl relative overflow-hidden"
+                {/* Bottom enterprise note */}
+                <motion.p
+                    initial="hidden" whileInView="visible" viewport={{ once: true }}
+                    variants={fadeUp} transition={{ duration: 0.6, delay: 0.5 }}
+                    className="text-center text-[13px] text-gray-400 mt-8"
                 >
-                    <div className="absolute inset-0 z-0">
-                        <img src="https://images.unsplash.com/photo-1552581234-26160f608093?auto=format&fit=crop&w=1200&q=80" alt="Team meeting" className="w-full h-full object-cover opacity-20 mix-blend-overlay" />
-                    </div>
-
-                    <div className="flex-1 max-w-xl relative z-10">
-                        <h3 className="text-[2.5rem] font-bold text-white mb-6 leading-tight tracking-tight">
-                            Simplify Management <br />
-                            <span className="text-[#a0ccbc]">Maximize Your Results</span>
-                        </h3>
-                        <p className="text-[17px] text-[#a0ccbc] mb-8 leading-relaxed max-w-md border-l-2 border-[#78d64b] pl-5">
-                            Streamline your entire queue process with intelligent tools designed to help you make better decisions.
-                        </p>
-                        <button className="bg-[#78d64b] hover:bg-[#68c63b] text-[#074b42] font-bold px-8 py-4 rounded-full transition-colors shadow-sm">
-                            Start Managing Now
-                        </button>
-                    </div>
-                </motion.div>
+                    All plans include a 14-day free trial. No credit card required.
+                </motion.p>
 
             </div>
         </section>

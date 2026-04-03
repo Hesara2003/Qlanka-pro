@@ -1,155 +1,187 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import phoneMockup from "../../assets/auth/phone_mockup.png";
 
-const trusted = [
-    "RCK",
-    "miro",
-    "stripe",
-    "Google",
-    "Adobe",
-    "Spotify",
-];
+const trusted = ["Stripe", "Linear", "Vercel", "Figma", "Loom", "Notion"];
 
 export default function HeroSection() {
-    // Animation variants
-    const fadeUp = {
-        hidden: { opacity: 0, y: 30 },
-        visible: { opacity: 1, y: 0 }
-    };
-
     return (
-        <section className="relative w-full bg-[#fcfcfc] overflow-hidden pt-28 lg:pt-32 pb-12 font-sans flex flex-col justify-center min-h-[calc(100vh-80px)] border-b border-gray-100">
-            
-            <div className="relative z-10 w-full max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-12 flex-1 flex flex-col justify-center">
-                <div className="flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-8">
-                    
-                    {/* Left Column: Text & CTAs */}
-                    <div className="flex flex-col items-start text-left lg:w-[45%] xl:w-[42%] shrink-0">
-                        <motion.h1
-                            initial="hidden"
-                            animate="visible"
-                            variants={fadeUp}
-                            transition={{ duration: 0.6, ease: "easeOut" }}
-                            className="font-bold text-[#1a1c23] leading-[1.05] tracking-tight"
-                            style={{ fontSize: "clamp(3rem, 5vw, 4.5rem)" }}
-                        >
-                            Turn Your Chaos <br />
-                            into Streamlined <br />
-                            Queues with Ease
-                        </motion.h1>
+        <section id="home" className="relative w-full overflow-hidden font-sans" style={{ background: "linear-gradient(160deg, #0f1117 0%, #111827 50%, #0d1f10 100%)" }}>
+            {/* Mesh gradient blobs */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-[-20%] left-[-10%] w-[700px] h-[700px] rounded-full opacity-20" style={{ background: "radial-gradient(circle, #78d64b 0%, transparent 70%)", filter: "blur(80px)" }} />
+                <div className="absolute bottom-[-30%] right-[-10%] w-[600px] h-[600px] rounded-full opacity-10" style={{ background: "radial-gradient(circle, #4abe8e 0%, transparent 70%)", filter: "blur(100px)" }} />
+                <div className="absolute top-[30%] right-[20%] w-[400px] h-[400px] rounded-full opacity-10" style={{ background: "radial-gradient(circle, #78d64b 0%, transparent 70%)", filter: "blur(80px)" }} />
+            </div>
 
-                        <motion.p
-                            initial="hidden"
-                            animate="visible"
-                            variants={fadeUp}
-                            transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
-                            className="mt-6 text-[17px] text-[#6b7280] leading-relaxed font-normal max-w-md"
-                        >
-                            Set up your branches in minutes, and let our platform manage your customer wait times with breathtaking, high-efficiency workflows.
-                        </motion.p>
+            {/* Grid dot pattern overlay */}
+            <div className="absolute inset-0 bg-grid-dots opacity-30 pointer-events-none" />
 
-                        <motion.div
-                            initial="hidden"
-                            animate="visible"
-                            variants={fadeUp}
-                            transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
-                            className="mt-8 flex flex-wrap items-center gap-4"
-                        >
-                            <Link
-                                to="/register"
-                                className="inline-flex items-center justify-center bg-[#1a1c23] hover:bg-black text-white text-[15px] font-semibold px-8 py-3.5 rounded-full transition-all duration-200 shadow-sm"
-                            >
-                                Start Managing
-                            </Link>
-                            <Link
-                                to="/features"
-                                className="inline-flex items-center justify-center bg-white text-[#1a1c23] border border-gray-200 text-[15px] font-semibold px-8 py-3.5 rounded-full hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-sm"
-                            >
-                                Explore Features
-                            </Link>
-                        </motion.div>
+            {/* Top border glow */}
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#78d64b]/40 to-transparent" />
 
-                        <motion.div
-                            initial="hidden"
-                            animate="visible"
-                            variants={fadeUp}
-                            transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
-                            className="mt-10 flex items-center gap-4 text-sm text-[#6b7280] font-medium"
-                        >
-                            <div className="flex -space-x-2 shrink-0">
-                                <div className="w-10 h-10 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center overflow-hidden"><img src="https://i.pravatar.cc/100?img=33" alt="user" className="w-full h-full object-cover" /></div>
-                                <div className="w-10 h-10 rounded-full bg-gray-300 border-2 border-white flex items-center justify-center overflow-hidden"><img src="https://i.pravatar.cc/100?img=47" alt="user" className="w-full h-full object-cover" /></div>
-                                <div className="w-10 h-10 rounded-full bg-gray-400 border-2 border-white flex items-center justify-center overflow-hidden"><img src="https://i.pravatar.cc/100?img=12" alt="user" className="w-full h-full object-cover" /></div>
-                                <div className="w-10 h-10 rounded-full bg-gray-500 border-2 border-white flex items-center justify-center overflow-hidden"><img src="https://i.pravatar.cc/100?img=68" alt="user" className="w-full h-full object-cover" /></div>
-                            </div>
-                            <span className="max-w-[200px] leading-snug">Join with <strong>2100+ Users</strong> and start managing queues now</span>
-                        </motion.div>
-                    </div>
-
-                    {/* Right Column: Visual Masonry Grid w/ Real Images */}
-                    <div className="w-full lg:w-[55%] h-[480px] lg:h-[550px] relative overflow-hidden hidden md:block rounded-l-3xl">
-                         <div className="absolute right-0 top-0 h-full w-[110%] flex gap-4 lg:gap-5 px-4 transform -rotate-1 scale-105 origin-center">
-                             
-                             {/* Column 1 */}
-                             <div className="flex flex-col gap-4 lg:gap-5 w-1/3 h-[120%] translate-y-4">
-                                  <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }} className="w-full rounded-2xl h-[45%] overflow-hidden relative shadow-sm border border-gray-100">
-                                        <img src="https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&w=500&q=80" alt="Customer Service" className="w-full h-full object-cover" />
-                                  </motion.div>
-                                  <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }} className="w-full bg-[#1a1c23] rounded-2xl h-[55%] overflow-hidden relative p-5 shadow-xl flex flex-col justify-end">
-                                      <div className="mb-auto">
-                                          <div className="w-10 h-10 rounded-full bg-[#0a5c4e] text-[#78d64b] flex items-center justify-center mb-4">
-                                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                                          </div>
-                                      </div>
-                                      <h3 className="text-white font-bold text-lg leading-tight mb-2">Automated Tokens</h3>
-                                      <p className="text-gray-400 text-xs">Seamless self-service kiosk workflows.</p>
-                                  </motion.div>
-                             </div>
-
-                             {/* Column 2 */}
-                             <div className="flex flex-col gap-4 lg:gap-5 w-1/3 h-[120%] -translate-y-8">
-                                  <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }} className="w-full rounded-2xl h-[60%] overflow-hidden relative shadow-md">
-                                        <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=500&q=80" alt="Modern Waiting Area" className="w-full h-full object-cover" />
-                                  </motion.div>
-                                  <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.6 }} className="w-full rounded-2xl h-[40%] overflow-hidden relative shadow-sm border border-gray-100">
-                                        <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=500&q=80" alt="Happy Customer" className="w-full h-full object-cover" />
-                                  </motion.div>
-                             </div>
-
-                             {/* Column 3 */}
-                             <div className="flex flex-col gap-4 lg:gap-5 w-1/3 h-[120%] translate-y-12">
-                                  <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.7 }} className="w-full bg-[#78d64b] rounded-2xl h-[35%] overflow-hidden relative shadow-sm flex items-center justify-center p-6 text-center">
-                                       <div>
-                                            <span className="block text-4xl lg:text-5xl font-black text-[#074b42] tracking-tighter">98%</span>
-                                            <span className="block text-[10px] font-bold text-[#0a5c4e] mt-2 uppercase tracking-widest">Efficiency</span>
-                                       </div>
-                                  </motion.div>
-                                  <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.8 }} className="w-full rounded-2xl h-[65%] overflow-hidden relative shadow-lg bg-gray-100">
-                                        <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=500&q=80" alt="Dashboard Analytics" className="w-full h-full object-cover" />
-                                  </motion.div>
-                             </div>
-
-                         </div>
-                    </div>
-
-                </div>
-
-                {/* Brand logos strip */}
-                <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.8, delay: 0.8 }}
-                    className="mt-12 lg:mt-16 w-full pt-8 border-t border-gray-200 flex flex-col items-center justify-center gap-4 hidden sm:flex"
+            <div className="relative z-10 w-full max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-12 pt-32 pb-0">
+                
+                {/* Announcement badge */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="flex justify-center mb-8"
                 >
-                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Trusted by industry leaders</p>
-                    <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12">
-                        {trusted.map((name, i) => (
-                            <span key={i} className="text-lg md:text-xl font-bold tracking-tight text-[#d1d5db] select-none opacity-80">
-                                {name}
-                            </span>
-                        ))}
+                    <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm text-[12px] font-medium text-gray-300">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#78d64b] animate-pulse" />
+                        Now with real-time analytics
+                        <span className="text-gray-500 mx-1">·</span>
+                        <span className="text-[#78d64b] hover:underline cursor-pointer">Learn more →</span>
                     </div>
                 </motion.div>
+
+                {/* Main headline */}
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.7, delay: 0.1 }}
+                    className="text-center mb-6"
+                >
+                    <h1 className="text-[3.2rem] sm:text-[4rem] lg:text-[5.5rem] font-medium text-white leading-[1.02] tracking-tight">
+                        Manage Your{" "}
+                        <span 
+                            className="italic" 
+                            style={{ 
+                                fontFamily: "'Playfair Display', Georgia, serif",
+                                background: "linear-gradient(135deg, #78d64b 0%, #4abe8e 50%, #a3e635 100%)",
+                                WebkitBackgroundClip: "text",
+                                WebkitTextFillColor: "transparent",
+                                backgroundClip: "text"
+                            }}
+                        >
+                            Queues
+                        </span>
+                        <br />
+                        With Confidence
+                    </h1>
+                </motion.div>
+
+                {/* Subheading */}
+                <motion.p
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.2 }}
+                    className="text-center text-gray-400 text-[17px] leading-relaxed max-w-[520px] mx-auto mb-10"
+                >
+                    The all-in-one queue management platform. Issue tokens, track wait times, and serve customers efficiently at scale.
+                </motion.p>
+
+                {/* CTAs */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.3 }}
+                    className="flex items-center justify-center gap-3 mb-16"
+                >
+                    <Link
+                        to="/register"
+                        className="inline-flex items-center gap-2 text-[14px] font-medium px-6 py-3 rounded-xl text-[#074b42] transition-all duration-200 shadow-lg shadow-[#78d64b]/25 hover:shadow-[#78d64b]/40 hover:scale-[1.02] active:scale-[0.98]"
+                        style={{ background: "linear-gradient(135deg, #78d64b 0%, #5ec941 100%)" }}
+                    >
+                        Get Started Free
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+                    </Link>
+                    <Link
+                        to="#features"
+                        className="inline-flex items-center gap-2 text-[14px] font-medium px-6 py-3 rounded-xl text-gray-300 bg-white/5 hover:bg-white/10 border border-white/10 transition-all duration-200"
+                    >
+                        View Demo
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>
+                    </Link>
+                </motion.div>
+
+                {/* Social proof */}
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.8, delay: 0.4 }}
+                    className="flex items-center justify-center gap-3 mb-16"
+                >
+                    <div className="flex -space-x-2">
+                        {["33","47","12","55","68"].map((id, i) => (
+                            <img key={i} src={`https://i.pravatar.cc/100?img=${id}`} alt="" className="w-7 h-7 rounded-full border-2 border-[#1a1c23] object-cover" />
+                        ))}
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[13px] text-gray-400">
+                        <span className="text-[#78d64b] font-medium">★★★★★</span>
+                        <span className="font-medium text-white">4.9</span>
+                        from <span className="font-medium text-white">2,300+</span> users
+                    </div>
+                </motion.div>
+
+                {/* Phone mockup — positioned to bleed into next section */}
+                <motion.div
+                    initial={{ opacity: 0, y: 60, scale: 0.92 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 1, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+                    className="flex justify-center relative"
+                >
+                    {/* Phone glow */}
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] pointer-events-none" style={{ background: "radial-gradient(ellipse, rgba(120,214,75,0.2) 0%, transparent 70%)", filter: "blur(20px)" }} />
+                    
+                    {/* Frame */}
+                    <div className="relative w-[300px] lg:w-[360px]">
+                        {/* Floating stats card — top left */}
+                        <motion.div
+                            animate={{ y: [0, -6, 0] }}
+                            transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+                            className="absolute -left-16 top-16 bg-white/10 backdrop-blur-xl border border-white/15 rounded-2xl px-4 py-3 shadow-xl z-20"
+                        >
+                            <div className="text-[10px] text-gray-400 font-medium uppercase tracking-widest mb-1">Wait Time</div>
+                            <div className="text-xl font-medium text-white">~12 <span className="text-[13px] text-gray-400">min</span></div>
+                            <div className="flex items-center gap-1 mt-1">
+                                <span className="text-[10px] text-[#78d64b] font-medium">↓ 40%</span>
+                                <span className="text-[10px] text-gray-500">vs last week</span>
+                            </div>
+                        </motion.div>
+
+                        {/* Floating stats card — top right */}
+                        <motion.div
+                            animate={{ y: [0, -8, 0] }}
+                            transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 1 }}
+                            className="absolute -right-16 top-8 bg-white/10 backdrop-blur-xl border border-white/15 rounded-2xl px-4 py-3 shadow-xl z-20"
+                        >
+                            <div className="text-[10px] text-gray-400 font-medium uppercase tracking-widest mb-1">Tokens Today</div>
+                            <div className="text-xl font-medium text-white">1,248</div>
+                            <div className="flex items-center gap-1 mt-1">
+                                <span className="text-[10px] text-[#78d64b] font-medium">↑ 12%</span>
+                                <span className="text-[10px] text-gray-500">vs yesterday</span>
+                            </div>
+                        </motion.div>
+
+                        <img 
+                            src={phoneMockup} 
+                            alt="QueueLanka app showing queue management dashboard" 
+                            className="w-full h-auto relative z-10 drop-shadow-[0_40px_60px_rgba(0,0,0,0.5)]"
+                        />
+                    </div>
+                </motion.div>
+            </div>
+
+            {/* Bottom fade into white */}
+            <div className="relative z-10 h-24" style={{ background: "linear-gradient(to bottom, transparent, #fff)" }} />
+
+            {/* Trusted by section — overlapping */}
+            <div className="relative z-10 bg-white pb-12 pt-4 border-b border-gray-100">
+                <div className="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-12">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-5 sm:gap-10">
+                        <span className="text-[11px] font-medium text-gray-300 uppercase tracking-[0.15em] whitespace-nowrap shrink-0">Trusted by teams at</span>
+                        <div className="flex flex-wrap items-center justify-center gap-8">
+                            {trusted.map((name, i) => (
+                                <span key={i} className="text-[15px] font-medium tracking-tight text-gray-300 select-none hover:text-gray-500 transition-colors cursor-default">
+                                    {name}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
     );

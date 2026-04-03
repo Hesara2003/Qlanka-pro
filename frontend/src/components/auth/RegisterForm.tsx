@@ -7,7 +7,7 @@ import {
   validateUsername,
   validatePasswordStrict,
 } from "../../utils/validation";
-import PasswordStrengthMeter from "./PasswordStrengthMeter";
+import registerHero from "../../assets/auth/register_hero.png";
 
 type Role = "citizen" | "officer" | "admin";
 
@@ -79,7 +79,6 @@ export default function RegisterForm() {
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   function handleChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -143,248 +142,167 @@ export default function RegisterForm() {
   }
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4 sm:p-6 font-sans text-gray-900 overflow-hidden bg-cover bg-center relative"
-      style={{ backgroundImage: "url('https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=2000&q=80')" }}
-    >
-      <div className="absolute inset-0 bg-[#1a1c23]/80 backdrop-blur-sm" />
-      <div className="relative z-10 flex w-full max-w-[650px] bg-white rounded-[2rem] shadow-2xl overflow-hidden h-fit max-h-[90vh]">
-        {/* Form Container */}
-        <div className="w-full px-8 py-8 sm:px-12 flex flex-col justify-start overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 mb-6 w-max">
-            <div className="w-8 h-8 rounded-full bg-[#78d64b] flex items-center justify-center shadow-sm">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                  <path d="M12 2L2 22h20L12 2z" fill="white" stroke="none" />
-              </svg>
-            </div>
-            <span className="text-xl font-bold text-[#1a1c23] tracking-tight">QueueLanka</span>
-          </Link>
+    <div className="w-full h-screen font-sans text-[#1a1c23] bg-white overflow-hidden select-none">
+      <div className="flex w-full h-full lg:flex-row flex-col">
+        
+        {/* Left Side: Form Container */}
+        <div className="w-full lg:w-[48%] h-full flex flex-col items-center justify-center bg-white px-8 sm:px-12 xl:px-24">
+          <div className="w-full max-w-[440px] animate-in fade-in slide-in-from-bottom-4 duration-1000">
+            {/* Top Brand Accent */}
+            <div className="w-12 h-1.5 bg-[#78d64b] rounded-full mb-8 opacity-80"></div>
 
-          <h1 className="text-3xl font-bold text-[#1a1c23] mb-2 tracking-tight">Create an account</h1>
-          <p className="text-gray-500 text-sm mb-6">Join the platform! Select method to sign up:</p>
+            <h1 className="text-[48px] lg:text-[56px] font-medium text-[#1a1c23] mb-3 tracking-[-0.05em] leading-[0.95]">
+              Create <br />
+              Account
+            </h1>
+            <p className="text-[#94a3b8] text-[15px] font-normal mb-10 leading-relaxed max-w-[340px]">
+              Start your journey today and streamline your operations.
+            </p>
 
-          {apiError && <div className="px-4 py-3 mb-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm font-medium">{apiError}</div>}
-          {success && <div className="px-4 py-3 mb-4 bg-green-50 border border-green-200 text-green-700 rounded-xl text-sm font-medium">{success}</div>}
-
-          {/* Social Auth Buttons */}
-          <div className="flex gap-4 mb-6">
-            <button type="button" className="flex-1 py-3 px-4 bg-white border border-gray-200 rounded-full text-sm font-bold text-[#1a1c23] flex items-center justify-center gap-2.5 hover:bg-gray-50 transition-colors shadow-sm">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.75h3.57c2.08-1.92 3.28-4.74 3.28-8.07z" fill="#4285F4" />
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.75c-.99.66-2.26 1.05-3.71 1.05-2.85 0-5.27-1.93-6.13-4.52H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                <path d="M5.87 14.12c-.22-.66-.35-1.36-.35-2.12s.13-1.46.35-2.12V7.04H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.96l3.69-2.84z" fill="#FBBC05" />
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.04l3.69 2.84c.86-2.59 3.28-4.5 6.13-4.5z" fill="#EA4335" />
-              </svg>
-              Google
-            </button>
-            <button type="button" className="flex-1 py-3 px-4 bg-white border border-gray-200 rounded-full text-sm font-bold text-[#1a1c23] flex items-center justify-center gap-2.5 hover:bg-gray-50 transition-colors shadow-sm">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" fill="#1877F2" />
-              </svg>
-              Facebook
-            </button>
-          </div>
-
-          <div className="relative flex items-center justify-center mb-6">
-            <span className="absolute inset-x-0 h-px bg-gray-200"></span>
-            <span className="relative bg-white px-3 text-xs text-gray-400 font-semibold tracking-wider uppercase">or register with email</span>
-          </div>
-
-          <form onSubmit={handleSubmit} noValidate>
-            {/* Username */}
-            <div className="mb-4">
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>
-                  </svg>
-                </div>
-                <input
-                  id="username"
-                  name="username"
-                  type="text"
-                  autoComplete="username"
-                  placeholder="Username"
-                  value={form.username}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  className={`w-full pl-11 pr-4 py-3.5 bg-gray-50 border ${touched.username && errors.username ? "border-red-400" : "border-gray-200"} rounded-xl text-sm outline-none transition-all duration-200 focus:bg-white focus:border-[#78d64b] focus:ring-1 focus:ring-[#78d64b] text-[#1a1c23] font-medium`}
-                  disabled={loading}
-                />
+            {apiError && (
+              <div className="px-6 py-4 mb-8 bg-red-50/50 border border-red-100 text-red-600 rounded-3xl text-[13px] font-medium flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300 backdrop-blur-sm">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                {apiError}
               </div>
-              {touched.username && errors.username && (
-                <span className="block text-xs text-red-500 mt-1.5 font-medium" role="alert">{errors.username}</span>
-              )}
-            </div>
-
-            {/* Email */}
-            <div className="mb-4">
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="5" width="18" height="14" rx="2" ry="2"></rect><polyline points="3 7 12 13 21 7"></polyline>
-                  </svg>
-                </div>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="Email Address"
-                  value={form.email}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  className={`w-full pl-11 pr-4 py-3.5 bg-gray-50 border ${touched.email && errors.email ? "border-red-400" : "border-gray-200"} rounded-xl text-sm outline-none transition-all duration-200 focus:bg-white focus:border-[#78d64b] focus:ring-1 focus:ring-[#78d64b] text-[#1a1c23] font-medium`}
-                  disabled={loading}
-                />
-              </div>
-              {touched.email && errors.email && (
-                <span className="block text-xs text-red-500 mt-1.5 font-medium" role="alert">{errors.email}</span>
-              )}
-            </div>
-
-            {/* Password */}
-            <div className="mb-4">
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                  </svg>
-                </div>
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="new-password"
-                  placeholder="Password"
-                  value={form.password}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  className={`w-full pl-11 pr-11 py-3.5 bg-gray-50 border ${touched.password && errors.password ? "border-red-400" : "border-gray-200"} rounded-xl text-sm outline-none transition-all duration-200 focus:bg-white focus:border-[#78d64b] focus:ring-1 focus:ring-[#78d64b] text-[#1a1c23] font-medium`}
-                  disabled={loading}
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-[#1a1c23] transition-colors"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
-                  ) : (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                  )}
-                </button>
-              </div>
-              {touched.password && errors.password && (
-                <span className="block text-xs text-red-500 mt-1.5 font-medium" role="alert">{errors.password}</span>
-              )}
-              {/* Live strength meter */}
-              <div className="mt-2">
-                <PasswordStrengthMeter password={form.password} />
-              </div>
-            </div>
-
-            {/* Confirm Password */}
-            <div className="mb-4">
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                  </svg>
-                </div>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type={showConfirmPassword ? "text" : "password"}
-                  autoComplete="new-password"
-                  placeholder="Confirm Password"
-                  value={form.confirmPassword}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  className={`w-full pl-11 pr-11 py-3.5 bg-gray-50 border ${touched.confirmPassword && errors.confirmPassword ? "border-red-400" : "border-gray-200"} rounded-xl text-sm outline-none transition-all duration-200 focus:bg-white focus:border-[#78d64b] focus:ring-1 focus:ring-[#78d64b] text-[#1a1c23] font-medium`}
-                  disabled={loading}
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-[#1a1c23] transition-colors"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  {showConfirmPassword ? (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
-                  ) : (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                  )}
-                </button>
-              </div>
-              {touched.confirmPassword && errors.confirmPassword && (
-                <span className="block text-xs text-red-500 mt-1.5 font-medium" role="alert">{errors.confirmPassword}</span>
-              )}
-            </div>
-
-            {/* Role */}
-            <div className="mb-4">
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                  </svg>
-                </div>
-                <select
-                  id="role"
-                  name="role"
-                  value={form.role}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  disabled={loading}
-                  className={`w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none transition-all duration-200 focus:bg-white focus:border-[#78d64b] focus:ring-1 focus:ring-[#78d64b] appearance-none text-[#1a1c23] font-medium`}
-                >
-                  <option value="citizen">Citizen</option>
-                  <option value="officer">Service Centre Officer</option>
-                  <option value="admin">Admin</option>
-                </select>
-                <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                </div>
-              </div>
-            </div>
-
-            {/* Center ID */}
-            {form.role === "officer" && (
-              <div className="mb-4">
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>
-                    </svg>
-                  </div>
-                  <input
-                    id="centerId"
-                    name="centerId"
-                    type="number"
-                    placeholder="Centre ID"
-                    value={form.centerId}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    className={`w-full pl-11 pr-4 py-3.5 bg-gray-50 border ${touched.centerId && errors.centerId ? "border-red-400" : "border-gray-200"} rounded-xl text-sm outline-none transition-all duration-200 focus:bg-white focus:border-[#78d64b] focus:ring-1 focus:ring-[#78d64b] text-[#1a1c23] font-medium`}
-                    disabled={loading}
-                  />
-                </div>
-                {touched.centerId && errors.centerId && (
-                  <span className="block text-xs text-red-500 mt-1.5 font-medium" role="alert">{errors.centerId}</span>
-                )}
+            )}
+            
+            {success && (
+              <div className="px-6 py-4 mb-8 bg-[#78d64b]/10 border border-[#78d64b]/20 text-[#074b42] rounded-3xl text-[13px] font-medium flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300 backdrop-blur-sm">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                {success}
               </div>
             )}
 
-            <button type="submit" className="w-full py-4 bg-[#1a1c23] text-white rounded-full text-sm font-bold mt-4 mb-6 transition-all hover:bg-black active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed shadow-md" disabled={loading}>
-              {loading ? "Creating account…" : "Register"}
-            </button>
-          </form>
+            <form onSubmit={handleSubmit} noValidate className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1 group">
+                  <label htmlFor="username" className="text-[11px] font-medium text-[#94a3b8] ml-1 uppercase tracking-[0.2em]">Username</label>
+                  <input
+                    id="username"
+                    name="username"
+                    type="text"
+                    autoComplete="username"
+                    placeholder="Your username"
+                    value={form.username}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    className={`w-full px-6 py-3.5 bg-gray-50/50 border ${touched.username && errors.username ? "border-red-200" : "border-transparent"} rounded-[18px] text-[14px] font-normal outline-none transition-all duration-300 focus:bg-white focus:border-[#78d64b] focus:ring-4 focus:ring-[#78d64b]/5 text-[#1a1c23] placeholder:text-[#cbd5e1]`}
+                    disabled={loading}
+                  />
+                  {touched.username && errors.username && (
+                    <span className="block text-[10px] text-red-500 mt-1 ml-1 font-normal animate-in fade-in" role="alert">{errors.username}</span>
+                  )}
+                </div>
 
-          <p className="text-center text-[13px] text-gray-500 font-medium pb-2">
-            Already have an account? <Link to="/login" className="text-[#0a5c4e] font-bold hover:underline hover:text-[#78d64b]">Log in</Link>
-          </p>
+                <div className="space-y-1 group">
+                  <label htmlFor="email" className="text-[11px] font-medium text-[#94a3b8] ml-1 uppercase tracking-[0.2em]">Email Address</label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    placeholder="Enter email"
+                    value={form.email}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    className={`w-full px-6 py-3.5 bg-gray-50/50 border ${touched.email && errors.email ? "border-red-200" : "border-transparent"} rounded-[18px] text-[14px] font-normal outline-none transition-all duration-300 focus:bg-white focus:border-[#78d64b] focus:ring-4 focus:ring-[#78d64b]/5 text-[#1a1c23] placeholder:text-[#cbd5e1]`}
+                    disabled={loading}
+                  />
+                  {touched.email && errors.email && (
+                    <span className="block text-[10px] text-red-500 mt-1 ml-1 font-normal animate-in fade-in" role="alert">{errors.email}</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-1 group">
+                <label htmlFor="password" className="text-[11px] font-medium text-[#94a3b8] ml-1 uppercase tracking-[0.2em]">Security Password</label>
+                <div className="relative">
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    placeholder="Create a password"
+                    value={form.password}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    className={`w-full px-6 py-3.5 pr-14 bg-gray-50/50 border ${touched.password && errors.password ? "border-red-200" : "border-transparent"} rounded-[18px] text-[14px] font-normal outline-none transition-all duration-300 focus:bg-white focus:border-[#78d64b] focus:ring-4 focus:ring-[#78d64b]/5 text-[#1a1c23] placeholder:text-[#cbd5e1]`}
+                    disabled={loading}
+                  />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-6 top-1/2 -translate-y-1/2 text-[#cbd5e1] hover:text-[#1a1c23] transition-colors">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </div>
+                {touched.password && errors.password && (
+                  <span className="block text-[10px] text-red-500 mt-1 ml-1 font-normal animate-in fade-in" role="alert">{errors.password}</span>
+                )}
+              </div>
+
+              <div className="space-y-1 group">
+                <label htmlFor="role" className="text-[11px] font-medium text-[#94a3b8] ml-1 uppercase tracking-[0.2em]">Account Type</label>
+                <div className="relative">
+                  <select
+                    id="role"
+                    name="role"
+                    value={form.role}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    disabled={loading}
+                    className={`w-full px-6 py-3.5 bg-gray-50/50 border border-transparent rounded-[18px] text-[14px] font-normal outline-none transition-all duration-300 focus:bg-white focus:border-[#78d64b] focus:ring-4 focus:ring-[#78d64b]/5 appearance-none text-[#1a1c23]`}
+                  >
+                    <option value="citizen">Citizen Account</option>
+                    <option value="officer">Service Centre Officer</option>
+                    <option value="admin">System Administrator</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 pr-6 flex items-center pointer-events-none text-[#cbd5e1]">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                type="submit" 
+                className="w-full py-4 bg-[#78d64b] text-[#074b42] rounded-[18px] text-[15px] font-medium mt-3 shadow-premium transition-all duration-300 hover:bg-[#6bd041] hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50" 
+                disabled={loading}
+              >
+                {loading ? "Creating account…" : "Join QueueLanka"}
+              </button>
+            </form>
+
+            <p className="text-center text-[13px] font-normal text-[#94a3b8] mt-8 tracking-tight">
+              Already have an account? <Link to="/login" className="text-[#1a1c23] font-medium hover:text-[#78d64b] transition-colors">Log in now</Link>
+            </p>
+          </div>
         </div>
+
+        {/* Right Side: Visual Section */}
+        <div className="hidden lg:flex flex-1 relative items-end p-20 xl:p-28 overflow-hidden">
+          {/* Background Image */}
+          <div className="absolute inset-0 z-0">
+            <img 
+              src={registerHero} 
+              alt="Queue Management Efficiency" 
+              className="w-full h-full object-cover"
+            />
+            {/* Subtle Gradient Overlay for Text Readability */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#1a1c23]/90 via-[#1a1c23]/40 to-transparent"></div>
+          </div>
+
+          <div className="relative z-10 max-w-[520px] animate-in fade-in slide-in-from-bottom-8 duration-1000">
+            <div className="mb-6 flex items-center gap-3">
+              <span className="px-3 py-1 bg-[#78d64b]/20 border border-[#78d64b]/30 rounded-full text-[11px] font-bold text-[#78d64b] uppercase tracking-widest">
+                Efficiency Redefined
+              </span>
+            </div>
+            <h2 className="text-[36px] lg:text-[44px] font-medium text-white leading-[1.1] mb-8 tracking-tighter">
+              Join 2,100+ branches transforming their customer experience.
+            </h2>
+            <p className="text-[15px] font-medium text-gray-400 uppercase tracking-[0.3em]">
+              — QueueLanka Operations
+            </p>
+          </div>
+        </div>
+
       </div>
     </div>
   );

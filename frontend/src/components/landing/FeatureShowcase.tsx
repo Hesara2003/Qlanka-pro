@@ -7,120 +7,95 @@ export default function FeatureShowcase() {
     };
 
     return (
-        <section id="about" className="py-20 lg:py-28 bg-white overflow-hidden font-sans border-b border-gray-100">
-            <div className="max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-12">
+        <section id="about" className="py-20 lg:py-28 bg-white overflow-hidden font-sans border-b border-gray-50">
+            <div className="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-12">
 
-                <div className="flex flex-col lg:flex-row gap-16 lg:gap-20 items-center">
+                {/* Label */}
+                <motion.div 
+                    initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }}
+                    variants={fadeUp} transition={{ duration: 0.6 }}
+                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-50 text-gray-500 font-medium text-xs tracking-wider uppercase mb-8"
+                >
+                    <span className="w-2 h-2 rounded-full bg-[#78d64b]" /> Our Mission
+                </motion.div>
+
+                <div className="flex flex-col lg:flex-row gap-16 lg:gap-20">
                     
-                    {/* Left Column: Text Content */}
-                    <div className="flex-1 lg:w-[45%] shrink-0">
-                        <motion.div 
-                            initial="hidden"
-                            whileInView="visible"
-                            viewport={{ once: true, margin: "-100px" }}
-                            variants={fadeUp}
-                            transition={{ duration: 0.6 }}
-                            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 text-[#0a5c4e] font-semibold text-xs tracking-wider uppercase mb-6"
-                        >
-                            <span className="w-2 h-2 rounded-full bg-[#78d64b]"></span> About Our Platform
-                        </motion.div>
-                        
+                    {/* Left Column: Mission Statement */}
+                    <div className="flex-1 lg:w-[50%]">
                         <motion.h2 
-                            initial="hidden"
-                            whileInView="visible"
-                            viewport={{ once: true, margin: "-100px" }}
-                            variants={fadeUp}
-                            transition={{ duration: 0.6, delay: 0.1 }}
-                            className="text-[2.5rem] md:text-[4rem] font-bold text-[#1a1c23] leading-[1.05] tracking-tight mb-8"
+                            initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }}
+                            variants={fadeUp} transition={{ duration: 0.6, delay: 0.1 }}
+                            className="text-[2rem] md:text-[2.8rem] text-[#1a1c23] leading-[1.2] tracking-tight mb-10"
+                            style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
                         >
-                            Transform Your <br /> Queue Process With <br />
-                            <span className="text-gray-400 font-normal">Smarter Technology</span>
+                            Empowering individuals to achieve{" "}
+                            <span className="italic text-[#78d64b]">operational freedom</span>{" "}
+                            through intuitive and personalized tools.
                         </motion.h2>
 
-                        <motion.p 
-                            initial="hidden"
-                            whileInView="visible"
-                            viewport={{ once: true, margin: "-100px" }}
-                            variants={fadeUp}
-                            transition={{ duration: 0.6, delay: 0.2 }}
-                            className="text-[#6b7280] text-[17px] leading-relaxed max-w-lg mb-10"
+                        <motion.div
+                            initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }}
+                            variants={fadeUp} transition={{ duration: 0.6, delay: 0.2 }}
+                            className="border-t border-gray-100 pt-8 mt-8 space-y-6"
                         >
-                            From generating tokens to serving customers, our platform streamlines every step. Manage confidently with tools built to reduce wait times and boost efficiency.
-                        </motion.p>
+                            <p className="text-[#6b7280] text-[15px] leading-relaxed max-w-lg">
+                                As a leading provider of innovative queue management software, we're dedicated to empowering businesses like yours to achieve their operational goals.
+                            </p>
 
-                        <motion.div 
-                            initial="hidden"
-                            whileInView="visible"
-                            viewport={{ once: true, margin: "-100px" }}
-                            variants={fadeUp}
-                            transition={{ duration: 0.6, delay: 0.3 }}
-                            className="flex gap-12 border-t border-gray-100 pt-8 mt-8"
-                        >
-                            <div>
-                                <h3 className="text-4xl font-bold text-[#1a1c23] tracking-tighter mb-1">120k<span className="text-[#78d64b]">+</span></h3>
-                                <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Active Users</p>
-                            </div>
-                            <div>
-                                <h3 className="text-4xl font-bold text-[#1a1c23] tracking-tighter mb-1">120<span className="text-[#78d64b]">+</span></h3>
-                                <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Branches</p>
+                            <div className="space-y-5">
+                                <div className="flex items-start gap-4">
+                                    <div className="w-8 h-8 rounded-full bg-[#78d64b]/10 flex items-center justify-center shrink-0 mt-0.5">
+                                        <div className="w-2.5 h-2.5 rounded-full bg-[#78d64b]" />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-medium text-[#1a1c23] text-[15px] mb-1">Business Growth and Efficiency</h4>
+                                        <p className="text-[13px] text-gray-400 leading-relaxed">Empowering businesses to achieve operational excellence through innovative solutions.</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-4">
+                                    <div className="w-8 h-8 rounded-full bg-[#78d64b]/10 flex items-center justify-center shrink-0 mt-0.5">
+                                        <div className="w-2.5 h-2.5 rounded-full bg-[#78d64b]" />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-medium text-[#1a1c23] text-[15px] mb-1">Technological Innovation</h4>
+                                        <p className="text-[13px] text-gray-400 leading-relaxed">Leveraging state-of-the-art technology innovation to empower businesses.</p>
+                                    </div>
+                                </div>
                             </div>
                         </motion.div>
                     </div>
 
                     {/* Right Column: Image Collage */}
-                    <div className="flex-1 w-full relative h-[500px] lg:h-[600px]">
-                        <div className="absolute inset-0 grid grid-cols-2 gap-4 lg:gap-6">
-                            
-                            {/* Tall Image */}
+                    <div className="flex-1 w-full relative h-[450px] lg:h-[550px]">
+                        <div className="absolute inset-0 grid grid-cols-3 gap-3">
                             <motion.div 
-                                initial={{ opacity: 0, y: 30 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.8, delay: 0.2 }}
-                                className="w-full h-[90%] mt-auto rounded-[2rem] overflow-hidden shadow-lg relative bg-gray-100 border border-gray-100/50"
+                                initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.2 }}
+                                className="col-span-1 rounded-[1.5rem] overflow-hidden shadow-sm border border-gray-100 bg-gray-100 translate-y-8"
                             >
-                                <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=800&q=80" alt="Business Metrics" className="w-full h-full object-cover" />
-                                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-3 rounded-2xl shadow-sm">
-                                    <div className="w-12 h-12 rounded-xl bg-[#0a5c4e] flex items-center justify-center text-[#78d64b]">
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-                                    </div>
-                                </div>
+                                <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=500&q=80" alt="Office" className="w-full h-full object-cover" />
                             </motion.div>
 
-                            {/* Stacked Images/Boxes */}
-                            <div className="w-full h-full flex flex-col gap-4 lg:gap-6">
-                                <motion.div 
-                                    initial={{ opacity: 0, y: 30 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }}
-                                    transition={{ duration: 0.8, delay: 0.4 }}
-                                    className="w-full h-[55%] rounded-[2rem] overflow-hidden shadow-md relative bg-gray-100"
-                                >
-                                    <img src="https://images.unsplash.com/photo-1572021335469-31706a17aaef?auto=format&fit=crop&w=800&q=80" alt="Collaboration" className="w-full h-full object-cover" />
-                                </motion.div>
-                                
-                                <motion.div 
-                                    initial={{ opacity: 0, y: 30 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }}
-                                    transition={{ duration: 0.8, delay: 0.6 }}
-                                    className="w-full h-[45%] bg-[#1a1c23] rounded-[2rem] shadow-xl p-8 flex flex-col justify-between"
-                                >
-                                    <div className="w-10 h-10 rounded-full bg-[#0a5c4e] flex items-center justify-center text-white mb-4">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                                    </div>
-                                    <div>
-                                        <h3 className="text-white font-bold text-xl mb-1">Enterprise Grade</h3>
-                                        <p className="text-gray-400 text-sm">Secure & reliable systems</p>
-                                    </div>
-                                </motion.div>
-                            </div>
+                            <motion.div 
+                                initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.3 }}
+                                className="col-span-1 rounded-[1.5rem] overflow-hidden shadow-sm border border-gray-100 bg-gray-100 -translate-y-4"
+                            >
+                                <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=500&q=80" alt="Meeting" className="w-full h-full object-cover" />
+                            </motion.div>
 
+                            <motion.div 
+                                initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.4 }}
+                                className="col-span-1 rounded-[1.5rem] overflow-hidden shadow-sm border border-gray-100 bg-gray-100 translate-y-12"
+                            >
+                                <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=500&q=80" alt="Team" className="w-full h-full object-cover" />
+                            </motion.div>
                         </div>
                     </div>
 
                 </div>
-
             </div>
         </section>
     );

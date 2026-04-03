@@ -1,31 +1,23 @@
 import { motion } from "framer-motion";
 
+const items = ["QUEUE MANAGEMENT", "DIGITAL TOKENS", "ZERO WAIT TIMES", "LIVE ANALYTICS", "98% EFFICIENCY", "SMART AUTOMATION"];
+const all = [...items, ...items, ...items];
+
 export default function BannerMarquee() {
     return (
-        <div className="w-full bg-[#78d64b] py-5 md:py-8 overflow-hidden flex flex-col font-sans border-y border-[#1a1c23]/10 relative z-20 shadow-sm">
-            <div className="flex whitespace-nowrap overflow-hidden relative">
-               {/* Marquee effect */}
+        <div className="w-full overflow-hidden font-sans border-y border-[#6bc63b]/20" style={{ background: "linear-gradient(135deg, #78d64b 0%, #5ec941 50%, #4abe8e 100%)" }}>
+            <div className="flex whitespace-nowrap py-4 md:py-5 relative">
                <motion.div 
-                 animate={{ x: ["0%", "-50%"] }} 
-                 transition={{ repeat: Infinity, ease: "linear", duration: 15 }}
-                 className="flex whitespace-nowrap items-center font-black text-2xl md:text-4xl text-[#0a5c4e] uppercase tracking-widest gap-12 md:gap-20"
+                 animate={{ x: ["0%", "-33.33%"] }} 
+                 transition={{ repeat: Infinity, ease: "linear", duration: 22 }}
+                 className="flex whitespace-nowrap items-center text-[13px] md:text-[14px] font-medium text-[#074b42] uppercase tracking-[0.25em] gap-0"
                >
-                   <span>✦ Digital Queues</span>
-                   <span>✦ Zero Wait Times</span>
-                   <span>✦ Live Analytics</span>
-                   <span>✦ Smart Tokens</span>
-                   <span>✦ 98% Efficiency</span>
-                   {/* Double the list to ensure seamless looping */}
-                   <span>✦ Digital Queues</span>
-                   <span>✦ Zero Wait Times</span>
-                   <span>✦ Live Analytics</span>
-                   <span>✦ Smart Tokens</span>
-                   <span>✦ 98% Efficiency</span>
-                   <span>✦ Digital Queues</span>
-                   <span>✦ Zero Wait Times</span>
-                   <span>✦ Live Analytics</span>
-                   <span>✦ Smart Tokens</span>
-                   <span>✦ 98% Efficiency</span>
+                    {all.map((item, i) => (
+                        <span key={i} className="flex items-center">
+                            <span className="px-8">{item}</span>
+                            <span className="text-[#074b42]/40 text-[8px]">✦</span>
+                        </span>
+                    ))}
                </motion.div>
             </div>
         </div>

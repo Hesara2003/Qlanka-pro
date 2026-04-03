@@ -7,6 +7,7 @@ import TestimonialsSection from "../components/landing/TestimonialsSection";
 import BannerStats from "../components/landing/BannerStats";
 import BannerMarquee from "../components/landing/BannerMarquee";
 import BannerHighlight from "../components/landing/BannerHighlight";
+import Footer from "../components/landing/Footer";
 
 export default function LandingPage() {
     return (
@@ -18,14 +19,16 @@ export default function LandingPage() {
 
             {/* Main Content Area */}
             <main>
+                <BannerMarquee />
                 <BannerStats />
                 <FeatureShowcase />
-                <BannerMarquee />
                 <BentoGrid />
                 <IntegrationsSection />
                 <TestimonialsSection />
                 <BannerHighlight />
             </main>
+
+            <Footer />
 
         </div>
     );

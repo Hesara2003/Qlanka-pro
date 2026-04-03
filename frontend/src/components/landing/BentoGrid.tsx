@@ -7,120 +7,170 @@ export default function BentoGrid() {
     };
 
     return (
-        <section id="features" className="py-20 lg:py-28 bg-[#fcfcfc] overflow-hidden font-sans border-b border-gray-100">
-            <div className="max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-12">
+        <section id="features" className="py-20 lg:py-28 bg-white overflow-hidden font-sans">
+            <div className="max-w-[85rem] mx-auto px-4 sm:px-6 lg:px-12">
 
                 {/* Section Header */}
-                <div className="text-center mb-16">
+                <div className="text-center mb-14">
                     <motion.div 
-                        initial="hidden"
-                        whileInView="visible"
-                        viewport={{ once: true, margin: "-100px" }}
-                        variants={fadeUp}
-                        transition={{ duration: 0.6 }}
-                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-gray-200 text-[#0a5c4e] font-semibold text-xs tracking-wider uppercase mb-6 shadow-sm"
+                        initial="hidden" whileInView="visible" viewport={{ once: true }}
+                        variants={fadeUp} transition={{ duration: 0.6 }}
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#78d64b]/20 bg-[#78d64b]/5 text-[#078d42] font-medium text-[11px] tracking-wider uppercase mb-5"
                     >
-                        <span className="w-2 h-2 rounded-full bg-[#78d64b]"></span> Our Features
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#78d64b]" /> Key Features
                     </motion.div>
                     <motion.h2 
-                        initial="hidden"
-                        whileInView="visible"
-                        viewport={{ once: true, margin: "-100px" }}
-                        variants={fadeUp}
-                        transition={{ duration: 0.6, delay: 0.1 }}
-                        className="text-[2.5rem] md:text-[4rem] font-bold text-[#1a1c23] leading-[1.05] tracking-tight"
+                        initial="hidden" whileInView="visible" viewport={{ once: true }}
+                        variants={fadeUp} transition={{ duration: 0.6, delay: 0.1 }}
+                        className="text-[2.5rem] md:text-[3.5rem] font-medium text-[#1a1c23] leading-[1.05] tracking-tight"
                     >
-                        Streamline Your Workflow<br />
-                        From Start To Finish
+                        Explore Our Standout{" "}
+                        <span 
+                            className="italic"
+                            style={{ 
+                                fontFamily: "'Playfair Display', Georgia, serif",
+                                background: "linear-gradient(135deg, #78d64b 0%, #4abe8e 100%)",
+                                WebkitBackgroundClip: "text",
+                                WebkitTextFillColor: "transparent",
+                                backgroundClip: "text"
+                            }}
+                        >
+                            Features
+                        </span>
                     </motion.h2>
                 </div>
 
-                {/* Bento Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 lg:grid-rows-2 gap-4 lg:gap-6 mt-12 auto-rows-[400px]">
+                {/* Bento Grid — premium dark inset container */}
+                <div className="rounded-[2.5rem] border border-gray-100 p-1.5 shadow-[0_2px_40px_rgba(0,0,0,0.06)]" style={{ background: "linear-gradient(145deg, #f9fafb 0%, #ffffff 100%)" }}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
 
-                    {/* Card 1: Wide (Top Left) */}
-                    <motion.div 
-                        initial="hidden"
-                        whileInView="visible"
-                        viewport={{ once: true, margin: "-100px" }}
-                        variants={fadeUp}
-                        transition={{ duration: 0.6, delay: 0.2 }}
-                        className="lg:col-span-2 bg-[#0a5c4e] text-white rounded-[2rem] p-8 lg:p-10 flex flex-col md:flex-row items-center gap-8 overflow-hidden relative shadow-lg"
-                    >
-                        <div className="flex-1 z-10">
-                            <h3 className="text-3xl font-bold mb-4 tracking-tight">Easy To Issue Tokens</h3>
-                            <p className="text-[#a0ccbc] text-[17px] mb-8 leading-relaxed max-w-md">
-                                Create and manage branch counters in minutes. Serve the right customer at the right time effortlessly with our digital kiosks.
-                            </p>
-                            <button className="bg-[#78d64b] hover:bg-[#68c63b] text-[#074b42] font-bold px-6 py-3 rounded-full transition-colors text-sm shadow-sm">
-                                View Kiosks
-                            </button>
-                        </div>
-                        <div className="w-full md:w-[45%] h-64 md:h-full relative mt-auto md:mt-0 z-10">
-                            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80" alt="Data Screen" className="w-full h-full object-cover rounded-2xl shadow-2xl border-4 border-[#0d6e5d]" />
-                        </div>
-                        {/* Decorative Background Element */}
-                        <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[150%] bg-[#0d6e5d] rounded-full blur-[100px] opacity-60 pointer-events-none"></div>
-                    </motion.div>
+                        {/* Card 1: Tall left card */}
+                        <motion.div 
+                            initial="hidden" whileInView="visible" viewport={{ once: true }}
+                            variants={fadeUp} transition={{ duration: 0.6, delay: 0.2 }}
+                            className="lg:row-span-2 group rounded-[2rem] bg-white p-8 flex flex-col justify-between min-h-[380px] border border-gray-100/80 hover:border-[#78d64b]/20 hover:shadow-[0_8px_30px_rgba(120,214,75,0.08)] transition-all duration-300 relative overflow-hidden"
+                        >
+                            {/* Top glow on hover */}
+                            <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style={{ background: "radial-gradient(circle, rgba(120,214,75,0.1) 0%, transparent 70%)" }} />
 
-                    {/* Card 2: Tall (Right Column) */}
-                    <motion.div 
-                        initial="hidden"
-                        whileInView="visible"
-                        viewport={{ once: true, margin: "-100px" }}
-                        variants={fadeUp}
-                        transition={{ duration: 0.6, delay: 0.3 }}
-                        className="lg:row-span-2 bg-white rounded-[2rem] p-8 lg:p-10 flex flex-col overflow-hidden relative border border-gray-200 shadow-sm"
-                    >
-                        <h3 className="text-3xl font-bold text-[#1a1c23] mb-4 tracking-tight z-10">Manage Customers</h3>
-                        <p className="text-[#6b7280] text-[17px] mb-8 z-10 leading-relaxed">
-                            Track, review, and organize. Gain full visibility into every stage of the queue pipeline.
-                        </p>
-                        
-                        {/* Interactive UI Mock */}
-                        <div className="relative w-full flex-1 min-h-[300px] mt-4 z-10 flex flex-col gap-3">
-                            <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=500&q=80" alt="Customer" className="w-full h-48 object-cover rounded-2xl mb-2" />
-                            
-                            <motion.div animate={{ y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 4 }} className="bg-white p-4 rounded-xl shadow-lg border border-gray-100 flex items-center gap-4 relative -mt-12 mx-4 z-20">
-                                <div className="w-10 h-10 rounded-full bg-[#1a1c23] flex items-center justify-center text-[#78d64b] font-bold text-sm shrink-0">VIP</div>
-                                <div className="text-left w-full">
-                                    <p className="text-sm font-bold text-gray-900">Kamal Perera</p>
-                                    <p className="text-xs text-gray-500 mt-0.5">Token D-012 • Waiting</p>
+                            <div>
+                                <div className="w-11 h-11 bg-gradient-to-br from-[#78d64b]/15 to-[#4abe8e]/10 rounded-2xl flex items-center justify-center mb-6 border border-[#78d64b]/10">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#78d64b" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
                                 </div>
-                            </motion.div>
-                        </div>
-                    </motion.div>
+                                <h3 className="text-[18px] font-medium text-[#1a1c23] mb-3 tracking-tight">Easy Token Issuance</h3>
+                                <p className="text-[13px] text-gray-400 leading-relaxed">Create and manage branch counters in minutes. Serve the right customer at the right time — effortlessly.</p>
+                            </div>
 
-                    {/* Card 3: Wide (Bottom Left) */}
-                    <motion.div 
-                        initial="hidden"
-                        whileInView="visible"
-                        viewport={{ once: true, margin: "-100px" }}
-                        variants={fadeUp}
-                        transition={{ duration: 0.6, delay: 0.4 }}
-                        className="lg:col-span-2 bg-[#1a1c23] text-white rounded-[2rem] p-0 flex flex-col md:flex-row overflow-hidden relative shadow-xl"
-                    >
-                        <div className="w-full md:w-1/2 h-64 md:h-full relative overflow-hidden">
-                            <img src="https://images.unsplash.com/photo-1556761175-5973dd0f0f7f?auto=format&fit=crop&w=600&q=80" alt="Live Status updates" className="w-full h-full object-cover opacity-80" />
-                            <div className="absolute inset-0 bg-[#1a1c23]/40"></div>
-                        </div>
-                        <div className="flex-1 p-8 lg:p-10 flex flex-col justify-center">
-                            <h3 className="text-3xl font-bold mb-4 tracking-tight text-white">Live Status Updates</h3>
-                            <p className="text-gray-400 text-[17px] mb-8 leading-relaxed">
-                                Communicate instantly with waiting customers. Keep everyone in the loop with SMS and live display portals.
-                            </p>
-                            <div className="flex gap-4">
-                                <div className="bg-[#272a35] px-4 py-3 rounded-xl border border-[#373b47] flex items-center gap-3">
-                                    <div className="w-3 h-3 rounded-full bg-[#78d64b] animate-pulse"></div>
-                                    <span className="text-sm font-semibold text-white">Syncing Live</span>
+                            {/* Mini UI */}
+                            <div className="mt-6 space-y-2">
+                                <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <span className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">Current Token</span>
+                                        <span className="text-[10px] bg-[#78d64b]/10 text-[#078d42] px-2 py-0.5 rounded-full font-medium">Live</span>
+                                    </div>
+                                    <div className="text-3xl font-medium text-[#1a1c23] tracking-tighter">A-104</div>
+                                    <div className="mt-3 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                        <motion.div 
+                                            className="h-full rounded-full" 
+                                            style={{ background: "linear-gradient(90deg, #78d64b, #4abe8e)" }}
+                                            initial={{ width: "0%" }}
+                                            whileInView={{ width: "65%" }}
+                                            transition={{ duration: 1.2, delay: 0.5 }}
+                                        />
+                                    </div>
+                                    <p className="text-[11px] text-gray-400 mt-2">65% capacity used today</p>
                                 </div>
                             </div>
-                        </div>
-                    </motion.div>
+                        </motion.div>
 
+                        {/* Card 2: Smart Queue Goals */}
+                        <motion.div 
+                            initial="hidden" whileInView="visible" viewport={{ once: true }}
+                            variants={fadeUp} transition={{ duration: 0.6, delay: 0.3 }}
+                            className="lg:col-span-2 group rounded-[2rem] bg-white p-8 border border-gray-100/80 hover:border-[#78d64b]/20 hover:shadow-[0_8px_30px_rgba(120,214,75,0.08)] transition-all duration-300 flex flex-col md:flex-row gap-8"
+                        >
+                            <div className="flex-1">
+                                <div className="w-11 h-11 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl flex items-center justify-center mb-6 border border-blue-100/50">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                                </div>
+                                <h3 className="text-[18px] font-medium text-[#1a1c23] mb-3 tracking-tight">Smart Queue Goals</h3>
+                                <p className="text-[13px] text-gray-400 leading-relaxed max-w-sm">Set specific queue targets and track progress towards them with real-time analytics dashboards.</p>
+                            </div>
+                            <div className="flex flex-col gap-2.5 md:w-[260px] shrink-0">
+                                {[
+                                    { label: "Reduce Wait Time", val: "-40%", color: "#78d64b", bg: "rgba(120,214,75,0.06)", border: "rgba(120,214,75,0.12)" },
+                                    { label: "Daily Tokens Target", val: "1,250", color: "#6366f1", bg: "rgba(99,102,241,0.06)", border: "rgba(99,102,241,0.12)" },
+                                    { label: "Avg. Service Time", val: "3.2m", color: "#f59e0b", bg: "rgba(245,158,11,0.06)", border: "rgba(245,158,11,0.12)" }
+                                ].map((item, i) => (
+                                    <div key={i} className="rounded-xl p-3.5 flex items-center justify-between" style={{ background: item.bg, border: `1px solid ${item.border}` }}>
+                                        <span className="text-[13px] font-medium text-[#1a1c23]">{item.label}</span>
+                                        <span className="text-[13px] font-medium" style={{ color: item.color }}>{item.val}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </motion.div>
+
+                        {/* Card 3: Live Status */}
+                        <motion.div 
+                            initial="hidden" whileInView="visible" viewport={{ once: true }}
+                            variants={fadeUp} transition={{ duration: 0.6, delay: 0.4 }}
+                            className="group rounded-[2rem] bg-white p-8 border border-gray-100/80 hover:border-[#78d64b]/20 hover:shadow-[0_8px_30px_rgba(120,214,75,0.08)] transition-all duration-300"
+                        >
+                            <div className="w-11 h-11 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl flex items-center justify-center mb-6 border border-emerald-100/50">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                            </div>
+                            <h3 className="text-[18px] font-medium text-[#1a1c23] mb-3 tracking-tight">Live Status Updates</h3>
+                            <p className="text-[13px] text-gray-400 leading-relaxed mb-6">Communicate instantly with waiting customers via SMS and live display portals.</p>
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-3 bg-emerald-50/50 border border-emerald-100 rounded-xl p-3">
+                                    <div className="w-2 h-2 rounded-full bg-[#78d64b] animate-pulse" />
+                                    <span className="text-[13px] font-medium text-[#1a1c23]">Syncing Live</span>
+                                    <span className="text-[11px] text-gray-400 ml-auto">Just now</span>
+                                </div>
+                                <div className="flex items-center gap-3 bg-gray-50/50 border border-gray-100 rounded-xl p-3">
+                                    <div className="w-2 h-2 rounded-full bg-gray-300" />
+                                    <span className="text-[13px] text-gray-500">A-103 served</span>
+                                    <span className="text-[11px] text-gray-400 ml-auto">2m ago</span>
+                                </div>
+                            </div>
+                        </motion.div>
+
+                        {/* Card 4: Analytics — Dark */}
+                        <motion.div 
+                            initial="hidden" whileInView="visible" viewport={{ once: true }}
+                            variants={fadeUp} transition={{ duration: 0.6, delay: 0.5 }}
+                            className="group rounded-[2rem] p-8 border transition-all duration-300 relative overflow-hidden flex flex-col justify-between"
+                            style={{ background: "linear-gradient(145deg, #1a1c23 0%, #0f1117 100%)", borderColor: "rgba(255,255,255,0.06)" }}
+                        >
+                            {/* Card glow */}
+                            <div className="absolute top-0 right-0 w-40 h-40 pointer-events-none" style={{ background: "radial-gradient(circle at top right, rgba(120,214,75,0.12) 0%, transparent 70%)" }} />
+
+                            <div className="relative z-10">
+                                <div className="w-11 h-11 rounded-2xl flex items-center justify-center mb-6" style={{ background: "rgba(120,214,75,0.1)", border: "1px solid rgba(120,214,75,0.15)" }}>
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#78d64b" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8l3 3 2-2 3 3"/></svg>
+                                </div>
+                                <h3 className="text-[18px] font-medium text-white mb-3 tracking-tight">Analytics Dashboard</h3>
+                                <p className="text-[13px] text-gray-500 leading-relaxed">Generate reports and visualizations to optimize operational performance.</p>
+                                
+                                {/* Mini bar chart */}
+                                <div className="mt-6 flex items-end gap-1 h-16">
+                                    {[35, 55, 42, 70, 58, 85, 68, 90, 72, 80, 64, 95].map((h, i) => (
+                                        <motion.div 
+                                            key={i} 
+                                            className="flex-1 rounded-t-sm"
+                                            style={{ background: i >= 9 ? "linear-gradient(to top, #78d64b, #4abe8e)" : "rgba(120,214,75,0.15)" }}
+                                            initial={{ height: 0 }}
+                                            whileInView={{ height: `${h}%` }}
+                                            transition={{ duration: 0.6, delay: 0.5 + i * 0.05 }}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        </motion.div>
+
+                    </div>
                 </div>
             </div>
         </section>
     );
 }
-
