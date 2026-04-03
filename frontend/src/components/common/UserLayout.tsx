@@ -1,15 +1,50 @@
+import { useEffect, useState, useMemo } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { tokenApi } from "../../api/tokenApi";
 
 export default function UserLayout() {
     const { logout } = useAuth();
     const location = useLocation();
+    
+    // SCRUM-72: Track if the user has an active token to provide direct queue access
+    const [activeCenterId, setActiveCenterId] = useState<number | null>(null);
 
-    const navItems = [
-        { icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6", label: "Dashboard", path: "/dashboard" },
-        { icon: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z", label: "Centers", path: "/service-centers" },
-        { icon: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z", label: "Live Queue", path: "/service-centers" },
-    ];
+    useEffect(() => {
+        const checkActiveTokens = async () => {
+            try {
+                const tokens = await tokenApi.getMyTokens();
+                // Find the first token that is in a live/active state
+                const active = tokens.find(t => 
+                    ['waiting', 'called', 'serving'].includes(t.status.toLowerCase())
+                );
+                setActiveCenterId(active?.centerId ?? null);
+            } catch (err) {
+                console.error("Failed to fetch active tokens for sidebar:", err);
+            }
+        };
+
+        checkActiveTokens();
+    }, [location.pathname]); // Re-check on navigation to keep status in sync
+
+    const navItems = useMemo(() => [
+        { 
+            icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6", 
+            label: "Dashboard", 
+            path: "/dashboard" 
+        },
+        { 
+            icon: "M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z", 
+            label: "Centers", 
+            path: "/service-centers" 
+        },
+        { 
+            icon: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z", 
+            label: activeCenterId ? "Live Queue Active" : "Live Queue", 
+            path: activeCenterId ? `/queue/${activeCenterId}` : "/service-centers",
+            isActive: !!activeCenterId
+        },
+    ], [activeCenterId]);
 
     return (
         <div className="min-h-screen bg-[#f8f9fb] flex font-sans text-gray-900 selection:bg-[#78d64b]/30">
@@ -32,20 +67,29 @@ export default function UserLayout() {
                 </Link>
 
                 <nav className="flex-1 flex flex-col gap-8">
-                    {navItems.map((item) => (
-                        <Link 
-                            key={item.label} 
-                            to={item.path}
-                            className={`group relative flex items-center justify-center w-14 h-14 rounded-2xl transition-all duration-300 ${location.pathname === item.path ? 'bg-gray-900 text-[#78d64b]' : 'text-gray-400 hover:text-gray-900 hover:bg-gray-50'}`}
-                        >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                                <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
-                            </svg>
-                            <span className="absolute left-16 px-2 py-1 bg-gray-800 text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none text-white">
-                                {item.label}
-                            </span>
-                        </Link>
-                    ))}
+                    {navItems.map((item) => {
+                        const isCurrentPath = location.pathname === item.path;
+                        return (
+                            <Link 
+                                key={item.label} 
+                                to={item.path}
+                                className={`group relative flex items-center justify-center w-14 h-14 rounded-2xl transition-all duration-300 ${isCurrentPath ? 'bg-gray-900 text-[#78d64b]' : 'text-gray-400 hover:text-gray-900 hover:bg-gray-50'}`}
+                            >
+                                <div className="relative">
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
+                                    </svg>
+                                    {/* SCRUM-72: Pulsing Emerald Dot for Active Queue Sessions */}
+                                    {item.label.includes("Live Queue") && item.isActive && (
+                                        <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#78d64b] rounded-full ring-2 ring-white animate-pulse" />
+                                    )}
+                                </div>
+                                <span className="absolute left-16 px-2 py-1 bg-gray-800 text-[10px] font-black uppercase tracking-widest rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none text-white shadow-xl z-50">
+                                    {item.label}
+                                </span>
+                            </Link>
+                        );
+                    })}
                 </nav>
 
                 <button 
@@ -65,4 +109,3 @@ export default function UserLayout() {
         </div>
     );
 }
-
