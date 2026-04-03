@@ -71,6 +71,11 @@ var app = builder.Build();
 
 app.UseMiddleware<RequestContextLoggingMiddleware>();
 app.UseMiddleware<ExceptionMiddleware>();
+app.MapGet("/", () => Results.Ok(new
+{
+    service = "QueueLanka ServiceCenter",
+    status = "Healthy"
+})).AllowAnonymous();
 app.MapHealthChecks("/health");
 
 app.UseSwagger();

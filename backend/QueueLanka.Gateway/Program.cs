@@ -230,6 +230,12 @@ app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapGet("/", () => Results.Ok(new
+{
+    service = "QueueLanka Gateway",
+    status = "Healthy"
+})).AllowAnonymous();
+
 app.MapGet("/health", () => "Healthy").AllowAnonymous();
 
 app.MapReverseProxy();

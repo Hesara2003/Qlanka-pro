@@ -179,6 +179,11 @@ eventBus.Subscribe<TokenCalledEvent, TokenCalledEventHandler>();
 
 app.UseMiddleware<RequestContextLoggingMiddleware>();
 app.UseMiddleware<ExceptionMiddleware>();
+app.MapGet("/", () => Results.Ok(new
+{
+    service = "QueueLanka Queue",
+    status = "Healthy"
+})).AllowAnonymous();
 app.MapHealthChecks("/health");
 
 app.UseSwagger();
