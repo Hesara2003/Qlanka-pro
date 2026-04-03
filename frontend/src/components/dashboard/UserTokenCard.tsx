@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { CancelTokenError } from '../../api/tokenApi';
 import type { UserToken } from '../../api/tokenApi';
-import { Loader2, Calendar, Clock, MapPin, XCircle } from 'lucide-react';
+import { Loader2, Calendar, MapPin, XCircle } from 'lucide-react';
 
 interface Props {
     token: UserToken;
@@ -17,15 +18,15 @@ export function UserTokenCard({ token, onCancel }: Props) {
         if (err instanceof CancelTokenError) {
             switch (err.code) {
                 case 'TOKEN_ALREADY_CANCELLED':
-                    return { message: 'This token was already cancelled (possibly from another session). Refreshing your list...', isNetwork: false };
+                    return { message: 'Already cancelled. Refreshing...', isNetwork: false };
                 case 'TOKEN_NOT_CANCELLABLE':
-                    return { message: 'This token can no longer be cancelled — it is currently being served, completed, or marked as a no-show.', isNetwork: false };
+                    return { message: 'No longer cancellable.', isNetwork: false };
                 case 'TOKEN_NOT_FOUND':
-                    return { message: 'We could not find this token on your account. Please refresh your tokens list.', isNetwork: false };
+                    return { message: 'Token not found. Refreshing...', isNetwork: false };
                 case 'AUTH_ERROR':
-                    return { message: 'Your session has expired. Please sign out and sign in again to continue.', isNetwork: false };
+                    return { message: 'Session expired. Please sign in again.', isNetwork: false };
                 case 'NETWORK_ERROR':
-                    return { message: "Couldn't reach the server. Please check your connection and try again.", isNetwork: true };
+                    return { message: "Network error. Check connection.", isNetwork: true };
                 default:
                     return { message: err.message, isNetwork: false };
             }
@@ -45,13 +46,13 @@ export function UserTokenCard({ token, onCancel }: Props) {
 
     const getStatusColorClass = (status: string) => {
         switch (status) {
-            case 'Waiting': return 'bg-amber-400 text-black';
-            case 'Serving': return 'bg-blue-500 text-white';
-            case 'Completed': return 'bg-emerald-500 text-white';
-            case 'Cancelled': return 'bg-red-500 text-white';
-            case 'Skipped': return 'bg-gray-500 text-white';
-            case 'NoShow': return 'bg-purple-600 text-white';
-            default: return 'bg-gray-800 text-white';
+            case 'Waiting': return 'bg-amber-100 text-amber-700';
+            case 'Serving': return 'bg-emerald-100 text-emerald-700';
+            case 'Completed': return 'bg-emerald-100 text-emerald-700';
+            case 'Cancelled': return 'bg-red-100 text-red-700';
+            case 'Skipped': return 'bg-gray-100 text-gray-700';
+            case 'NoShow': return 'bg-purple-100 text-purple-700';
+            default: return 'bg-gray-100 text-gray-700';
         }
     };
 
@@ -71,15 +72,15 @@ export function UserTokenCard({ token, onCancel }: Props) {
     const isCancellable = token.status === 'Waiting' && !!onCancel;
 
     return (
-        <div className="bg-[#1a1c23] border border-gray-800 rounded-[2rem] p-6 flex flex-col gap-4 w-full relative overflow-hidden transition-opacity">
+        <div className="bg-white border border-gray-100 rounded-[2.5rem] p-6 flex flex-col gap-4 w-full relative overflow-hidden transition-all hover:bg-gray-50 group shadow-sm">
 
             {/* Top accent bar based on status */}
-            <div className={`absolute top-0 left-0 right-0 h-[5px] rounded-t-[2rem] ${getStatusColorClass(token.status)}`} />
+            <div className={`absolute top-0 left-0 right-0 h-[5px] rounded-t-[2.5rem] ${getStatusColorClass(token.status)}`} />
 
             {/* Header row */}
             <div className="flex justify-between items-start pt-1">
-                <h3 className="text-white text-lg font-bold flex items-center gap-2 leading-snug tracking-tight">
-                    <MapPin className="w-4.5 h-4.5 text-[#78d64b] shrink-0" />
+                <h3 className="text-gray-900 text-lg font-bold flex items-center gap-2 leading-snug tracking-tight">
+                    <MapPin className="w-4 h-4 text-[#78d64b] shrink-0" />
                     {token.centerName}
                 </h3>
                 <span className="text-gray-500 text-[10px] uppercase font-black flex items-center gap-1.5 shrink-0 ml-2 tracking-widest bg-white/5 px-3 py-1 rounded-full border border-white/5">
@@ -89,9 +90,9 @@ export function UserTokenCard({ token, onCancel }: Props) {
             </div>
 
             {/* Token number + status */}
-            <div className="text-center my-4 bg-white/5 p-8 rounded-[2rem] border border-white/5 shadow-inner">
+            <div className="text-center my-4 bg-gray-50 p-8 rounded-[2.5rem] border border-gray-100 shadow-inner">
                 <p className="text-[#78d64b] text-[10px] uppercase tracking-[0.2em] font-black mb-2 opacity-80 italic">Token Number</p>
-                <h2 className="text-6xl text-white font-black tracking-tighter leading-none">
+                <h2 className="text-6xl text-gray-900 font-black tracking-tighter leading-none">
                     {token.tokenNumber}
                 </h2>
                 <div className="mt-6">
@@ -103,10 +104,10 @@ export function UserTokenCard({ token, onCancel }: Props) {
 
             {/* Queue position + ETA (only for active tokens) */}
             {(token.queuePosition !== null || token.eta) && token.status !== 'Cancelled' && (
-                <div className="grid grid-cols-2 gap-4 bg-black/40 p-5 rounded-[1.5rem] border border-white/5">
+                <div className="grid grid-cols-2 gap-4 bg-gray-100/50 p-5 rounded-[2rem] border border-gray-100">
                     {token.queuePosition !== null && (
                         <div>
-                            <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest italic">Position</p>
+                            <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest italic">Position</p>
                             <p className="mt-1 text-[#78d64b] text-3xl font-black tracking-tighter">
                                 {token.queuePosition === 0 ? "Now" : `#${token.queuePosition}`}
                             </p>
@@ -114,8 +115,8 @@ export function UserTokenCard({ token, onCancel }: Props) {
                     )}
                     {token.eta && (
                         <div>
-                            <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest italic">Time</p>
-                            <p className="mt-1 text-white text-3xl font-black tracking-tighter flex items-center gap-2 leading-none">
+                            <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest italic">Time</p>
+                            <p className="mt-1 text-gray-900 text-3xl font-black tracking-tighter flex items-center gap-2 leading-none">
                                 {formatTime(token.eta)}
                             </p>
                         </div>
@@ -125,7 +126,7 @@ export function UserTokenCard({ token, onCancel }: Props) {
 
             {/* Cancelled notice */}
             {token.status === 'Cancelled' && (
-                <div className="bg-red-900/20 border border-red-500/20 rounded-[1.5rem] p-5 flex items-center gap-4">
+                <div className="bg-red-900/20 border border-red-500/20 rounded-[2rem] p-5 flex items-center gap-4">
                     <XCircle className="w-6 h-6 text-red-500 shrink-0" />
                     <div>
                         <p className="text-red-400 text-sm font-black uppercase tracking-widest">Cancelled</p>
@@ -162,7 +163,7 @@ export function UserTokenCard({ token, onCancel }: Props) {
             <div className="mt-2 flex flex-col gap-3">
                 <Link
                     to={`/queue/${token.centerId}`}
-                    className="flex flex-row items-center justify-center gap-2 w-full py-4 bg-[#78d64b] text-black rounded-full font-black text-xs uppercase tracking-widest no-underline transition-all hover:bg-[#bef264] hover:scale-[0.98] active:scale-95 shadow-xl shadow-[#78d64b]/10"
+                    className="flex flex-row items-center justify-center gap-2 w-full py-4 bg-[#78d64b] text-black rounded-full font-black text-xs uppercase tracking-widest no-underline transition-all hover:bg-[#bef264] hover:scale-[0.98] active:scale-95 shadow-xl shadow-[#78d64b]/20"
                 >
                     <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -176,14 +177,6 @@ export function UserTokenCard({ token, onCancel }: Props) {
                         {cancelError && (
                             <div className={`rounded-2xl p-4 text-[10px] font-bold uppercase tracking-widest mb-3 flex flex-col gap-3 ${cancelError.isNetwork ? 'bg-blue-900/20 border border-blue-500/20 text-blue-300' : 'bg-red-900/20 border border-red-500/20 text-red-300'}`}>
                                 <span>{cancelError.message}</span>
-                                {cancelError.isNetwork && (
-                                    <button
-                                        onClick={() => { setCancelError(null); setConfirming(true); }}
-                                        className="self-start px-4 py-2 bg-blue-600 text-white rounded-full transition-colors"
-                                    >
-                                        Try again
-                                    </button>
-                                )}
                             </div>
                         )}
 
@@ -211,7 +204,7 @@ export function UserTokenCard({ token, onCancel }: Props) {
                         ) : (
                             <button
                                 onClick={() => setConfirming(true)}
-                                className="w-full py-3 bg-transparent text-gray-600 border border-white/5 hover:border-red-500/30 hover:text-red-500/70 rounded-full font-black text-[10px] uppercase tracking-widest transition-all italic"
+                                className="w-full py-3 bg-transparent text-gray-400 border border-gray-100 hover:border-red-500/30 hover:text-red-500/70 rounded-full font-black text-[10px] uppercase tracking-widest transition-all italic"
                             >
                                 Cancel Service
                             </button>
@@ -219,9 +212,6 @@ export function UserTokenCard({ token, onCancel }: Props) {
                     </div>
                 )}
             </div>
-        </div>
-    );
-}
         </div>
     );
 }
