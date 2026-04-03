@@ -160,6 +160,9 @@ export function useQueueHub(options: UseQueueHubOptions): UseQueueHubResult {
 
     const effectiveCenterId = (centerId ?? Number(sessionStorage.getItem(SESSION_CENTER_ID_KEY) || "")) || undefined;
     const effectiveCounterId = (counterId ?? Number(sessionStorage.getItem(SESSION_COUNTER_ID_KEY) || "")) || undefined;
+    const hasValidCenterId = Boolean(effectiveCenterId && !Number.isNaN(effectiveCenterId));
+    const hasValidCounterId = Boolean(effectiveCounterId && !Number.isNaN(effectiveCounterId));
+    const canConnect = enabled && (hasValidCenterId || (isOfficer && hasValidCounterId));
 
     const getAccessToken = useCallback(() => {
         return localStorage.getItem("token") ?? null;
@@ -398,7 +401,7 @@ export function useQueueHub(options: UseQueueHubOptions): UseQueueHubResult {
             return;
         }
 
-        if (!enabled || !effectiveCenterId || Number.isNaN(effectiveCenterId)) {
+        if (!canConnect) {
             setConnectionStatus("disconnected");
             return;
         }
@@ -452,7 +455,7 @@ export function useQueueHub(options: UseQueueHubOptions): UseQueueHubResult {
         } catch {
             scheduleReconnect("start-failed");
         }
-    }, [attachEventListeners, effectiveCenterId, enabled, ensureValidAccessToken, getAccessToken, handleConnected, hubUrl, scheduleReconnect]);
+    }, [attachEventListeners, canConnect, ensureValidAccessToken, getAccessToken, handleConnected, hubUrl, scheduleReconnect]);
 
     const reconnect = useCallback(async () => {
         const connection = connectionRef.current;
@@ -473,7 +476,7 @@ export function useQueueHub(options: UseQueueHubOptions): UseQueueHubResult {
         isMountedRef.current = true;
         stopRequestedRef.current = false;
 
-        if (!enabled || !effectiveCenterId || Number.isNaN(effectiveCenterId)) {
+        if (!canConnect) {
             setLatestCalledToken(null);
             setLatestStatusUpdate(null);
             setLatestReassignment(null);
@@ -526,7 +529,7 @@ export function useQueueHub(options: UseQueueHubOptions): UseQueueHubResult {
 
             void stop();
         };
-    }, [centerId, clearReconnectTimer, connect, counterId, effectiveCenterId, enabled, leaveGroups]);
+    }, [centerId, clearReconnectTimer, connect, counterId, canConnect, leaveGroups]);
 
     useEffect(() => {
         if (!isVisible || !isMountedRef.current) {

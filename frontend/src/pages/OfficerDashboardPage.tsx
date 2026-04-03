@@ -77,7 +77,7 @@ export default function OfficerDashboardPage() {
         centerId: officerCenterId,
         counterId: user?.counterId,
         isOfficer: true,
-        enabled: Boolean(officerCenterId && user?.counterId),
+        enabled: Boolean(user?.counterId),
         onReconnected: () => {
             setReconnectNonce((prev) => prev + 1);
         },
