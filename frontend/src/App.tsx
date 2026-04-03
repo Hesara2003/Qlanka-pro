@@ -23,6 +23,7 @@ import ProtectedRoute from "./components/common/ProtectedRoute";
 import AdminRoute from "./components/common/AdminRoute";
 import OfficerRoute from "./components/common/OfficerRoute";
 import AdminLayout from "./components/common/AdminLayout";
+import OfficerLayout from "./components/common/OfficerLayout";
 import OfficerDashboardPage from "./pages/OfficerDashboardPage";
 import UserLayout from "./components/common/UserLayout";
 
@@ -85,7 +86,7 @@ function App() {
 
       {/* ── Officer-only routes ───────────────────────────── */}
       <Route element={<OfficerRoute />}>
-        <Route element={<AdminLayout />}>
+        <Route element={<OfficerLayout />}>
           <Route path="/officer" element={<OfficerDashboardPage />} />
         </Route>
       </Route>

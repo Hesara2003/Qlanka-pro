@@ -16,6 +16,7 @@ import type {
     CounterDashboardDto,
     CounterStatsDto,
     WaitingTokenDto,
+    DashboardCurrentTokenDto,
 } from "../api/counterApi";
 
 export type TokenActionStatus = "served" | "skipped";
@@ -27,7 +28,7 @@ export interface TokenActionOutcome {
 
 interface UseCounterResult {
     /** The token most recently called at this counter, or null if none yet. */
-    calledToken: CalledTokenDto | null;
+    calledToken: CalledTokenDto | DashboardCurrentTokenDto | null;
     /** True while the call-next API request is in-flight. */
     loading: boolean;
     /** Human-readable error message, or null if no error. */
@@ -103,7 +104,7 @@ export function useCounter(
     centerId?: number | null,
     queueRefreshSignals?: QueueRefreshSignals,
 ): UseCounterResult {
-    const [calledToken, setCalledToken] = useState<CalledTokenDto | null>(null);
+    const [calledToken, setCalledToken] = useState<CalledTokenDto | DashboardCurrentTokenDto | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [errorCode, setErrorCode] = useState<CallNextErrorCode | null>(null);
@@ -200,6 +201,10 @@ export function useCounter(
             setDashboard(payload);
             setWaitingTokens(normalizedWaitingTokens);
             setDashboardLastUpdatedAt(new Date());
+
+            if (payload.currentToken) {
+                setCalledToken(payload.currentToken);
+            }
 
             setStats({
                 servedCount: payload.servedCount ?? 0,
