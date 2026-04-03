@@ -1,11 +1,9 @@
 import Navbar from "../components/landing/Navbar";
 import HeroSection from "../components/landing/HeroSection";
-import FeatureShowcase from "../components/landing/FeatureShowcase";
-import BentoGrid from "../components/landing/BentoGrid";
-import IntegrationsSection from "../components/landing/IntegrationsSection";
+import AbstractionsSection from "../components/landing/AbstractionsSection";
+import SurfaceAgentsSection from "../components/landing/SurfaceAgentsSection";
+import DeveloperShowcase from "../components/landing/DeveloperShowcase";
 import TestimonialsSection from "../components/landing/TestimonialsSection";
-import BannerStats from "../components/landing/BannerStats";
-import BannerMarquee from "../components/landing/BannerMarquee";
 import BannerHighlight from "../components/landing/BannerHighlight";
 import Footer from "../components/landing/Footer";
 
@@ -19,11 +17,9 @@ export default function LandingPage() {
 
             {/* Main Content Area */}
             <main>
-                <BannerMarquee />
-                <BannerStats />
-                <FeatureShowcase />
-                <BentoGrid />
-                <IntegrationsSection />
+                <AbstractionsSection />
+                <SurfaceAgentsSection />
+                <DeveloperShowcase />
                 <TestimonialsSection />
                 <BannerHighlight />
             </main>
