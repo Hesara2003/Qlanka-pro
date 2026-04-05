@@ -259,7 +259,7 @@ export default function LiveQueuePage() {
                         <span className="text-[10px] font-black text-gray-900 uppercase tracking-widest">{user?.username || "Guest"}</span>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2" data-testid="live-queue-connection-status">
                          <div className={`w-1.5 h-1.5 rounded-full ${isAuthorized && connectionStatus === "connected" ? "bg-[#78d64b] animate-pulse" : "bg-red-400"}`} />
                          <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest italic">{isAuthorized ? "Live Updates" : "System Paused"}</span>
                     </div>
@@ -323,13 +323,13 @@ export default function LiveQueuePage() {
                                 <div className="flex-1 flex flex-col items-center justify-center py-10 min-h-0">
                                     {currentServing ? (
                                         <motion.div key={currentServing.tokenNumber} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="text-center w-full">
-                                            <span className="text-6xl lg:text-8xl font-black tracking-tighter leading-none text-gray-900 block break-all" style={{ fontFamily: "'Playfair Display', serif" }}>{currentServing.tokenNumber}</span>
+                                            <span className="text-6xl lg:text-8xl font-black tracking-tighter leading-none text-gray-900 block break-all" data-testid="live-queue-current-token" style={{ fontFamily: "'Playfair Display', serif" }}>{currentServing.tokenNumber}</span>
                                             <div className="flex items-center justify-center gap-6 mt-8">
                                                 <div className="bg-[#78d64b]/10 px-6 py-2 rounded-2xl border border-[#78d64b]/20"><span className="text-[10px] font-black text-[#78d64b] uppercase tracking-widest">Verified visitor</span></div>
                                             </div>
                                         </motion.div>
                                     ) : (
-                                        <div className="text-center"><span className="text-4xl lg:text-6xl font-black tracking-tighter text-gray-200 uppercase">Station Idle</span><p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-4">Awaiting next visitor</p></div>
+                                        <div className="text-center" data-testid="live-queue-station-idle"><span className="text-4xl lg:text-6xl font-black tracking-tighter text-gray-200 uppercase">Station Idle</span><p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-4">Awaiting next visitor</p></div>
                                     )}
                                 </div>
                                 <div className="mt-auto pt-8 border-t border-gray-100 grid grid-cols-3 gap-8">
@@ -345,14 +345,14 @@ export default function LiveQueuePage() {
                             <div className="p-8 pb-4 shrink-0">
                                 <div className="flex items-center justify-between mb-2">
                                     <h3 className="text-xs font-black text-gray-900 uppercase tracking-widest italic leading-none">Waiting List</h3>
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">{waitingList.length} Waiting</span>
+                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none" data-testid="live-queue-waiting-count">{waitingList.length} Waiting</span>
                                 </div>
                                 <div className="h-1 w-12 bg-[#78d64b] rounded-full" />
                             </div>
                             <div className="flex-1 overflow-y-auto px-4 lg:px-8 pb-10 space-y-px scrollbar-hide">
                                 <AnimatePresence mode="popLayout">
                                     {waitingList.map((token, idx) => (
-                                        <motion.div key={token.tokenId} layout initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, scale: 0.95 }} className="group flex items-center gap-6 bg-white hover:bg-white p-5 lg:p-6 transition-all border-b border-gray-100/60 first:rounded-t-3xl last:rounded-b-3xl shadow-sm hover:shadow-premium hover:z-10 relative">
+                                        <motion.div key={token.tokenId} layout initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, scale: 0.95 }} className="group flex items-center gap-6 bg-white hover:bg-white p-5 lg:p-6 transition-all border-b border-gray-100/60 first:rounded-t-3xl last:rounded-b-3xl shadow-sm hover:shadow-premium hover:z-10 relative" data-testid={`live-queue-row-${token.tokenId}`}>
                                             <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 font-bold text-xs group-hover:bg-[#78d64b]/10 group-hover:text-[#78d64b] transition-colors shrink-0">{idx + 1}</div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center justify-between mb-1"><span className="text-[13px] font-black text-gray-900 tracking-tight uppercase tracking-widest">{token.tokenNumber}</span><span className="bg-[#78d64b]/5 text-[#78d64b] px-2.5 py-0.5 rounded-full text-[8px] font-black tracking-widest uppercase">Waiting</span></div>

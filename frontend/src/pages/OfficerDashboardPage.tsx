@@ -89,7 +89,7 @@ export default function OfficerDashboardPage() {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-8">
+                        <div className="grid grid-cols-3 gap-8">
                             {/* Waiting Card */}
                             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white p-10 rounded-[2.5rem] border border-gray-50 shadow-sm hover:shadow-premium transition-all">
                                 <div className="flex items-center gap-3 mb-6">
@@ -99,7 +99,7 @@ export default function OfficerDashboardPage() {
                                     <span className="text-sm font-bold text-gray-600">Customers Waiting</span>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <h4 className="text-6xl font-black tracking-tighter text-gray-900">{waitingTokens.length}</h4>
+                                    <h4 className="text-6xl font-black tracking-tighter text-gray-900" data-testid="officer-waiting-count">{waitingTokens.length}</h4>
                                 </div>
                             </motion.div>
 
@@ -112,7 +112,20 @@ export default function OfficerDashboardPage() {
                                     <span className="text-sm font-bold text-gray-600">Daily Served</span>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <h4 className="text-6xl font-black tracking-tighter text-gray-900">{displayStats?.servedCount || 0}</h4>
+                                    <h4 className="text-6xl font-black tracking-tighter text-gray-900" data-testid="officer-served-count">{displayStats?.servedCount || 0}</h4>
+                                </div>
+                            </motion.div>
+
+                            {/* Skipped Card */}
+                            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white p-10 rounded-[2.5rem] border border-gray-50 shadow-sm hover:shadow-premium transition-all">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500">
+                                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4m0 4h.01M10.29 3.86l-8.2 14.21A2 2 0 003.82 21h16.36a2 2 0 001.73-2.93l-8.2-14.21a2 2 0 00-3.42 0z"/></svg>
+                                    </div>
+                                    <span className="text-sm font-bold text-gray-600">Daily Skipped</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <h4 className="text-6xl font-black tracking-tighter text-gray-900" data-testid="officer-skipped-count">{displayStats?.skippedCount || 0}</h4>
                                 </div>
                             </motion.div>
                         </div>
@@ -151,6 +164,7 @@ export default function OfficerDashboardPage() {
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.9 }}
                                     onClick={callNext}
+                                    data-testid="officer-call-next"
                                     disabled={loading}
                                     className="w-full aspect-square bg-gray-900 rounded-[2.5rem] flex flex-col items-center justify-center text-center group active:scale-95 transition-all shadow-2xl shadow-black/20"
                                 >
@@ -171,7 +185,7 @@ export default function OfficerDashboardPage() {
                                     exit={{ opacity: 0, y: -20 }}
                                     className="flex flex-col gap-4"
                                 >
-                                    <div className="bg-gray-50 p-8 rounded-[2rem] text-center mb-4 border border-gray-100 flex flex-col items-center min-h-[200px] justify-center overflow-hidden">
+                                    <div className="bg-gray-50 p-8 rounded-[2rem] text-center mb-4 border border-gray-100 flex flex-col items-center min-h-[200px] justify-center overflow-hidden" data-testid="officer-current-token">
                                         <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-4 shrink-0">Current Token</span>
                                         <h4 className="text-3xl font-black tracking-tighter text-gray-900 break-all w-full line-clamp-3 leading-tight">{calledToken.tokenNumber}</h4>
                                     </div>
@@ -185,6 +199,7 @@ export default function OfficerDashboardPage() {
                                     <div className="grid grid-cols-2 gap-4">
                                         <button 
                                             onClick={serveToken}
+                                            data-testid="officer-serve"
                                             disabled={serveLoading}
                                             className="h-16 bg-[#78d64b] text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-emerald-500 transition-all flex items-center justify-center gap-2"
                                         >
@@ -192,6 +207,7 @@ export default function OfficerDashboardPage() {
                                         </button>
                                         <button 
                                             onClick={skipToken}
+                                            data-testid="officer-skip"
                                             disabled={skipLoading}
                                             className="h-16 bg-white border border-gray-200 text-gray-900 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
                                         >

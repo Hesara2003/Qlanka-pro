@@ -25,4 +25,20 @@ export default async function globalSetup(config: FullConfig): Promise<void> {
       `Smoke preflight failed: target app is stopped at ${baseURL}. Start the app service or point SMOKE_BASE_URL to a running environment.`
     );
   }
+
+  const uiBaseUrl = process.env.UI_BASE_URL;
+  if (uiBaseUrl) {
+    const uiUrl = uiBaseUrl.replace(/\/$/, "");
+
+    try {
+      const uiResponse = await fetch(uiUrl);
+      if (!uiResponse.ok) {
+        throw new Error(`Unexpected HTTP ${uiResponse.status}`);
+      }
+    } catch (error) {
+      throw new Error(
+        `Smoke preflight failed: cannot reach the frontend at ${uiUrl}. ${String(error)}`
+      );
+    }
+  }
 }

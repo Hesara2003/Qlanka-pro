@@ -130,6 +130,7 @@ export default function LoginForm() {
                 <input
                   id="username"
                   name="username"
+                  data-testid="login-username"
                   type="text"
                   autoComplete="username"
                   placeholder="Enter credentials"
@@ -150,6 +151,7 @@ export default function LoginForm() {
                   <input
                     id="password"
                     name="password"
+                    data-testid="login-password"
                     type={showPassword ? "text" : "password"}
                     autoComplete="current-password"
                     placeholder="Enter password"
@@ -178,6 +180,7 @@ export default function LoginForm() {
 
               <button 
                 type="submit" 
+                data-testid="login-submit"
                 className="w-full py-4 bg-[#78d64b] text-[#074b42] rounded-[18px] text-[15px] font-medium mt-3 shadow-premium transition-all duration-300 hover:bg-[#6bd041] hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50" 
                 disabled={loading}
               >
