@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
+  <hashTree>
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="SCRUM-166 WebSocket Updates" enabled="true">
+      <stringProp name="TestPlan.comments">SCRUM-165/SCRUM-166 websocket scenario using SignalR negotiate + websocket connect.</stringProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+        <collectionProp name="Arguments.arguments"/>
+      </elementProp>
+      <stringProp name="TestPlan.user_define_classpath"></stringProp>
+    </TestPlan>
+    <hashTree>
+      <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="Users CSV" enabled="true">
+        <stringProp name="delimiter">,</stringProp>
+        <stringProp name="filename">${__P(usersCsv,tests/jmeter/config/users.csv)}</stringProp>
+        <boolProp name="ignoreFirstLine">true</boolProp>
+        <boolProp name="recycle">true</boolProp>
+        <stringProp name="shareMode">shareMode.all</stringProp>
+        <boolProp name="stopThread">false</boolProp>
+        <stringProp name="variableNames">username,password,role</stringProp>
+      </CSVDataSet>
+      <hashTree/>
+      <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="Centers CSV" enabled="true">
+        <stringProp name="delimiter">,</stringProp>
+        <stringProp name="filename">${__P(centersCountersCsv,tests/jmeter/config/centers-counters.csv)}</stringProp>
+        <boolProp name="ignoreFirstLine">true</boolProp>
+        <boolProp name="recycle">true</boolProp>
+        <stringProp name="shareMode">shareMode.all</stringProp>
+        <boolProp name="stopThread">false</boolProp>
+        <stringProp name="variableNames">centerId,counterId,appointmentDate,appointmentTime</stringProp>
+      </CSVDataSet>
+      <hashTree/>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="WebSocket Clients" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <stringProp name="LoopController.loops">1</stringProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">${__P(wsThreads,50)}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${__P(wsRampUp,30)}</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${__P(wsHoldSeconds,300)}</stringProp>
+      </ThreadGroup>
+      <hashTree>
+        <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="HTTP Defaults" enabled="true">
+          <stringProp name="HTTPSampler.protocol">${__P(protocol,https)}</stringProp>
+          <stringProp name="HTTPSampler.domain">${__P(host,localhost)}</stringProp>
+          <stringProp name="HTTPSampler.port">${__P(port,443)}</stringProp>
+          <stringProp name="HTTPSampler.connect_timeout">10000</stringProp>
+          <stringProp name="HTTPSampler.response_timeout">15000</stringProp>
+        </ConfigTestElement>
+        <hashTree/>
+        <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="JSON Headers" enabled="true">
+          <collectionProp name="HeaderManager.headers">
+            <elementProp name="Content-Type" elementType="Header">
+              <stringProp name="Header.name">Content-Type</stringProp>
+              <stringProp name="Header.value">application/json</stringProp>
+            </elementProp>
+            <elementProp name="Accept" elementType="Header">
+              <stringProp name="Header.name">Accept</stringProp>
+              <stringProp name="Header.value">application/json</stringProp>
+            </elementProp>
+          </collectionProp>
+        </HeaderManager>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Login" enabled="true">
+          <stringProp name="HTTPSampler.path">${__P(loginPath,/api/auth/login)}</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{"username":"${username}","password":"${password}"}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Access Token" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">accessToken</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.token</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">NO_TOKEN</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="SignalR Negotiate" enabled="true">
+          <stringProp name="HTTPSampler.path">${__P(hubPath,/hubs/queue)}/negotiate?negotiateVersion=1&amp;centerId=${centerId}</stringProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="Extract Connection Token" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">connectionToken</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.connectionToken</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+            <stringProp name="JSONPostProcessor.defaultValues">NO_CONNECTION</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+        </hashTree>
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Open WebSocket And Join Group" enabled="true">
+          <stringProp name="cacheKey">signalr_ws_client</stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="script">import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.WebSocket
+import java.time.Duration
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+
+SampleResult.sampleStart()
+def protocol = props.get('protocol','https')
+def scheme = protocol == 'https' ? 'wss' : 'ws'
+def host = props.get('host','localhost')
+def port = props.get('port','443')
+def hubPath = props.get('hubPath','/hubs/queue')
+def accessToken = vars.get('accessToken')
+def connectionToken = vars.get('connectionToken')
+def centerId = vars.get('centerId') ?: '1'
+def holdSeconds = (props.get('wsHoldSeconds','300') as int)
+
+def wsUrl = "${scheme}://${host}:${port}${hubPath}?id=${connectionToken}&amp;access_token=${accessToken}&amp;centerId=${centerId}"
+
+def connected = new CountDownLatch(1)
+def listener = [
+  onOpen: { WebSocket ws -> connected.countDown(); ws.request(1) },
+  onText: { WebSocket ws, CharSequence data, boolean last -> ws.request(1); CompletableFuture.completedFuture(null) },
+  onError: { WebSocket ws, Throwable error -> log.warn('WS error: ' + error.getMessage()) }
+] as WebSocket.Listener
+
+try {
+  def client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build()
+  def ws = client.newWebSocketBuilder().buildAsync(URI.create(wsUrl), listener).get(10, TimeUnit.SECONDS)
+
+  if (!connected.await(10, TimeUnit.SECONDS)) {
+    throw new RuntimeException('WebSocket connect timeout')
+  }
+
+  ws.sendText('{"protocol":"json","version":1}\u001e', true).join()
+  ws.sendText('{"type":1,"target":"JoinCenterGroup","arguments":[' + centerId + ']}\u001e', true).join()
+
+  Thread.sleep(Math.min(holdSeconds, 30) * 1000L)
+  ws.sendClose(WebSocket.NORMAL_CLOSURE, 'done').join()
+
+  SampleResult.setSuccessful(true)
+  SampleResult.setResponseCode('200')
+  SampleResult.setResponseMessage('WebSocket flow completed')
+  SampleResult.setResponseData('connected_and_joined', 'UTF-8')
+} catch (Throwable t) {
+  SampleResult.setSuccessful(false)
+  SampleResult.setResponseCode('500')
+  SampleResult.setResponseMessage(t.getMessage())
+  SampleResult.setResponseData(t.toString(), 'UTF-8')
+}
+SampleResult.sampleEnd()</stringProp>
+        </JSR223Sampler>
+        <hashTree/>
+      </hashTree>
+      <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary" enabled="true">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <fieldNames>true</fieldNames>
+            <bytes>true</bytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+    </hashTree>
+  </hashTree>
+</jmeterTestPlan>
