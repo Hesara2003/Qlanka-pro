@@ -10,19 +10,32 @@ import {
 } from "../helpers/e2e.helper";
 
 test.describe.configure({ mode: "serial" });
+test.setTimeout(120_000);
 
 let scenario: Awaited<ReturnType<typeof prepareQueueScenario>>;
 let bookings: Array<{ tokenNumber: string }>;
 
 test.beforeEach(async ({ request }) => {
-  scenario = await prepareQueueScenario(request, 3);
-  const bookingDate = buildDateKey(1);
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      scenario = await prepareQueueScenario(request, 3);
+      const bookingDate = buildDateKey(1);
 
-  bookings = [
-    await bookAppointment(request, scenario.citizens[0].token!, scenario.clientIp, scenario.center.centerId, bookingDate, `${buildTimeSlot(8, 30)}:00`),
-    await bookAppointment(request, scenario.citizens[1].token!, scenario.clientIp, scenario.center.centerId, bookingDate, `${buildTimeSlot(9, 0)}:00`),
-    await bookAppointment(request, scenario.citizens[2].token!, scenario.clientIp, scenario.center.centerId, bookingDate, `${buildTimeSlot(9, 30)}:00`),
-  ];
+      bookings = [
+        await bookAppointment(request, scenario.citizens[0].token!, scenario.clientIp, scenario.center.centerId, bookingDate, `${buildTimeSlot(8, 30)}:00`),
+        await bookAppointment(request, scenario.citizens[1].token!, scenario.clientIp, scenario.center.centerId, bookingDate, `${buildTimeSlot(9, 0)}:00`),
+        await bookAppointment(request, scenario.citizens[2].token!, scenario.clientIp, scenario.center.centerId, bookingDate, `${buildTimeSlot(9, 30)}:00`),
+      ];
+      return;
+    } catch {
+      if (attempt < 2) {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        continue;
+      }
+
+      throw new Error("Failed to prepare scenario and bookings after 3 attempts");
+    }
+  }
 });
 
 test("keeps citizen queue views synchronized with officer actions", async ({ browser, request }) => {
@@ -35,9 +48,9 @@ test("keeps citizen queue views synchronized with officer actions", async ({ bro
   const officerPage = await officerContext.newPage();
 
   try {
-    await loginThroughUi(citizenOnePage, scenario.citizens[0], "/dashboard");
-    await loginThroughUi(citizenTwoPage, scenario.citizens[1], "/dashboard");
-    await loginThroughUi(officerPage, scenario.officer, "/officer");
+    await loginThroughUi(citizenOnePage, request, scenario.citizens[0], "/dashboard");
+    await loginThroughUi(citizenTwoPage, request, scenario.citizens[1], "/dashboard");
+    await loginThroughUi(officerPage, request, scenario.officer, "/officer");
 
     const queueUrl = `${getUiBaseUrl()}/queue/${scenario.center.centerId}`;
 

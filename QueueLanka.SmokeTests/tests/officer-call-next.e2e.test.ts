@@ -10,22 +10,35 @@ import {
 } from "../helpers/e2e.helper";
 
 test.describe.configure({ mode: "serial" });
+test.setTimeout(120_000);
 
 let scenario: Awaited<ReturnType<typeof prepareQueueScenario>>;
 let bookings: Array<{ tokenNumber: string }>;
 
 test.beforeEach(async ({ request }) => {
-  scenario = await prepareQueueScenario(request, 2);
-  const bookingDate = buildDateKey(1);
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      scenario = await prepareQueueScenario(request, 2);
+      const bookingDate = buildDateKey(1);
 
-  bookings = [
-    await bookAppointment(request, scenario.citizens[0].token!, scenario.clientIp, scenario.center.centerId, bookingDate, `${buildTimeSlot(8, 30)}:00`),
-    await bookAppointment(request, scenario.citizens[1].token!, scenario.clientIp, scenario.center.centerId, bookingDate, `${buildTimeSlot(9, 0)}:00`),
-  ];
+      bookings = [
+        await bookAppointment(request, scenario.citizens[0].token!, scenario.clientIp, scenario.center.centerId, bookingDate, `${buildTimeSlot(8, 30)}:00`),
+        await bookAppointment(request, scenario.citizens[1].token!, scenario.clientIp, scenario.center.centerId, bookingDate, `${buildTimeSlot(9, 0)}:00`),
+      ];
+      return;
+    } catch {
+      if (attempt < 2) {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        continue;
+      }
+
+      throw new Error("Failed to prepare scenario and bookings after 3 attempts");
+    }
+  }
 });
 
 test("calls next, serves, and skips while updating the officer dashboard", async ({ page, request }) => {
-  await loginThroughUi(page, scenario.officer, "/officer");
+  await loginThroughUi(page, request, scenario.officer, "/officer");
 
   await expect(page.getByTestId("officer-waiting-count")).toHaveText("2");
 

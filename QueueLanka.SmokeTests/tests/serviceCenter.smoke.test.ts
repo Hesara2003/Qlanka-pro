@@ -1,5 +1,4 @@
-import { test, expect } from "@playwright/test";
-import { getAuthToken } from "../helpers/auth.helper";
+import { expect, test, type APIRequestContext } from "@playwright/test";
 
 // ─────────────────────────────────────────────────────────────
 // Service Center Smoke Tests — /api/service-centers
@@ -9,7 +8,10 @@ test.describe("Service Center Smoke Tests", () => {
   test("GET /api/service-centers — returns 200 + array", async ({
     request,
   }) => {
-    const response = await request.get("/api/service-centers");
+    const adminToken = await getAdminAuthToken(request);
+    const response = await request.get("/api/service-centers", {
+      headers: { Authorization: `Bearer ${adminToken}` },
+    });
 
     expect(response.status()).toBe(200);
 
@@ -21,16 +23,21 @@ test.describe("Service Center Smoke Tests", () => {
   test("GET /api/service-centers/1 — valid ID returns 200", async ({
     request,
   }) => {
-    const response = await request.get("/api/service-centers/1");
+    const adminToken = await getAdminAuthToken(request);
+    const response = await request.get("/api/service-centers/1", {
+      headers: { Authorization: `Bearer ${adminToken}` },
+    });
 
-    // 200 if it exists, 404 if not — both are acceptable for a smoke test
     expect([200, 404]).toContain(response.status());
   });
 
   test("GET /api/service-centers/999999 — invalid ID returns 404", async ({
     request,
   }) => {
-    const response = await request.get("/api/service-centers/999999");
+    const adminToken = await getAdminAuthToken(request);
+    const response = await request.get("/api/service-centers/999999", {
+      headers: { Authorization: `Bearer ${adminToken}` },
+    });
 
     expect(response.status()).toBe(404);
   });
@@ -38,7 +45,7 @@ test.describe("Service Center Smoke Tests", () => {
   test("POST /api/service-centers — admin can create (or 401/403 if not admin)", async ({
     request,
   }) => {
-    const token = await getAuthToken(request);
+    const token = await getAdminAuthToken(request);
 
     const response = await request.post("/api/service-centers", {
       headers: { Authorization: `Bearer ${token}` },
@@ -53,7 +60,22 @@ test.describe("Service Center Smoke Tests", () => {
       },
     });
 
-    // 201 = created, 403 = user is not admin, 409 = already exists
-    expect([201, 403, 409]).toContain(response.status());
+    expect([201, 409]).toContain(response.status());
   });
 });
+
+async function getAdminAuthToken(request: APIRequestContext): Promise<string> {
+  const response = await request.post("/api/auth/login", {
+    data: {
+      username: process.env.SMOKE_ADMIN_USERNAME ?? "healthcheck_admin",
+      password: process.env.SMOKE_ADMIN_PASSWORD ?? "Health@Check1",
+    },
+  });
+
+  if (!response.ok()) {
+    throw new Error(`Admin login failed (${response.status()}).`);
+  }
+
+  const body = await response.json();
+  return body.token;
+}

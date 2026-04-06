@@ -1,0 +1,1180 @@
+timeStamp,elapsed,label,responseCode,responseMessage,threadName,dataType,success,failureMessage,bytes,sentBytes,grpThreads,allThreads,URL,Latency,IdleTime,Connect
+1775379641241,58,Login,Non HTTP response code: org.apache.http.conn.HttpHostConnectException,"Non HTTP response message: Connect to localhost:5000 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: getsockopt",WebSocket Clients 1-1,text,false,,2678,0,1,1,http://localhost:5000/api/auth/login,0,0,57
+1775379641350,3,SignalR Negotiate,Non HTTP response code: org.apache.http.conn.HttpHostConnectException,"Non HTTP response message: Connect to localhost:5000 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: getsockopt",WebSocket Clients 1-1,text,false,,2678,0,1,1,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,0,0,3
+1775379642046,3,Login,Non HTTP response code: org.apache.http.conn.HttpHostConnectException,"Non HTTP response message: Connect to localhost:5000 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: getsockopt",WebSocket Clients 1-2,text,false,,2678,0,2,2,http://localhost:5000/api/auth/login,0,0,3
+1775379642055,3,SignalR Negotiate,Non HTTP response code: org.apache.http.conn.HttpHostConnectException,"Non HTTP response message: Connect to localhost:5000 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: getsockopt",WebSocket Clients 1-2,text,false,,2678,0,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,0,0,3
+1775379643050,2,Login,Non HTTP response code: org.apache.http.conn.HttpHostConnectException,"Non HTTP response message: Connect to localhost:5000 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: getsockopt",WebSocket Clients 1-3,text,false,,2678,0,3,3,http://localhost:5000/api/auth/login,0,0,2
+1775379643058,3,SignalR Negotiate,Non HTTP response code: org.apache.http.conn.HttpHostConnectException,"Non HTTP response message: Connect to localhost:5000 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: getsockopt",WebSocket Clients 1-3,text,false,,2678,0,3,3,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,0,0,3
+1775379644043,2,Login,Non HTTP response code: org.apache.http.conn.HttpHostConnectException,"Non HTTP response message: Connect to localhost:5000 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: getsockopt",WebSocket Clients 1-4,text,false,,2678,0,4,4,http://localhost:5000/api/auth/login,0,0,1
+1775379644046,2,SignalR Negotiate,Non HTTP response code: org.apache.http.conn.HttpHostConnectException,"Non HTTP response message: Connect to localhost:5000 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: getsockopt",WebSocket Clients 1-4,text,false,,2678,0,4,4,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,0,0,2
+1775379643065,1438,Open WebSocket And Join Group,500,java.net.ConnectException,WebSocket Clients 1-3,text,false,,66,0,4,4,null,0,0,0
+1775379642061,2442,Open WebSocket And Join Group,500,java.net.ConnectException,WebSocket Clients 1-2,text,false,,66,0,4,4,null,0,0,0
+1775379644050,453,Open WebSocket And Join Group,500,java.net.ConnectException,WebSocket Clients 1-4,text,false,,66,0,4,4,null,0,0,0
+1775379641357,3147,Open WebSocket And Join Group,500,java.net.ConnectException,WebSocket Clients 1-1,text,false,,66,0,4,4,null,0,0,0
+1775379645038,2,Login,Non HTTP response code: org.apache.http.conn.HttpHostConnectException,"Non HTTP response message: Connect to localhost:5000 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: getsockopt",WebSocket Clients 1-5,text,false,,2678,0,1,1,http://localhost:5000/api/auth/login,0,0,2
+1775379645041,1,SignalR Negotiate,Non HTTP response code: org.apache.http.conn.HttpHostConnectException,"Non HTTP response message: Connect to localhost:5000 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: getsockopt",WebSocket Clients 1-5,text,false,,2678,0,1,1,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,0,0,1
+1775379645044,8,Open WebSocket And Join Group,500,java.net.ConnectException,WebSocket Clients 1-5,text,false,,66,0,1,1,null,0,0,0
+1775383607746,261,Login,404,Not Found,WebSocket Clients 1-1,text,false,,2145,265,1,1,http://localhost:5000/api/auth/login,259,0,119
+1775383608131,8,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-1,,false,,185,239,1,1,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,8,0,5
+1775383608219,113,Login,404,Not Found,WebSocket Clients 1-2,text,false,,2145,265,2,2,http://localhost:5000/api/auth/login,113,0,3
+1775383608335,5,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-2,,false,,185,239,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,5,0,2
+1775383609227,110,Login,404,Not Found,WebSocket Clients 1-3,text,false,,2145,265,3,3,http://localhost:5000/api/auth/login,110,0,2
+1775383609340,4,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-3,,false,,185,239,3,3,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,4,0,2
+1775383610227,126,Login,404,Not Found,WebSocket Clients 1-4,text,false,,2145,265,4,4,http://localhost:5000/api/auth/login,125,0,3
+1775383610356,24,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-4,,false,,185,239,4,4,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,24,0,3
+1775383611211,364,Login,404,Not Found,WebSocket Clients 1-5,text,false,,2145,265,5,5,http://localhost:5000/api/auth/login,364,0,2
+1775383611580,48,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-5,,false,,185,239,5,5,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,48,0,3
+1775383611630,2935,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-5,text,false,,82,0,5,5,null,0,0,0
+1775383608140,6425,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-1,text,false,,82,0,5,5,null,0,0,0
+1775383609346,5220,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-3,text,false,,82,0,5,5,null,0,0,0
+1775383608341,6226,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-2,text,false,,82,0,5,5,null,0,0,0
+1775383610381,4188,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-4,text,false,,82,0,5,5,null,0,0,0
+1775386248667,549,Login,401,Unauthorized,WebSocket Clients 1-2,text,false,,3606,265,2,2,http://localhost:5000/api/auth/login,500,0,85
+1775386249316,20,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-2,,false,,185,239,3,3,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,20,0,3
+1775386248667,1357,Login,200,OK,WebSocket Clients 1-1,text,true,,837,265,4,4,http://localhost:5000/api/auth/login,1356,0,85
+1775386250026,9,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-1,,false,,185,239,4,4,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,9,0,3
+1775386249838,370,Login,401,Unauthorized,WebSocket Clients 1-4,text,false,,3606,265,4,4,http://localhost:5000/api/auth/login,370,0,2
+1775386250211,19,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-4,,false,,185,239,4,4,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,19,0,2
+1775386249248,1441,Login,200,OK,WebSocket Clients 1-3,text,true,,837,265,5,5,http://localhost:5000/api/auth/login,1440,0,2
+1775386250691,47,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-3,,false,,185,239,5,5,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,47,0,2
+1775386251024,388,Login,401,Unauthorized,WebSocket Clients 1-6,text,false,,3606,265,6,6,http://localhost:5000/api/auth/login,388,0,3
+1775386251415,5,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-6,,false,,185,239,6,6,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,5,0,3
+1775386250433,1319,Login,200,OK,WebSocket Clients 1-5,text,true,,837,265,7,7,http://localhost:5000/api/auth/login,1318,0,2
+1775386251755,5,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-5,,false,,185,239,7,7,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,5,0,3
+1775386252993,401,Login,401,Unauthorized,WebSocket Clients 1-9,text,false,,3606,265,9,9,http://localhost:5000/api/auth/login,401,0,2
+1775386253397,13,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-9,,false,,185,239,9,9,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,13,0,2
+1775386253463,361,Login,401,Unauthorized,WebSocket Clients 1-10,text,false,,3606,265,10,10,http://localhost:5000/api/auth/login,361,0,3
+1775386253826,29,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-10,,false,,185,239,10,10,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,29,0,2
+1775386252988,1588,Login,200,OK,WebSocket Clients 1-7,text,true,,837,265,11,11,http://localhost:5000/api/auth/login,1588,0,2
+1775386254578,154,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-7,,false,,185,239,12,12,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,154,0,3
+1775386253261,1588,Login,200,OK,WebSocket Clients 1-8,text,true,,837,265,12,12,http://localhost:5000/api/auth/login,1588,0,7
+1775386254851,20,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-8,,false,,185,239,12,12,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,20,0,3
+1775386254629,504,Login,401,Unauthorized,WebSocket Clients 1-12,text,false,,3606,265,12,12,http://localhost:5000/api/auth/login,504,0,3
+1775386255135,39,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-12,,false,,185,239,12,12,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,39,0,2
+1775386254048,1782,Login,200,OK,WebSocket Clients 1-11,text,true,,837,265,14,14,http://localhost:5000/api/auth/login,1781,0,2
+1775386255832,9,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-11,,false,,185,239,14,14,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,9,0,1
+1775386255813,475,Login,401,Unauthorized,WebSocket Clients 1-14,text,false,,3606,265,14,14,http://localhost:5000/api/auth/login,475,0,2
+1775386256291,39,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-14,,false,,185,239,14,14,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,39,0,3
+1775386255239,1600,Login,200,OK,WebSocket Clients 1-13,text,true,,837,265,15,15,http://localhost:5000/api/auth/login,1599,0,5
+1775386256840,10,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-13,,false,,185,239,15,15,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,10,0,3
+1775386250232,7140,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-4,text,false,,82,0,16,16,null,0,0,0
+1775386256331,1041,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-14,text,false,,82,0,16,16,null,0,0,0
+1775386253857,3518,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-10,text,false,,82,0,16,16,null,0,0,0
+1775386251762,5614,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-5,text,false,,82,0,16,16,null,0,0,0
+1775386254875,2503,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-8,text,false,,82,0,16,16,null,0,0,0
+1775386254733,2646,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-7,text,false,,82,0,16,16,null,0,0,0
+1775386250740,6640,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-3,text,false,,82,0,16,16,null,0,0,0
+1775386253411,3972,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-9,text,false,,82,0,9,9,null,0,0,0
+1775386249338,8046,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-2,text,false,,82,0,8,8,null,0,0,0
+1775386251421,5964,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-6,text,false,,82,0,7,7,null,0,0,0
+1775386256851,536,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-13,text,false,,82,0,6,6,null,0,0,0
+1775386255842,1546,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-11,text,false,,82,0,6,6,null,0,0,0
+1775386255176,2213,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-12,text,false,,82,0,4,4,null,0,0,0
+1775386250036,7355,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-1,text,false,,82,0,3,3,null,0,0,0
+1775386257007,513,Login,401,Unauthorized,WebSocket Clients 1-16,text,false,,3606,265,2,2,http://localhost:5000/api/auth/login,513,0,3
+1775386257523,15,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-16,,false,,185,239,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,15,0,1
+1775386257539,195,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-16,text,false,,82,0,3,3,null,0,0,0
+1775386256415,1818,Login,200,OK,WebSocket Clients 1-15,text,true,,837,265,3,3,http://localhost:5000/api/auth/login,1817,0,4
+1775386258234,5,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-15,,false,,185,239,3,3,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,5,0,2
+1775386258240,180,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-15,text,false,,82,0,3,3,null,0,0,0
+1775386258209,379,Login,401,Unauthorized,WebSocket Clients 1-18,text,false,,3605,265,2,2,http://localhost:5000/api/auth/login,378,0,1
+1775386258590,4,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-18,,false,,185,239,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,4,0,2
+1775386258595,63,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-18,text,false,,82,0,2,2,null,0,0,0
+1775386257659,1427,Login,200,OK,WebSocket Clients 1-17,text,true,,837,265,2,2,http://localhost:5000/api/auth/login,1427,0,1
+1775386259088,14,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-17,,false,,185,239,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,14,0,2
+1775386259103,180,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-17,text,false,,82,0,2,2,null,0,0,0
+1775386259405,408,Login,401,Unauthorized,WebSocket Clients 1-20,text,false,,3606,265,2,2,http://localhost:5000/api/auth/login,408,0,2
+1775386259815,14,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-20,,false,,185,239,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,14,0,2
+1775386259831,112,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-20,text,false,,82,0,2,2,null,0,0,0
+1775386258831,1239,Login,200,OK,WebSocket Clients 1-19,text,true,,837,265,2,2,http://localhost:5000/api/auth/login,1239,0,3
+1775386260079,17,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-19,,false,,185,239,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,17,0,2
+1775386260097,129,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-19,text,false,,82,0,2,2,null,0,0,0
+1775386260605,348,Login,401,Unauthorized,WebSocket Clients 1-22,text,false,,3606,265,2,2,http://localhost:5000/api/auth/login,347,0,3
+1775386260955,11,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-22,,false,,185,239,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,11,0,2
+1775386260967,37,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-22,text,false,,82,0,2,2,null,0,0,0
+1775386260035,1478,Login,200,OK,WebSocket Clients 1-21,text,true,,837,265,2,2,http://localhost:5000/api/auth/login,1476,0,1
+1775386261515,11,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-21,,false,,185,239,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,11,0,2
+1775386261526,195,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-21,text,false,,82,0,2,2,null,0,0,0
+1775386261824,364,Login,401,Unauthorized,WebSocket Clients 1-24,text,false,,3606,265,2,2,http://localhost:5000/api/auth/login,363,0,1
+1775386262190,3,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-24,,false,,185,239,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,3,0,1
+1775386262194,42,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-24,text,false,,82,0,2,2,null,0,0,0
+1775386261200,1228,Login,200,OK,WebSocket Clients 1-23,text,true,,837,265,2,2,http://localhost:5000/api/auth/login,1228,0,2
+1775386262429,19,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-23,,false,,185,239,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,19,0,2
+1775386262449,163,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-23,text,false,,82,0,2,2,null,0,0,0
+1775386263008,356,Login,401,Unauthorized,WebSocket Clients 1-26,text,false,,3606,265,2,2,http://localhost:5000/api/auth/login,356,0,6
+1775386263366,4,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-26,,false,,185,239,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,4,0,2
+1775386263370,50,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-26,text,false,,82,0,2,2,null,0,0,0
+1775386262418,1242,Login,200,OK,WebSocket Clients 1-25,text,true,,837,265,2,2,http://localhost:5000/api/auth/login,1242,0,2
+1775386263662,4,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-25,,false,,185,239,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,4,0,2
+1775386263667,121,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-25,text,false,,82,0,2,2,null,0,0,0
+1775386264203,279,Login,401,Unauthorized,WebSocket Clients 1-28,text,false,,3606,265,2,2,http://localhost:5000/api/auth/login,279,0,3
+1775386264484,19,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-28,,false,,185,239,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,19,0,2
+1775386264504,33,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-28,text,false,,82,0,2,2,null,0,0,0
+1775386263593,1196,Login,200,OK,WebSocket Clients 1-27,text,true,,837,265,1,1,http://localhost:5000/api/auth/login,1195,0,3
+1775386264790,26,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-27,,false,,185,239,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,26,0,2
+1775386264817,175,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-27,text,false,,82,0,2,2,null,0,0,0
+1775386265400,259,Login,401,Unauthorized,WebSocket Clients 1-30,text,false,,3605,265,2,2,http://localhost:5000/api/auth/login,259,0,1
+1775386265661,21,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-30,,false,,185,239,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,21,0,2
+1775386265683,35,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-30,text,false,,82,0,2,2,null,0,0,0
+1775386264801,1114,Login,200,OK,WebSocket Clients 1-29,text,true,,837,265,1,1,http://localhost:5000/api/auth/login,1114,0,2
+1775386265916,3,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-29,,false,,185,239,1,1,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,3,0,2
+1775386265920,207,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-29,text,false,,82,0,2,2,null,0,0,0
+1775386266599,232,Login,401,Unauthorized,WebSocket Clients 1-32,text,false,,3605,265,2,2,http://localhost:5000/api/auth/login,232,0,3
+1775386266833,16,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-32,,false,,185,239,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,16,0,2
+1775386266849,30,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-32,text,false,,82,0,2,2,null,0,0,0
+1775386265993,1102,Login,200,OK,WebSocket Clients 1-31,text,true,,837,265,1,1,http://localhost:5000/api/auth/login,1101,0,1
+1775386267097,4,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-31,,false,,185,239,1,1,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,4,0,2
+1775386267102,131,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-31,text,false,,82,0,2,2,null,0,0,0
+1775386267812,308,Login,401,Unauthorized,WebSocket Clients 1-34,text,false,,3606,265,2,2,http://localhost:5000/api/auth/login,307,0,1
+1775386268122,4,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-34,,false,,185,239,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,4,0,2
+1775386268126,52,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-34,text,false,,82,0,2,2,null,0,0,0
+1775386267210,1391,Login,200,OK,WebSocket Clients 1-33,text,true,,837,265,2,2,http://localhost:5000/api/auth/login,1390,0,18
+1775386268602,4,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-33,,false,,185,239,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,4,0,2
+1775386268607,175,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-33,text,false,,82,0,2,2,null,0,0,0
+1775386268986,476,Login,401,Unauthorized,WebSocket Clients 1-36,text,false,,3606,265,2,2,http://localhost:5000/api/auth/login,475,0,2
+1775386269463,7,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-36,,false,,185,239,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,7,0,2
+1775386269470,31,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-36,text,false,,82,0,2,2,null,0,0,0
+1775386268399,1132,Login,200,OK,WebSocket Clients 1-35,text,true,,837,265,1,1,http://localhost:5000/api/auth/login,1132,0,2
+1775386269532,6,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-35,,false,,185,239,1,1,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,6,0,2
+1775386269538,162,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-35,text,false,,82,0,2,2,null,0,0,0
+1775386270178,295,Login,401,Unauthorized,WebSocket Clients 1-38,text,false,,3606,265,2,2,http://localhost:5000/api/auth/login,295,0,2
+1775386270475,5,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-38,,false,,185,239,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,5,0,2
+1775386270481,26,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-38,text,false,,82,0,2,2,null,0,0,0
+1775386269592,1130,Login,200,OK,WebSocket Clients 1-37,text,true,,837,265,1,1,http://localhost:5000/api/auth/login,1130,0,2
+1775386270723,12,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-37,,false,,185,239,1,1,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,12,0,2
+1775386270736,170,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-37,text,false,,82,0,2,2,null,0,0,0
+1775386271385,418,Login,401,Unauthorized,WebSocket Clients 1-40,text,false,,3606,265,2,2,http://localhost:5000/api/auth/login,417,0,3
+1775386271805,14,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-40,,false,,185,239,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,14,0,1
+1775386271820,23,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-40,text,false,,82,0,2,2,null,0,0,0
+1775386270790,1175,Login,200,OK,WebSocket Clients 1-39,text,true,,837,265,1,1,http://localhost:5000/api/auth/login,1175,0,3
+1775386271967,24,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-39,,false,,185,239,1,1,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,24,0,1
+1775386271992,226,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-39,text,false,,82,0,2,2,null,0,0,0
+1775386272577,459,Login,401,Unauthorized,WebSocket Clients 1-42,text,false,,3606,265,2,2,http://localhost:5000/api/auth/login,459,0,2
+1775386273038,3,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-42,,false,,185,239,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,3,0,1
+1775386273041,36,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-42,text,false,,82,0,2,2,null,0,0,0
+1775386272002,1100,Login,200,OK,WebSocket Clients 1-41,text,true,,837,265,1,1,http://localhost:5000/api/auth/login,1099,0,2
+1775386273103,7,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-41,,false,,185,239,1,1,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,7,0,1
+1775386273111,189,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-41,text,false,,82,0,2,2,null,0,0,0
+1775386273774,381,Login,401,Unauthorized,WebSocket Clients 1-44,text,false,,3606,265,2,2,http://localhost:5000/api/auth/login,381,0,6
+1775386274157,14,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-44,,false,,185,239,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,14,0,2
+1775386274173,58,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-44,text,false,,82,0,2,2,null,0,0,0
+1775386273168,1148,Login,200,OK,WebSocket Clients 1-43,text,true,,837,265,1,1,http://localhost:5000/api/auth/login,1147,0,2
+1775386274318,4,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-43,,false,,185,239,1,1,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,4,0,2
+1775386274322,130,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-43,text,false,,82,0,2,2,null,0,0,0
+1775386274967,421,Login,401,Unauthorized,WebSocket Clients 1-46,text,false,,3606,265,2,2,http://localhost:5000/api/auth/login,421,0,1
+1775386275390,5,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-46,,false,,185,239,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,5,0,2
+1775386275396,36,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-46,text,false,,82,0,2,2,null,0,0,0
+1775386274379,1288,Login,200,OK,WebSocket Clients 1-45,text,true,,837,265,2,2,http://localhost:5000/api/auth/login,1288,0,2
+1775386275669,4,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-45,,false,,185,239,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,4,0,1
+1775386275674,141,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-45,text,false,,82,0,2,2,null,0,0,0
+1775386276176,423,Login,401,Unauthorized,WebSocket Clients 1-48,text,false,,3606,265,2,2,http://localhost:5000/api/auth/login,423,0,3
+1775386276601,4,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-48,,false,,185,239,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,4,0,2
+1775386276606,20,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-48,text,false,,82,0,2,2,null,0,0,0
+1775386275573,1134,Login,200,OK,WebSocket Clients 1-47,text,true,,837,265,1,1,http://localhost:5000/api/auth/login,1133,0,2
+1775386276708,7,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-47,,false,,185,239,1,1,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,7,0,1
+1775386276716,109,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-47,text,false,,82,0,2,2,null,0,0,0
+1775386277372,255,Login,401,Unauthorized,WebSocket Clients 1-50,text,false,,3605,265,2,2,http://localhost:5000/api/auth/login,255,0,2
+1775386277629,4,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-50,,false,,185,239,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,4,0,1
+1775386277634,68,Open WebSocket And Join Group,500,java.net.http.WebSocketHandshakeException,WebSocket Clients 1-50,text,false,,82,0,2,2,null,0,0,0
+1775386276775,1229,Login,200,OK,WebSocket Clients 1-49,text,true,,837,265,1,1,http://localhost:5000/api/auth/login,1229,0,3
+1775386278005,4,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-49,,false,,185,239,1,1,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,4,0,2
+1775386449398,300,Login,401,Unauthorized,WebSocket Clients 1-2,text,false,,3606,268,2,2,http://localhost:5000/api/auth/login,297,0,9
+1775386449866,4,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-2,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,4,0,2
+1775386449299,1294,Login,200,OK,WebSocket Clients 1-1,text,true,,837,268,3,3,http://localhost:5000/api/auth/login,1294,0,109
+1775386450596,8,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-1,,false,,185,242,4,4,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,8,0,4
+1775386450602,237,Login,401,Unauthorized,WebSocket Clients 1-4,text,false,,3606,268,4,4,http://localhost:5000/api/auth/login,237,0,2
+1775386450842,14,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-4,,false,,185,242,4,4,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,14,0,3
+1775386449991,1558,Login,200,OK,WebSocket Clients 1-3,text,true,,837,268,5,5,http://localhost:5000/api/auth/login,1555,0,2
+1775386451556,42,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-3,,false,,185,242,5,5,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,42,0,1
+1775386451756,393,Login,401,Unauthorized,WebSocket Clients 1-6,text,false,,3606,268,6,6,http://localhost:5000/api/auth/login,392,0,2
+1775386452151,34,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-6,,false,,185,242,6,6,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,34,0,1
+1775386449871,2448,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script1.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script1.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script1.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-2,text,false,,0,0,6,6,null,0,0,0
+1775386451599,722,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script4.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script4.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script4.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-3,text,false,,0,0,6,6,null,0,0,0
+1775386450605,1737,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script2.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script2.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script2.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-1,text,false,,0,0,5,5,null,0,0,0
+1775386450857,1548,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script3.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script3.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script3.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-4,text,false,,0,0,4,4,null,0,0,0
+1775386452188,356,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script5.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script5.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script5.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-6,text,false,,0,0,3,3,null,0,0,0
+1775386451399,1649,Login,200,OK,WebSocket Clients 1-5,text,true,,837,268,3,3,http://localhost:5000/api/auth/login,1648,0,2
+1775386453050,3,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-5,,false,,185,242,3,3,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,3,0,1
+1775386453054,169,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script6.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script6.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script6.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-5,text,false,,0,0,3,3,null,0,0,0
+1775386452912,448,Login,401,Unauthorized,WebSocket Clients 1-8,text,false,,3606,268,2,2,http://localhost:5000/api/auth/login,448,0,1
+1775386453362,17,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-8,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,17,0,2
+1775386453379,171,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script7.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script7.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script7.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-8,text,false,,0,0,3,3,null,0,0,0
+1775386452355,1295,Login,200,OK,WebSocket Clients 1-7,text,true,,837,268,2,2,http://localhost:5000/api/auth/login,1294,0,2
+1775386453652,3,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-7,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,3,0,1
+1775386453656,258,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script8.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script8.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script8.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-7,text,false,,0,0,2,2,null,0,0,0
+1775386454083,406,Login,401,Unauthorized,WebSocket Clients 1-10,text,false,,3606,268,2,2,http://localhost:5000/api/auth/login,406,0,2
+1775386454492,4,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-10,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,4,0,2
+1775386454497,168,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script9.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script9.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script9.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-10,text,false,,0,0,3,3,null,0,0,0
+1775386453513,1430,Login,200,OK,WebSocket Clients 1-9,text,true,,837,268,2,2,http://localhost:5000/api/auth/login,1430,0,2
+1775386454946,8,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-9,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,8,0,2
+1775386454955,202,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script10.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script10.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script10.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-9,text,false,,0,0,2,2,null,0,0,0
+1775386455265,481,Login,401,Unauthorized,WebSocket Clients 1-12,text,false,,3606,268,2,2,http://localhost:5000/api/auth/login,479,0,1
+1775386455748,5,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-12,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,5,0,2
+1775386455753,208,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script11.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script11.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script11.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-12,text,false,,0,0,3,3,null,0,0,0
+1775386454629,1339,Login,200,OK,WebSocket Clients 1-11,text,true,,837,268,2,2,http://localhost:5000/api/auth/login,1339,0,1
+1775386455970,3,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-11,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,3,0,1
+1775386455974,220,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script12.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script12.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script12.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-11,text,false,,0,0,2,2,null,0,0,0
+1775386456413,353,Login,401,Unauthorized,WebSocket Clients 1-14,text,false,,3606,268,2,2,http://localhost:5000/api/auth/login,353,0,2
+1775386456769,3,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-14,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,3,0,1
+1775386456773,230,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script13.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script13.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script13.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-14,text,false,,0,0,3,3,null,0,0,0
+1775386455858,1339,Login,200,OK,WebSocket Clients 1-13,text,true,,837,268,2,2,http://localhost:5000/api/auth/login,1338,0,3
+1775386457199,5,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-13,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,5,0,1
+1775386457205,212,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script14.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script14.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script14.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-13,text,false,,0,0,2,2,null,0,0,0
+1775386457603,370,Login,401,Unauthorized,WebSocket Clients 1-16,text,false,,3606,268,2,2,http://localhost:5000/api/auth/login,369,0,2
+1775386457974,7,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-16,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,7,0,2
+1775386457983,169,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script15.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script15.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script15.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-16,text,false,,0,0,2,2,null,0,0,0
+1775386457012,1453,Login,200,OK,WebSocket Clients 1-15,text,true,,837,268,2,2,http://localhost:5000/api/auth/login,1453,0,1
+1775386458467,3,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-15,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,3,0,1
+1775386458471,142,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script16.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script16.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script16.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-15,text,false,,0,0,2,2,null,0,0,0
+1775386458767,386,Login,401,Unauthorized,WebSocket Clients 1-18,text,false,,3605,268,2,2,http://localhost:5000/api/auth/login,385,0,1
+1775386459153,30,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-18,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,30,0,2
+1775386459184,170,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script17.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script17.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script17.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-18,text,false,,0,0,2,2,null,0,0,0
+1775386458182,1485,Login,200,OK,WebSocket Clients 1-17,text,true,,837,268,2,2,http://localhost:5000/api/auth/login,1485,0,2
+1775386459668,8,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-17,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,8,0,2
+1775386459677,182,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script18.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script18.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script18.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-17,text,false,,0,0,2,2,null,0,0,0
+1775386459993,258,Login,401,Unauthorized,WebSocket Clients 1-20,text,false,,3604,268,2,2,http://localhost:5000/api/auth/login,258,0,1
+1775386460253,3,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-20,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,3,0,1
+1775386460257,164,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script19.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script19.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script19.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-20,text,false,,0,0,2,2,null,0,0,0
+1775386459379,1237,Login,200,OK,WebSocket Clients 1-19,text,true,,837,268,2,2,http://localhost:5000/api/auth/login,1237,0,2
+1775386460618,4,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-19,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,4,0,1
+1775386460623,145,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script20.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script20.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script20.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-19,text,false,,0,0,2,2,null,0,0,0
+1775386461170,238,Login,401,Unauthorized,WebSocket Clients 1-22,text,false,,3606,268,2,2,http://localhost:5000/api/auth/login,237,0,2
+1775386461410,39,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-22,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,39,0,1
+1775386461450,145,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script21.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script21.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script21.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-22,text,false,,0,0,2,2,null,0,0,0
+1775386460583,1231,Login,200,OK,WebSocket Clients 1-21,text,true,,837,268,2,2,http://localhost:5000/api/auth/login,1231,0,2
+1775386461816,5,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-21,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,5,0,1
+1775386461822,134,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script22.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script22.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script22.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-21,text,false,,0,0,2,2,null,0,0,0
+1775386462350,538,Login,401,Unauthorized,WebSocket Clients 1-24,text,false,,3606,268,2,2,http://localhost:5000/api/auth/login,538,0,2
+1775386462890,25,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-24,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,25,0,2
+1775386461763,1208,Login,200,OK,WebSocket Clients 1-23,text,true,,837,268,3,3,http://localhost:5000/api/auth/login,1204,0,3
+1775386462973,9,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-23,,false,,185,242,3,3,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,9,0,1
+1775386462916,144,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script23.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script23.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script23.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-24,text,false,,0,0,3,3,null,0,0,0
+1775386462983,190,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script24.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script24.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script24.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-23,text,false,,0,0,2,2,null,0,0,0
+1775386463545,358,Login,401,Unauthorized,WebSocket Clients 1-26,text,false,,3606,268,2,2,http://localhost:5000/api/auth/login,357,0,1
+1775386463904,3,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-26,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,3,0,2
+1775386463908,169,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script25.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script25.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script25.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-26,text,false,,0,0,2,2,null,0,0,0
+1775386462960,1304,Login,200,OK,WebSocket Clients 1-25,text,true,,837,268,2,2,http://localhost:5000/api/auth/login,1304,0,1
+1775386464265,15,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-25,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,15,0,2
+1775386464281,206,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script26.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script26.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script26.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-25,text,false,,0,0,2,2,null,0,0,0
+1775386464760,372,Login,401,Unauthorized,WebSocket Clients 1-28,text,false,,3606,268,2,2,http://localhost:5000/api/auth/login,372,0,2
+1775386465134,14,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-28,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,14,0,1
+1775386465149,198,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script27.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script27.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script27.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-28,text,false,,0,0,2,2,null,0,0,0
+1775386464150,1222,Login,200,OK,WebSocket Clients 1-27,text,true,,837,268,2,2,http://localhost:5000/api/auth/login,1222,0,2
+1775386465373,5,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-27,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,5,0,2
+1775386465379,211,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script28.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script28.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script28.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-27,text,false,,0,0,2,2,null,0,0,0
+1775386465965,266,Login,401,Unauthorized,WebSocket Clients 1-30,text,false,,3606,268,2,2,http://localhost:5000/api/auth/login,265,0,2
+1775386466233,13,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-30,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,13,0,1
+1775386466246,187,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script29.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script29.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script29.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-30,text,false,,0,0,2,2,null,0,0,0
+1775386465358,1275,Login,200,OK,WebSocket Clients 1-29,text,true,,837,268,2,2,http://localhost:5000/api/auth/login,1275,0,2
+1775386466635,14,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-29,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,14,0,2
+1775386466650,165,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script30.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script30.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script30.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-29,text,false,,0,0,2,2,null,0,0,0
+1775386467149,441,Login,401,Unauthorized,WebSocket Clients 1-32,text,false,,3606,268,2,2,http://localhost:5000/api/auth/login,441,0,2
+1775386467591,3,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-32,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,3,0,2
+1775386467595,183,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script31.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script31.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script31.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-32,text,false,,0,0,3,3,null,0,0,0
+1775386466569,1311,Login,200,OK,WebSocket Clients 1-31,text,true,,837,268,2,2,http://localhost:5000/api/auth/login,1311,0,1
+1775386467882,8,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-31,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,8,0,2
+1775386467892,173,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script32.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script32.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script32.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-31,text,false,,0,0,2,2,null,0,0,0
+1775386468353,371,Login,401,Unauthorized,WebSocket Clients 1-34,text,false,,3606,268,2,2,http://localhost:5000/api/auth/login,371,0,1
+1775386468726,7,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-34,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,7,0,2
+1775386468734,214,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script33.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script33.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script33.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-34,text,false,,0,0,3,3,null,0,0,0
+1775386467755,1195,Login,200,OK,WebSocket Clients 1-33,text,true,,837,268,2,2,http://localhost:5000/api/auth/login,1195,0,2
+1775386468951,7,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-33,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,7,0,2
+1775386468958,180,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script34.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script34.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script34.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-33,text,false,,0,0,2,2,null,0,0,0
+1775386469553,400,Login,401,Unauthorized,WebSocket Clients 1-36,text,false,,3606,268,2,2,http://localhost:5000/api/auth/login,399,0,1
+1775386469954,16,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-36,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,16,0,2
+1775386469970,209,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script35.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script35.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script35.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-36,text,false,,0,0,3,3,null,0,0,0
+1775386468947,1265,Login,200,OK,WebSocket Clients 1-35,text,true,,837,268,2,2,http://localhost:5000/api/auth/login,1264,0,1
+1775386470213,9,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-35,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,9,0,1
+1775386470223,199,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script36.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script36.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script36.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-35,text,false,,0,0,2,2,null,0,0,0
+1775386470751,482,Login,401,Unauthorized,WebSocket Clients 1-38,text,false,,3606,268,2,2,http://localhost:5000/api/auth/login,482,0,3
+1775386471235,4,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-38,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,4,0,2
+1775386471239,250,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script37.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script37.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script37.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-38,text,false,,0,0,3,3,null,0,0,0
+1775386470181,1524,Login,200,OK,WebSocket Clients 1-37,text,true,,837,268,2,2,http://localhost:5000/api/auth/login,1524,0,1
+1775386471706,31,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-37,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,31,0,2
+1775386471738,232,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script38.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script38.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script38.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-37,text,false,,0,0,3,3,null,0,0,0
+1775386471963,357,Login,401,Unauthorized,WebSocket Clients 1-40,text,false,,3606,268,2,2,http://localhost:5000/api/auth/login,357,0,2
+1775386472322,8,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-40,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,8,0,1
+1775386472331,181,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script39.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script39.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script39.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-40,text,false,,0,0,2,2,null,0,0,0
+1775386471398,1638,Login,200,OK,WebSocket Clients 1-39,text,true,,837,268,2,2,http://localhost:5000/api/auth/login,1638,0,1
+1775386473037,5,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-39,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,5,0,2
+1775386473043,211,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script40.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script40.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script40.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-39,text,false,,0,0,3,3,null,0,0,0
+1775386473175,366,Login,401,Unauthorized,WebSocket Clients 1-42,text,false,,3606,268,2,2,http://localhost:5000/api/auth/login,366,0,2
+1775386473543,3,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-42,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,3,0,1
+1775386473546,207,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script41.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script41.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script41.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-42,text,false,,0,0,2,2,null,0,0,0
+1775386472574,1592,Login,200,OK,WebSocket Clients 1-41,text,true,,837,268,2,2,http://localhost:5000/api/auth/login,1592,0,2
+1775386474167,3,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-41,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,3,0,1
+1775386474171,130,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script42.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script42.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script42.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-41,text,false,,0,0,2,2,null,0,0,0
+1775386474408,316,Login,401,Unauthorized,WebSocket Clients 1-44,text,false,,3606,268,2,2,http://localhost:5000/api/auth/login,316,0,3
+1775386474726,11,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-44,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,11,0,2
+1775386474740,137,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script43.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script43.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script43.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-44,text,false,,0,0,2,2,null,0,0,0
+1775386473778,1307,Login,200,OK,WebSocket Clients 1-43,text,true,,837,268,2,2,http://localhost:5000/api/auth/login,1307,0,2
+1775386475087,27,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-43,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,27,0,1
+1775386475115,129,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script44.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script44.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script44.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-43,text,false,,0,0,2,2,null,0,0,0
+1775386475606,233,Login,401,Unauthorized,WebSocket Clients 1-46,text,false,,3606,268,2,2,http://localhost:5000/api/auth/login,233,0,1
+1775386475841,4,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-46,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,4,0,2
+1775386475846,165,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script45.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script45.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script45.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-46,text,false,,0,0,2,2,null,0,0,0
+1775386474984,1245,Login,200,OK,WebSocket Clients 1-45,text,true,,837,268,2,2,http://localhost:5000/api/auth/login,1243,0,2
+1775386476231,3,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-45,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,3,0,1
+1775386476234,123,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script46.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script46.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script46.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-45,text,false,,0,0,2,2,null,0,0,0
+1775386476779,400,Login,401,Unauthorized,WebSocket Clients 1-48,text,false,,3606,268,2,2,http://localhost:5000/api/auth/login,399,0,2
+1775386477180,19,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-48,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=3,19,0,1
+1775386477199,168,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script47.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script47.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script47.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-48,text,false,,0,0,3,3,null,0,0,0
+1775386476208,1280,Login,200,OK,WebSocket Clients 1-47,text,true,,837,268,2,2,http://localhost:5000/api/auth/login,1280,0,2
+1775386477490,5,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-47,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,5,0,2
+1775386477495,137,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script48.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script48.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script48.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-47,text,false,,0,0,2,2,null,0,0,0
+1775386477948,281,Login,401,Unauthorized,WebSocket Clients 1-50,text,false,,3606,268,2,2,http://localhost:5000/api/auth/login,281,0,2
+1775386478231,4,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-50,,false,,185,242,2,2,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=2,4,0,1
+1775386478236,123,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script49.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script49.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script49.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-50,text,false,,0,0,2,2,null,0,0,0
+1775386477359,1207,Login,200,OK,WebSocket Clients 1-49,text,true,,837,268,1,1,http://localhost:5000/api/auth/login,1207,0,2
+1775386478567,11,SignalR Negotiate,401,Unauthorized,WebSocket Clients 1-49,,false,,185,242,1,1,http://localhost:5000/hubs/queue/negotiate?negotiateVersion=1&centerId=1,11,0,1
+1775386478579,122,Open WebSocket And Join Group,500,"javax.script.ScriptException: org.codehaus.groovy.control.MultipleCompilationErrorsException: startup failed:
+Script50.groovy: 2: unable to resolve class java.net.http.HttpClient
+ @ line 2, column 1.
+   import java.net.http.HttpClient
+   ^
+
+Script50.groovy: 3: unable to resolve class java.net.http.WebSocket
+ @ line 3, column 1.
+   import java.net.http.WebSocket
+   ^
+
+Script50.groovy: 23: unable to resolve class WebSocket.Listener
+ @ line 23, column 16.
+   def listener = [
+                  ^
+
+3 errors
+",WebSocket Clients 1-49,text,false,,0,0,1,1,null,0,0,0
