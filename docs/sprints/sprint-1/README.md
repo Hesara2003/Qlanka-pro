@@ -14,6 +14,7 @@ This folder contains all documentation related to Sprint 1.
 | `sprint-metrics.md` | Story points (40), velocity (40), completion rate (90%), burndown, quality and dev metrics |
 | `qa-report.md` | 52 test cases, test results, bug log, and QA summary |
 | `devops-doc.md` | Local setup, environment variables, CI pipeline, Docker, middleware pipeline, deployment guide |
+| `developer-doc.md` | Full developer handbook: setup, run modes, tests, CI alignment, PR workflow, troubleshooting |
 | `api-documentation.md` | Full API reference — all endpoints, request/response shapes, status codes, error codes |
 | `technical-decisions-log.md` | DB schema decisions, API design, security, caching, and architecture choices |
 | `user-stories.md` | Detailed user stories (US-01 to US-10), acceptance criteria, sub-tasks, branch mapping |

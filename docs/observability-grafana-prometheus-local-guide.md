@@ -18,6 +18,18 @@ This guide explains how to run, use, and troubleshoot Grafana + Prometheus local
 - Prometheus: http://localhost:9090
 - Grafana: http://localhost:3000
 
+## 2.1) WSO2 API Manager Endpoints (Current)
+
+QueueLanka has migrated API gateway management to WSO2 API Manager.
+
+- Publisher: https://20.193.250.12:9443/publisher/
+- Dev Portal: https://20.193.250.12:9443/devportal/
+- Admin Portal: https://20.193.250.12:9443/admin/
+
+Notes:
+- Keep local service ports for local metrics scraping and backend troubleshooting.
+- Use WSO2 URLs for API publishing/subscriptions and externally managed gateway flows.
+
 Prometheus scrape config for local:
 - deploy/infrastructure/monitoring/prometheus/prometheus.local.yml
 
@@ -92,6 +104,8 @@ Custom command examples:
   node scripts/load_test_local.js --url http://localhost:5012/health --duration 30 --concurrency 50
   node scripts/load_test_local.js --url http://localhost:5012/api/auth/login --method POST --header Content-Type:application/json --body {"email":"fake@example.com","password":"wrong"} --duration 20 --concurrency 20
 
+If validating through WSO2-managed routes, replace the URL with the published API base URL from WSO2 Dev Portal.
+
 ## 5) Bring Up the Stack (Recommended Sequence)
 
 1. Ensure Grafana service is running
@@ -107,6 +121,12 @@ Health checks:
 - Prometheus healthy: http://localhost:9090/-/healthy
 - Prometheus targets: http://localhost:9090/targets
 - Grafana health API: http://localhost:3000/api/health
+
+WSO2 management endpoints:
+
+- Publisher: https://20.193.250.12:9443/publisher/
+- Dev Portal: https://20.193.250.12:9443/devportal/
+- Admin: https://20.193.250.12:9443/admin/
 
 ## 6) Configure Grafana
 
