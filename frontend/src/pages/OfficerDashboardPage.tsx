@@ -40,6 +40,7 @@ export default function OfficerDashboardPage() {
         skipError,
         waitingTokens,
         stats,
+        dashboard,
         counterUnavailable,
         error,
         calledToken,
@@ -56,6 +57,7 @@ export default function OfficerDashboardPage() {
 
     const displayStats = stats;
     const { lastUpdatedText } = useLastUpdated(dashboardLastUpdatedAt || lastConnectedAt);
+    const displayedCounterId = counterUnavailable ? null : (dashboard?.counterId ?? user?.counterId ?? null);
 
     useEffect(() => {
         if (reconnectNonce <= 0) return;
@@ -142,7 +144,9 @@ export default function OfficerDashboardPage() {
                                  <h2 className="text-lg font-black tracking-tight text-gray-900">Workstation</h2>
                                  <span className="px-2 py-0.5 bg-emerald-50 text-emerald-500 rounded-full text-[9px] font-black uppercase tracking-widest">Active</span>
                             </div>
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest italic">Counter #{user?.counterId}</p>
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest italic">
+                                {displayedCounterId ? `Counter #${displayedCounterId}` : "Counter Unassigned"}
+                            </p>
                         </div>
 
                         {counterUnavailable && (
