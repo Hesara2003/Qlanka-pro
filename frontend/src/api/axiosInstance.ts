@@ -2,12 +2,31 @@
 
 import axios from "axios";
 
+const isWso2Enabled = (import.meta.env.VITE_WSO2_ENABLED ?? "false").toLowerCase() === "true";
+
 const rawApiBaseUrl = (
   import.meta.env.VITE_API_BASE_URL ??
-  "https://qlanka-gateway.redrock-2a740b8b.centralindia.azurecontainerapps.io"
+  import.meta.env.VITE_WSO2_API_BASE_URL ??
+  "https://20.193.250.12:9443"
 ).replace(/\/+$/, "");
 
 const apiBaseUrl = rawApiBaseUrl.replace(/\/api$/i, "");
+
+const wso2PublicContext = (import.meta.env.VITE_WSO2_PUBLIC_CONTEXT ?? "/public/v1").replace(/\/+$/, "");
+const wso2OfficerContext = (import.meta.env.VITE_WSO2_OFFICER_CONTEXT ?? "/officer/v1").replace(/\/+$/, "");
+const wso2AdminContext = (import.meta.env.VITE_WSO2_ADMIN_CONTEXT ?? "/admin/v1").replace(/\/+$/, "");
+
+function resolveWso2ContextForPath(path: string): string {
+  if (path.startsWith("/api/admin") || path.startsWith("/api/reports")) {
+    return wso2AdminContext;
+  }
+
+  if (path.startsWith("/api/counters")) {
+    return wso2OfficerContext;
+  }
+
+  return wso2PublicContext;
+}
 
 export class AuthorizationError extends Error {
   public readonly code: string;
@@ -31,6 +50,17 @@ const axiosInstance = axios.create({
 
 // Attach JWT token to every request if present
 axiosInstance.interceptors.request.use((config) => {
+  if (isWso2Enabled && typeof config.url === "string" && config.url.startsWith("/")) {
+    const isAlreadyContextualized =
+      config.url.startsWith(`${wso2PublicContext}/`) ||
+      config.url.startsWith(`${wso2OfficerContext}/`) ||
+      config.url.startsWith(`${wso2AdminContext}/`);
+
+    if (!isAlreadyContextualized) {
+      config.url = `${resolveWso2ContextForPath(config.url)}${config.url}`;
+    }
+  }
+
   const token = localStorage.getItem("token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;

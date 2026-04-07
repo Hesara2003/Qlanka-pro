@@ -1,0 +1,197 @@
+openapi: 3.0.1
+info:
+  title: QueueLanka Officer API
+  version: v1
+servers:
+  - url: /
+security:
+  - default: []
+paths:
+  '/api/counters/{counterId}/call-next':
+    post:
+      parameters:
+        - name: counterId
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            format: string
+      responses:
+        '200':
+          description: ok
+      security:
+        - default: []
+      x-auth-type: Application & Application User
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: false
+  '/api/counters/{counterId}/tokens/{tokenId}/status':
+    put:
+      parameters:
+        - name: counterId
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            format: string
+        - name: tokenId
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            format: string
+      responses:
+        '200':
+          description: ok
+      security:
+        - default: []
+      x-auth-type: Application & Application User
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: false
+  '/api/counters/{counterId}/tokens/reassign':
+    post:
+      parameters:
+        - name: counterId
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            format: string
+      responses:
+        '200':
+          description: ok
+      security:
+        - default: []
+      x-auth-type: Application & Application User
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: false
+  '/api/counters/{counterId}/dashboard':
+    get:
+      parameters:
+        - name: counterId
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            format: string
+      responses:
+        '200':
+          description: ok
+      security:
+        - default: []
+      x-auth-type: Application & Application User
+      x-throttling-tier: QueuePollingPolicy
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: false
+  '/api/counters/{counterId}/tokens/waiting':
+    get:
+      parameters:
+        - name: counterId
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            format: string
+      responses:
+        '200':
+          description: ok
+      security:
+        - default: []
+      x-auth-type: Application & Application User
+      x-throttling-tier: QueuePollingPolicy
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: false
+  '/api/counters/{counterId}/stats':
+    get:
+      parameters:
+        - name: counterId
+          in: path
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            format: string
+      responses:
+        '200':
+          description: ok
+      security:
+        - default: []
+      x-auth-type: Application & Application User
+      x-throttling-tier: Unlimited
+      x-wso2-application-security:
+        security-types:
+          - oauth2
+        optional: false
+components:
+  securitySchemes:
+    default:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: 'https://20.193.250.12:9443/oauth2/authorize'
+          scopes: {}
+x-wso2-api-key-header: ApiKey
+x-wso2-auth-header: Authorization
+x-wso2-cors:
+  corsConfigurationEnabled: false
+  accessControlAllowOrigins:
+    - '*'
+  accessControlAllowCredentials: false
+  accessControlAllowHeaders:
+    - authorization
+    - Access-Control-Allow-Origin
+    - Content-Type
+    - SOAPAction
+    - apikey
+    - Internal-Key
+  accessControlAllowMethods:
+    - GET
+    - PUT
+    - POST
+    - DELETE
+    - PATCH
+    - OPTIONS
+x-wso2-production-endpoints:
+  urls:
+    - 'https://qlanka-queue.redrock-2a740b8b.centralindia.azurecontainerapps.io'
+  type: http
+x-wso2-sandbox-endpoints:
+  urls:
+    - 'https://qlanka-queue.redrock-2a740b8b.centralindia.azurecontainerapps.io'
+  type: http
+x-wso2-basePath: /officer/v1
+x-wso2-transports:
+  - http
+  - https
+x-wso2-application-security:
+  security-types:
+    - oauth2
+  optional: false
+x-wso2-response-cache:
+  enabled: false
+  cacheTimeoutInSeconds: 300

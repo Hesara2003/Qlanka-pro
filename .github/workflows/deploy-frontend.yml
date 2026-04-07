@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_API_BASE_URL: https://qlanka-gateway.redrock-2a740b8b.centralindia.azurecontainerapps.io
+  AZURE_API_BASE_URL: https://20.193.250.12:9443
   AZURE_FRONTEND_URL: https://queuelanka-frontend-hrcvdec5dnach0aj.centralindia-01.azurewebsites.net
 
 jobs:

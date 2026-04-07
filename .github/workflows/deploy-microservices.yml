@@ -1,31 +1,59 @@
-name: Build & Push Microservices
+name: Build, Push & Deploy Microservices
 
 on:
   push:
     branches: [feature/microservices, main]
   workflow_dispatch:
+    inputs:
+      rollout_percent:
+        description: "Percent of traffic to route to the newly deployed revision (1-100)"
+        required: false
+        default: "100"
+        type: string
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      ACR_LOGIN_SERVER: qlankaregistry.azurecr.io
+      RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+      ROLLOUT_PERCENT: ${{ github.event.inputs.rollout_percent || '100' }}
     strategy:
       matrix:
         service:
           - name: qlanka-gateway
             dockerfile: QueueLanka.Gateway/Dockerfile
             containerapp: qlanka-gateway
+            min_replicas: 2
+            max_replicas: 10
+            http_concurrency: 80
           - name: qlanka-identity
             dockerfile: QueueLanka.Identity/Dockerfile
             containerapp: qlanka-identity
+            min_replicas: 2
+            max_replicas: 10
+            http_concurrency: 60
           - name: qlanka-servicecenter
             dockerfile: QueueLanka.ServiceCenter/Dockerfile
             containerapp: qlanka-servicecenter
+            min_replicas: 2
+            max_replicas: 10
+            http_concurrency: 60
           - name: qlanka-queue
             dockerfile: QueueLanka.Queue/Dockerfile
             containerapp: qlanka-queue
+            min_replicas: 3
+            max_replicas: 15
+            http_concurrency: 40
           - name: qlanka-notification
             dockerfile: QueueLanka.Notification/Dockerfile
             containerapp: qlanka-notification
+            min_replicas: 1
+            max_replicas: 6
+            http_concurrency: 30
 
     steps:
       - name: Checkout code
@@ -34,15 +62,112 @@ jobs:
       - name: Log in to Azure Container Registry
         uses: azure/docker-login@v2
         with:
-          login-server: qlankaregistry.azurecr.io
+          login-server: ${{ env.ACR_LOGIN_SERVER }}
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
+      - name: Resolve Azure auth mode
+        id: authmode
+        shell: bash
+        env:
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+        run: |
+          if [ -n "$AZURE_CREDENTIALS" ]; then
+            echo "use_sp=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "use_sp=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Azure login (service principal JSON)
+        if: ${{ steps.authmode.outputs.use_sp == 'true' }}
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Azure login (OIDC)
+        if: ${{ steps.authmode.outputs.use_sp != 'true' }}
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Ensure Container Apps CLI extension
+        run: |
+          az extension add --name containerapp --upgrade --only-show-errors
+
       - name: Build and push ${{ matrix.service.name }}
         run: |
+          IMAGE_TAG="${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service.name }}:${{ github.sha }}"
+          IMAGE_LATEST="${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service.name }}:latest"
+
           docker build \
-            -t qlankaregistry.azurecr.io/${{ matrix.service.name }}:${{ github.sha }} \
-            -t qlankaregistry.azurecr.io/${{ matrix.service.name }}:latest \
+            -t "$IMAGE_TAG" \
+            -t "$IMAGE_LATEST" \
             -f backend/${{ matrix.service.dockerfile }} backend
-          docker push qlankaregistry.azurecr.io/${{ matrix.service.name }}:${{ github.sha }}
-          docker push qlankaregistry.azurecr.io/${{ matrix.service.name }}:latest
+          docker push "$IMAGE_TAG"
+          docker push "$IMAGE_LATEST"
+
+      - name: Deploy with autoscaling and traffic rules
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ -z "${RESOURCE_GROUP:-}" ]; then
+            echo "AZURE_RESOURCE_GROUP secret is required."
+            exit 1
+          fi
+
+          if ! [[ "$ROLLOUT_PERCENT" =~ ^[0-9]+$ ]] || [ "$ROLLOUT_PERCENT" -lt 1 ] || [ "$ROLLOUT_PERCENT" -gt 100 ]; then
+            echo "rollout_percent must be an integer from 1 to 100."
+            exit 1
+          fi
+
+          APP_NAME="${{ matrix.service.containerapp }}"
+          IMAGE_TAG="${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service.name }}:${{ github.sha }}"
+
+          az containerapp revision set-mode \
+            --name "$APP_NAME" \
+            --resource-group "$RESOURCE_GROUP" \
+            --mode multiple
+
+          az containerapp update \
+            --name "$APP_NAME" \
+            --resource-group "$RESOURCE_GROUP" \
+            --image "$IMAGE_TAG" \
+            --min-replicas "${{ matrix.service.min_replicas }}" \
+            --max-replicas "${{ matrix.service.max_replicas }}" \
+            --scale-rule-name "http-concurrency" \
+            --scale-rule-type http \
+            --scale-rule-http-concurrency "${{ matrix.service.http_concurrency }}"
+
+          NEW_REVISION=$(az containerapp revision list \
+            --name "$APP_NAME" \
+            --resource-group "$RESOURCE_GROUP" \
+            --query "sort_by([].{name:name,created:properties.createdTime}, &created)[-1].name" \
+            -o tsv)
+
+          OLD_REVISION=$(az containerapp revision list \
+            --name "$APP_NAME" \
+            --resource-group "$RESOURCE_GROUP" \
+            --query "sort_by([].{name:name,created:properties.createdTime}, &created)[-2].name" \
+            -o tsv)
+
+          REMAINING_PERCENT=$((100 - ROLLOUT_PERCENT))
+
+          if [ "$REMAINING_PERCENT" -gt 0 ] && [ -n "$OLD_REVISION" ]; then
+            az containerapp ingress traffic set \
+              --name "$APP_NAME" \
+              --resource-group "$RESOURCE_GROUP" \
+              --revision-weight "$NEW_REVISION=$ROLLOUT_PERCENT" "$OLD_REVISION=$REMAINING_PERCENT"
+          else
+            az containerapp ingress traffic set \
+              --name "$APP_NAME" \
+              --resource-group "$RESOURCE_GROUP" \
+              --revision-weight "$NEW_REVISION=100"
+          fi
+
+          echo "Traffic status for $APP_NAME"
+          az containerapp ingress traffic show \
+            --name "$APP_NAME" \
+            --resource-group "$RESOURCE_GROUP"
