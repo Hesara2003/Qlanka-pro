@@ -1,12 +1,19 @@
-import { AxiosError } from "axios";
+import { AxiosError, type AxiosResponse } from "axios";
 import axiosInstance from "./axiosInstance";
 
-function extractErrorMessage(error: unknown): string {
+async function extractErrorMessage(error: unknown): Promise<string> {
     if (error instanceof AxiosError && error.response?.data) {
         if (error.response.data instanceof Blob) {
+            try {
+                const text = await error.response.data.text();
+                const parsed = JSON.parse(text) as { message?: string };
+                if (parsed?.message) return parsed.message;
+            } catch {
+                // Ignore blob parse failure and fall back to generic message.
+            }
             return "Failed to run report. Check parameters.";
         }
-        return error.response.data.message ?? "An unexpected error occurred.";
+        return (error.response.data as { message?: string }).message ?? "An unexpected error occurred.";
     }
     return "Failed to connect to service. Please try again.";
 }
@@ -16,15 +23,38 @@ export async function downloadDailyCenterSummaryCsv(
     fromDate: string,
     toDate: string
 ): Promise<void> {
+    const params = {
+        from: fromDate,
+        to: toDate,
+        format: "csv"
+    };
+
+    const routes = [
+        `/api/reports/centers/${centerId}/summary`,
+        `/reports/centers/${centerId}/summary`,
+    ];
+
     try {
-        const response = await axiosInstance.get(`/api/reports/centers/${centerId}/summary`, {
-            params: {
-                from: fromDate,
-                to: toDate,
-                format: "csv"
-            },
-            responseType: 'blob' // Explicitly fetch as blob
-        });
+        let response: AxiosResponse<Blob> | null = null;
+
+        for (let i = 0; i < routes.length; i++) {
+            try {
+                response = await axiosInstance.get(routes[i], {
+                    params,
+                    responseType: "blob"
+                });
+                break;
+            } catch (error) {
+                if (error instanceof AxiosError && error.response?.status === 404 && i < routes.length - 1) {
+                    continue;
+                }
+                throw error;
+            }
+        }
+
+        if (!response) {
+            throw new Error("Failed to connect to service. Please try again.");
+        }
 
         // If backend returned 204 No Content
         if (response.status === 204) {
@@ -57,6 +87,6 @@ export async function downloadDailyCenterSummaryCsv(
         if (error instanceof Error && error.message === "No data available for the selected dates.") {
             throw error;
         }
-        throw new Error(extractErrorMessage(error));
+        throw new Error(await extractErrorMessage(error));
     }
 }
