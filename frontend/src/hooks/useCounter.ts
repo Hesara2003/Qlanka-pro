@@ -95,6 +95,10 @@ interface QueueRefreshSignals {
     latestQueueUpdate: QueueUpdatedPayload | null;
 }
 
+function isCalledTokenStatus(status: string | undefined | null): boolean {
+    return (status ?? "").toLowerCase() === "called";
+}
+
 /**
  * Custom hook managing the "call next token" action for a counter officer.
  *
@@ -216,7 +220,9 @@ export function useCounter(
             setDashboardLastUpdatedAt(new Date());
 
             if (payload.currentToken) {
-                setCalledToken(payload.currentToken);
+                setCalledToken(isCalledTokenStatus(payload.currentToken.status) ? payload.currentToken : null);
+            } else {
+                setCalledToken(null);
             }
 
             setStats({
@@ -445,6 +451,10 @@ export function useCounter(
     }, [counterId, counterUnavailable, fetchDashboard, fetchStats]);
 
     const serveToken = useCallback(async () => {
+        if (serveLoading || skipLoading) {
+            return;
+        }
+
         if (counterUnavailable) {
             setServeError("Assigned counter not found. Please contact an administrator.");
             setServeRetryable(false);
@@ -454,6 +464,15 @@ export function useCounter(
         if (counterId == null || !calledToken) {
             setServeError("No token is currently being served.");
             setServeRetryable(false);
+            return;
+        }
+
+        if (!isCalledTokenStatus(calledToken.status)) {
+            setServeError("Token is no longer in called state. Queue has been refreshed.");
+            setServeRetryable(false);
+            setCalledToken(null);
+            void fetchDashboard();
+            void fetchStats();
             return;
         }
 
@@ -500,9 +519,13 @@ export function useCounter(
                 setServeLoading(false);
             }
         }
-    }, [calledToken, counterId, counterUnavailable, fetchDashboard, fetchStats]);
+    }, [calledToken, counterId, counterUnavailable, fetchDashboard, fetchStats, serveLoading, skipLoading]);
 
     const skipToken = useCallback(async () => {
+        if (serveLoading || skipLoading) {
+            return;
+        }
+
         if (counterUnavailable) {
             setSkipError("Assigned counter not found. Please contact an administrator.");
             setSkipRetryable(false);
@@ -512,6 +535,15 @@ export function useCounter(
         if (counterId == null || !calledToken) {
             setSkipError("No token is currently being served.");
             setSkipRetryable(false);
+            return;
+        }
+
+        if (!isCalledTokenStatus(calledToken.status)) {
+            setSkipError("Token is no longer in called state. Queue has been refreshed.");
+            setSkipRetryable(false);
+            setCalledToken(null);
+            void fetchDashboard();
+            void fetchStats();
             return;
         }
 
@@ -558,7 +590,7 @@ export function useCounter(
                 setSkipLoading(false);
             }
         }
-    }, [calledToken, counterId, counterUnavailable, fetchDashboard, fetchStats]);
+    }, [calledToken, counterId, counterUnavailable, fetchDashboard, fetchStats, serveLoading, skipLoading]);
 
     const clearActionOutcome = useCallback(() => {
         setActionOutcome(null);

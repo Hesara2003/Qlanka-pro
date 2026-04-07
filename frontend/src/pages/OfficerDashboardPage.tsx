@@ -58,6 +58,7 @@ export default function OfficerDashboardPage() {
     const displayStats = stats;
     const { lastUpdatedText } = useLastUpdated(dashboardLastUpdatedAt || lastConnectedAt);
     const displayedCounterId = counterUnavailable ? null : (dashboard?.counterId ?? user?.counterId ?? null);
+    const tokenActionInProgress = serveLoading || skipLoading;
 
     useEffect(() => {
         if (reconnectNonce <= 0) return;
@@ -199,14 +200,14 @@ export default function OfficerDashboardPage() {
                                     <div className="grid grid-cols-2 gap-4">
                                         <button 
                                             onClick={serveToken}
-                                            disabled={serveLoading}
+                                            disabled={tokenActionInProgress}
                                             className="h-16 bg-[#78d64b] text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-emerald-500 transition-all flex items-center justify-center gap-2"
                                         >
                                             {serveLoading ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : "Serve"}
                                         </button>
                                         <button 
                                             onClick={skipToken}
-                                            disabled={skipLoading}
+                                            disabled={tokenActionInProgress}
                                             className="h-16 bg-white border border-gray-200 text-gray-900 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
                                         >
                                             {skipLoading ? <div className="w-4 h-4 border-2 border-gray-900/20 border-t-gray-900 rounded-full animate-spin" /> : "Skip"}
