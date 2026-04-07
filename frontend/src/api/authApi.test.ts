@@ -84,4 +84,12 @@ describe('authApi', () => {
       'Network error. Please try again.',
     )
   })
+
+  it('maps axios errors without response body to network fallback message', async () => {
+    mockedAxios.post.mockRejectedValueOnce(new AxiosError('network'))
+
+    await expect(loginUser({ username: 'alice', password: 'bad' })).rejects.toThrow(
+      'Network error. Please try again.',
+    )
+  })
 })
