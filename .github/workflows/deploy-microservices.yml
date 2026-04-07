@@ -20,7 +20,7 @@ jobs:
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       ACR_LOGIN_SERVER: qlankaregistry.azurecr.io
-      RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
+      RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP || vars.AZURE_RESOURCE_GROUP || 'rg-queuelanka-pro' }}
       ROLLOUT_PERCENT: ${{ github.event.inputs.rollout_percent || '100' }}
       AZURE_CLIENT_ID_FALLBACK: ${{ secrets.AZURE_CLIENT_ID || secrets.QLANKAQUEUE_AZURE_CLIENT_ID || secrets.QLANKAIDENTITY_AZURE_CLIENT_ID || secrets.QLANKASERVICECENTER_AZURE_CLIENT_ID || secrets.QLANKAOFFICER_AZURE_CLIENT_ID }}
       AZURE_TENANT_ID_FALLBACK: ${{ secrets.AZURE_TENANT_ID || secrets.QLANKAQUEUE_AZURE_TENANT_ID || secrets.QLANKAIDENTITY_AZURE_TENANT_ID || secrets.QLANKASERVICECENTER_AZURE_TENANT_ID || secrets.QLANKAOFFICER_AZURE_TENANT_ID }}
@@ -143,7 +143,7 @@ jobs:
           set -euo pipefail
 
           if [ -z "${RESOURCE_GROUP:-}" ]; then
-            echo "AZURE_RESOURCE_GROUP secret is required."
+            echo "RESOURCE_GROUP is missing. Set AZURE_RESOURCE_GROUP secret/variable or keep fallback value in workflow."
             exit 1
           fi
 
