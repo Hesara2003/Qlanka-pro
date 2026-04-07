@@ -58,3 +58,30 @@ export interface ServiceCenterApiError {
 export interface ServiceCenterListResponse {
   serviceCenters: ServiceCenter[];
 }
+
+export interface CenterLocation {
+  centerId: number;
+  streetAddress: string;
+  city: string;
+  district: string;
+  province: string;
+  postalCode?: string;
+  country: string;
+  latitude?: number;
+  longitude?: number;
+  googleMapsUrl?: string;
+  landmark?: string;
+}
+
+export interface UpsertLocationRequest {
+  streetAddress: string;
+  city: string;
+  district: string;
+  province: string;
+  postalCode?: string;
+  country: string;
+  latitude?: number;
+  longitude?: number;
+  googleMapsUrl?: string;
+  landmark?: string;
+}
