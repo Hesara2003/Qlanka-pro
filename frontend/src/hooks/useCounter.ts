@@ -77,6 +77,8 @@ interface UseCounterResult {
     dashboardLoading: boolean;
     /** Stats call loading state. */
     statsLoading: boolean;
+    /** True when assigned counter no longer exists or is not accessible. */
+    counterUnavailable: boolean;
     /** Timestamp for the latest dashboard refresh. */
     dashboardLastUpdatedAt: Date | null;
     /** Fetches full dashboard payload. */
@@ -127,6 +129,7 @@ export function useCounter(
     });
     const [dashboardLoading, setDashboardLoading] = useState(false);
     const [statsLoading, setStatsLoading] = useState(false);
+    const [counterUnavailable, setCounterUnavailable] = useState(false);
     const [dashboardLastUpdatedAt, setDashboardLastUpdatedAt] = useState<Date | null>(null);
 
     const isMountedRef = useRef(true);
@@ -142,6 +145,16 @@ export function useCounter(
                 dashboardDebounceTimeoutRef.current = null;
             }
         };
+    }, []);
+
+    useEffect(() => {
+        setCounterUnavailable(false);
+    }, [counterId]);
+
+    const isCounterUnavailableError = useCallback((err: unknown) => {
+        if (!(err instanceof Error)) return false;
+        const msg = err.message.toLowerCase();
+        return msg.includes("counter not found") || msg.includes("forbidden");
     }, []);
 
     const fetchAvailableCounters = useCallback(async () => {
@@ -175,7 +188,7 @@ export function useCounter(
     }, [fetchAvailableCounters]);
 
     const fetchDashboard = useCallback(async () => {
-        if (counterId == null) {
+        if (counterId == null || counterUnavailable) {
             if (isMountedRef.current) {
                 setDashboard(null);
                 setWaitingTokens([]);
@@ -216,15 +229,20 @@ export function useCounter(
             if (!isMountedRef.current) return;
             setDashboard(null);
             setWaitingTokens([]);
+            if (isCounterUnavailableError(err)) {
+                setCounterUnavailable(true);
+                setError("Assigned counter not found. Please ask an admin to reassign your counter.");
+                setErrorCode("UNKNOWN_ERROR");
+            }
         } finally {
             if (isMountedRef.current) {
                 setDashboardLoading(false);
             }
         }
-    }, [counterId]);
+    }, [counterId, counterUnavailable, isCounterUnavailableError]);
 
     const fetchStats = useCallback(async () => {
-        if (counterId == null) {
+        if (counterId == null || counterUnavailable) {
             if (isMountedRef.current) {
                 setStats({ servedCount: 0, skippedCount: 0, averageServiceTimeSeconds: 0 });
             }
@@ -247,12 +265,17 @@ export function useCounter(
             console.error("Stats fetch error:", err);
             if (!isMountedRef.current) return;
             setStats({ servedCount: 0, skippedCount: 0, averageServiceTimeSeconds: 0 });
+            if (isCounterUnavailableError(err)) {
+                setCounterUnavailable(true);
+                setError("Assigned counter not found. Please ask an admin to reassign your counter.");
+                setErrorCode("UNKNOWN_ERROR");
+            }
         } finally {
             if (isMountedRef.current) {
                 setStatsLoading(false);
             }
         }
-    }, [counterId]);
+    }, [counterId, counterUnavailable, isCounterUnavailableError]);
 
     const scheduleDashboardRefresh = useCallback(() => {
         if (dashboardDebounceTimeoutRef.current !== null) {
@@ -270,6 +293,7 @@ export function useCounter(
     }, [fetchDashboard]);
 
     useEffect(() => {
+        if (counterUnavailable) return;
         void fetchStats();
 
         const intervalId = window.setInterval(() => {
@@ -279,7 +303,7 @@ export function useCounter(
         return () => {
             window.clearInterval(intervalId);
         };
-    }, [fetchStats]);
+    }, [fetchStats, counterUnavailable]);
 
     useEffect(() => {
         const calledEvent = queueRefreshSignals?.latestCalledToken;
@@ -380,7 +404,7 @@ export function useCounter(
     }, [queueRefreshSignals?.latestReassignment, counterId, scheduleDashboardRefresh]);
 
     const callNext = useCallback(async () => {
-        if (counterId == null) {
+        if (counterId == null || counterUnavailable) {
             setError("Counter not configured. Please contact an administrator.");
             setErrorCode("UNKNOWN_ERROR");
             return;
@@ -418,9 +442,15 @@ export function useCounter(
                 setLoading(false);
             }
         }
-    }, [counterId, fetchDashboard, fetchStats]);
+    }, [counterId, counterUnavailable, fetchDashboard, fetchStats]);
 
     const serveToken = useCallback(async () => {
+        if (counterUnavailable) {
+            setServeError("Assigned counter not found. Please contact an administrator.");
+            setServeRetryable(false);
+            return;
+        }
+
         if (counterId == null || !calledToken) {
             setServeError("No token is currently being served.");
             setServeRetryable(false);
@@ -470,9 +500,15 @@ export function useCounter(
                 setServeLoading(false);
             }
         }
-    }, [calledToken, counterId, fetchDashboard, fetchStats]);
+    }, [calledToken, counterId, counterUnavailable, fetchDashboard, fetchStats]);
 
     const skipToken = useCallback(async () => {
+        if (counterUnavailable) {
+            setSkipError("Assigned counter not found. Please contact an administrator.");
+            setSkipRetryable(false);
+            return;
+        }
+
         if (counterId == null || !calledToken) {
             setSkipError("No token is currently being served.");
             setSkipRetryable(false);
@@ -522,14 +558,14 @@ export function useCounter(
                 setSkipLoading(false);
             }
         }
-    }, [calledToken, counterId, fetchDashboard, fetchStats]);
+    }, [calledToken, counterId, counterUnavailable, fetchDashboard, fetchStats]);
 
     const clearActionOutcome = useCallback(() => {
         setActionOutcome(null);
     }, []);
 
     const reassignToken = useCallback(async (tokenId: number, targetCounterId: number, reason?: string) => {
-        if (counterId == null) {
+        if (counterId == null || counterUnavailable) {
             if (isMountedRef.current) {
                 setReassignError("Counter not configured. Please contact an administrator.");
             }
@@ -573,7 +609,7 @@ export function useCounter(
             }
         }
         return false;
-    }, [counterId, fetchDashboard, fetchStats]);
+    }, [counterId, counterUnavailable, fetchDashboard, fetchStats]);
 
     const reset = useCallback(() => {
         setCalledToken(null);
@@ -594,6 +630,7 @@ export function useCounter(
         setStats({ servedCount: 0, skippedCount: 0, averageServiceTimeSeconds: 0 });
         setDashboardLoading(false);
         setStatsLoading(false);
+        setCounterUnavailable(false);
         setDashboardLastUpdatedAt(null);
     }, []);
 
@@ -623,6 +660,7 @@ export function useCounter(
         stats,
         dashboardLoading,
         statsLoading,
+        counterUnavailable,
         dashboardLastUpdatedAt,
         fetchDashboard,
         fetchStats,

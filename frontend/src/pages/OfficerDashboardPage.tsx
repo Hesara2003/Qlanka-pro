@@ -40,6 +40,8 @@ export default function OfficerDashboardPage() {
         skipError,
         waitingTokens,
         stats,
+        counterUnavailable,
+        error,
         calledToken,
         dashboardLastUpdatedAt,
         fetchDashboard,
@@ -142,6 +144,14 @@ export default function OfficerDashboardPage() {
                             </div>
                             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest italic">Counter #{user?.counterId}</p>
                         </div>
+
+                        {counterUnavailable && (
+                            <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
+                                <p className="text-[11px] font-bold uppercase tracking-wider text-amber-700">
+                                    {error || "Assigned counter is unavailable. Ask an admin to reassign your counter."}
+                                </p>
+                            </div>
+                        )}
 
                         <AnimatePresence mode="wait">
                             {!calledToken ? (
