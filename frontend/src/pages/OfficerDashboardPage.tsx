@@ -40,6 +40,9 @@ export default function OfficerDashboardPage() {
         skipError,
         waitingTokens,
         stats,
+        dashboard,
+        counterUnavailable,
+        error,
         calledToken,
         dashboardLastUpdatedAt,
         fetchDashboard,
@@ -54,6 +57,8 @@ export default function OfficerDashboardPage() {
 
     const displayStats = stats;
     const { lastUpdatedText } = useLastUpdated(dashboardLastUpdatedAt || lastConnectedAt);
+    const displayedCounterId = counterUnavailable ? null : (dashboard?.counterId ?? user?.counterId ?? null);
+    const tokenActionInProgress = serveLoading || skipLoading;
 
     useEffect(() => {
         if (reconnectNonce <= 0) return;
@@ -140,8 +145,18 @@ export default function OfficerDashboardPage() {
                                  <h2 className="text-lg font-black tracking-tight text-gray-900">Workstation</h2>
                                  <span className="px-2 py-0.5 bg-emerald-50 text-emerald-500 rounded-full text-[9px] font-black uppercase tracking-widest">Active</span>
                             </div>
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest italic">Counter #{user?.counterId}</p>
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest italic">
+                                {displayedCounterId ? `Counter #${displayedCounterId}` : "Counter Unassigned"}
+                            </p>
                         </div>
+
+                        {counterUnavailable && (
+                            <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
+                                <p className="text-[11px] font-bold uppercase tracking-wider text-amber-700">
+                                    {error || "Assigned counter is unavailable. Ask an admin to reassign your counter."}
+                                </p>
+                            </div>
+                        )}
 
                         <AnimatePresence mode="wait">
                             {!calledToken ? (
@@ -185,14 +200,14 @@ export default function OfficerDashboardPage() {
                                     <div className="grid grid-cols-2 gap-4">
                                         <button 
                                             onClick={serveToken}
-                                            disabled={serveLoading}
+                                            disabled={tokenActionInProgress}
                                             className="h-16 bg-[#78d64b] text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-emerald-500 transition-all flex items-center justify-center gap-2"
                                         >
                                             {serveLoading ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" /> : "Serve"}
                                         </button>
                                         <button 
                                             onClick={skipToken}
-                                            disabled={skipLoading}
+                                            disabled={tokenActionInProgress}
                                             className="h-16 bg-white border border-gray-200 text-gray-900 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
                                         >
                                             {skipLoading ? <div className="w-4 h-4 border-2 border-gray-900/20 border-t-gray-900 rounded-full animate-spin" /> : "Skip"}

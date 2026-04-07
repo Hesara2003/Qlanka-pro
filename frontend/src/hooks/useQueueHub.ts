@@ -172,7 +172,8 @@ export function useQueueHub(options: UseQueueHubOptions): UseQueueHubResult {
     const onReconnectedRef = useRef<UseQueueHubOptions["onReconnected"]>(onReconnected);
 
     const effectiveCenterId = (centerId ?? Number(sessionStorage.getItem(SESSION_CENTER_ID_KEY) || "")) || undefined;
-    const effectiveCounterId = (counterId ?? Number(sessionStorage.getItem(SESSION_COUNTER_ID_KEY) || "")) || undefined;
+    // Do not fall back to a cached counter ID to avoid stale officer assignments.
+    const effectiveCounterId = (counterId && !Number.isNaN(counterId)) ? counterId : undefined;
     const hasValidCenterId = Boolean(effectiveCenterId && !Number.isNaN(effectiveCenterId));
     const hasValidCounterId = Boolean(effectiveCounterId && !Number.isNaN(effectiveCounterId));
     const canConnect = enabled && (hasValidCenterId || (isOfficer && hasValidCounterId));
@@ -401,6 +402,8 @@ export function useQueueHub(options: UseQueueHubOptions): UseQueueHubResult {
 
         if (effectiveCounterId) {
             sessionStorage.setItem(SESSION_COUNTER_ID_KEY, String(effectiveCounterId));
+        } else {
+            sessionStorage.removeItem(SESSION_COUNTER_ID_KEY);
         }
 
         const onReconnectedCallback = onReconnectedRef.current;
@@ -532,6 +535,8 @@ export function useQueueHub(options: UseQueueHubOptions): UseQueueHubResult {
 
         if (counterId && !Number.isNaN(counterId)) {
             sessionStorage.setItem(SESSION_COUNTER_ID_KEY, String(counterId));
+        } else {
+            sessionStorage.removeItem(SESSION_COUNTER_ID_KEY);
         }
 
         void connect();

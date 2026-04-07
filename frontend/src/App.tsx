@@ -19,6 +19,7 @@ import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import AdminServiceCentersPage from "./pages/AdminServiceCentersPage";
 import AdminCountersPage from "./pages/AdminCountersPage";
+import AdminEditServiceCenterPage from "./pages/AdminEditServiceCenterPage";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import AdminRoute from "./components/common/AdminRoute";
 import OfficerRoute from "./components/common/OfficerRoute";
@@ -79,6 +80,7 @@ function App() {
           <Route path="/admin" element={<AdminDashboardPage />} />
           <Route path="/admin/service-centers" element={<AdminServiceCentersPage />} />
           <Route path="/admin/service-centers/create" element={<AdminCreateServiceCenterPage />} />
+          <Route path="/admin/service-centers/:centerId/edit" element={<AdminEditServiceCenterPage />} />
           <Route path="/admin/users" element={<AdminUsersPage />} />
           <Route path="/admin/counters" element={<AdminCountersPage />} />
         </Route>

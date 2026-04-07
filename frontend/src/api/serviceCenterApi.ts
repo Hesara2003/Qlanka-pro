@@ -6,6 +6,8 @@ import type {
   ServiceCenterApiError,
   ApiResponse,
   CreateServiceCenterRequest,
+  CenterLocation,
+  UpsertLocationRequest,
 } from "../types/serviceCenter";
 
 // Error handling utility
@@ -141,5 +143,61 @@ export async function checkServiceCenterAvailability(
   } catch (error) {
     console.error("Error checking availability:", error);
     return false;
+  }
+}
+
+/**
+ * Update active/inactive status for a service center (admin only)
+ */
+export async function updateServiceCenterStatus(
+  centerId: number,
+  isActive: boolean,
+  reason = "Updated via admin console"
+): Promise<ServiceCenter> {
+  try {
+    const { data } = await axiosInstance.patch<ApiResponse<ServiceCenter>>(
+      `/api/service-centers/${centerId}/status`,
+      { isActive, reason }
+    );
+    return data.data;
+  } catch (error) {
+    if (error instanceof AxiosError) throw error;
+    throw new Error(extractErrorMessage(error));
+  }
+}
+
+/**
+ * Get structured location details for a service center
+ */
+export async function getServiceCenterLocation(
+  centerId: number
+): Promise<CenterLocation> {
+  try {
+    const { data } = await axiosInstance.get<ApiResponse<CenterLocation>>(
+      `/api/service-centers/${centerId}/location`
+    );
+    return data.data;
+  } catch (error) {
+    if (error instanceof AxiosError) throw error;
+    throw new Error(extractErrorMessage(error));
+  }
+}
+
+/**
+ * Create or update location for a service center (admin only)
+ */
+export async function upsertServiceCenterLocation(
+  centerId: number,
+  payload: UpsertLocationRequest
+): Promise<CenterLocation> {
+  try {
+    const { data } = await axiosInstance.put<ApiResponse<CenterLocation>>(
+      `/api/service-centers/${centerId}/location`,
+      payload
+    );
+    return data.data;
+  } catch (error) {
+    if (error instanceof AxiosError) throw error;
+    throw new Error(extractErrorMessage(error));
   }
 }

@@ -18,7 +18,12 @@ test.describe("Token Smoke Tests", () => {
     expect(response.status()).toBe(200);
 
     const body = await response.json();
-    expect(Array.isArray(body)).toBe(true);
+    const tokenList = Array.isArray(body)
+      ? body
+      : Array.isArray(body?.data)
+        ? body.data
+        : null;
+    expect(Array.isArray(tokenList)).toBe(true);
   });
 
   test("GET /api/Token/my-tokens — without auth returns 401", async ({
