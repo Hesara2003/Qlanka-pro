@@ -1,12 +1,7 @@
-using Microsoft.IdentityModel.Tokens;
 using QueueLanka.Identity.Data;
 using QueueLanka.Identity.DTOs.Auth;
 using QueueLanka.Shared.Exceptions;
 using QueueLanka.Identity.Models;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace QueueLanka.Identity.Services;
 
@@ -17,12 +12,18 @@ public class AuthService : IAuthService
     private readonly IUserRepository              _users;
     private readonly IEmailVerificationService    _emailVerification;
     private readonly IConfiguration               _config;
+    private readonly IWso2IdentityService          _wso2;
 
-    public AuthService(IUserRepository users, IEmailVerificationService emailVerification, IConfiguration config)
+    public AuthService(
+        IUserRepository users,
+        IEmailVerificationService emailVerification,
+        IConfiguration config,
+        IWso2IdentityService wso2)
     {
         _users             = users;
         _emailVerification = emailVerification;
         _config            = config;
+        _wso2              = wso2;
     }
 
     // ── Register ───────────────────────────────────────────────
@@ -63,8 +64,15 @@ public class AuthService : IAuthService
 
         var userId = await _users.CreateAsync(user);
 
-        // Email verification disabled — users are auto-verified on registration
-        // await _emailVerification.SendVerificationAsync(userId, user.Email, user.Username);
+        // Provision the user into WSO2 IS via SCIM2.
+        // This is non-blocking: a failure is logged but does NOT roll back the MySQL record.
+        // Operators can re-sync manually using the SCIM2 API if needed.
+        await _wso2.ProvisionUserAsync(
+            username: user.Username,
+            password: dto.Password,   // raw password needed for WSO2 SCIM2 provisioning
+            email:    user.Email,
+            role:     user.Role,
+            centerId: user.CenterId);
 
         return new RegisterResponseDto
         {
@@ -79,21 +87,20 @@ public class AuthService : IAuthService
     {
         var user = await _users.GetByUsernameAsync(dto.Username);
 
-        // Always use the same generic message — don't reveal which field failed
+        // Step 1: Local credential check (BCrypt) — defence-in-depth.
+        // This prevents unnecessary ROPC calls to WSO2 IS for known-bad credentials
+        // and ensures the account exists and is active before we hit the IdP.
         if (user is null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             throw new InvalidCredentialsException();
-
-        // Email verification disabled
-        // if (!user.IsEmailVerified)
-        //     throw new EmailNotVerifiedException();
 
         if (!user.IsActive)
             throw new AccountDisabledException();
 
-        var accessToken  = GenerateJwt(user);
-        var refreshToken = GenerateRefreshToken();
-        var expiryMins   = _config.GetValue<int>("Jwt:AccessTokenExpiryMinutes");
+        // Step 2: Exchange credentials with WSO2 IS via ROPC.
+        // WSO2 IS is the authoritative token issuer; its access token is returned to the client.
+        var wso2Result = await _wso2.GetTokenAsync(dto.Username, dto.Password);
 
+        // Step 3: For officers, look up their assigned counter from the queue database.
         int? counterId = null;
         if (user.Role.Equals("officer", StringComparison.OrdinalIgnoreCase))
         {
@@ -103,57 +110,19 @@ public class AuthService : IAuthService
                 var queueConnStr = identityConnStr.Replace("identity_db", "queue_db");
                 using var conn = new MySqlConnector.MySqlConnection(queueConnStr);
                 await conn.OpenAsync();
-                var sql = "SELECT counter_id FROM queue_db.counters WHERE assigned_officer_user_id = @UserId LIMIT 1";
+                const string sql = "SELECT counter_id FROM queue_db.counters WHERE assigned_officer_user_id = @UserId LIMIT 1";
                 counterId = await Dapper.SqlMapper.QueryFirstOrDefaultAsync<int?>(conn, sql, new { UserId = user.UserId });
             }
         }
 
         return new LoginResponseDto
         {
-            Token        = accessToken,
-            RefreshToken = refreshToken,
-            ExpiresIn    = expiryMins * 60,
+            Token        = wso2Result.AccessToken,
+            RefreshToken = wso2Result.RefreshToken,
+            ExpiresIn    = wso2Result.ExpiresIn,
             Role         = user.Role.ToLowerInvariant(),
             CounterId    = counterId
         };
     }
 
-    // ── Private helpers ────────────────────────────────────────
-    private string GenerateJwt(User user)
-    {
-        var secret   = _config["Jwt:Secret"]!;
-        var issuer   = _config["Jwt:Issuer"];
-        var audience = _config["Jwt:Audience"];
-        var expiryMins = _config.GetValue<int>("Jwt:AccessTokenExpiryMinutes");
-
-        var key   = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        var claims = new List<Claim>
-        {
-            new(JwtRegisteredClaimNames.Sub,      user.UserId.ToString()),
-            new(JwtRegisteredClaimNames.UniqueName, user.Username),
-            new(ClaimTypes.Role,                  user.Role),
-            new(JwtRegisteredClaimNames.Jti,      Guid.NewGuid().ToString())
-        };
-
-        if (user.CenterId.HasValue)
-            claims.Add(new Claim("centerId", user.CenterId.Value.ToString()));
-
-        var token = new JwtSecurityToken(
-            issuer:             issuer,
-            audience:           audience,
-            claims:             claims,
-            notBefore:          DateTime.UtcNow,
-            expires:            DateTime.UtcNow.AddMinutes(expiryMins),
-            signingCredentials: creds);
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
-    }
-
-    private static string GenerateRefreshToken()
-    {
-        var bytes = RandomNumberGenerator.GetBytes(64);
-        return Convert.ToBase64String(bytes);
-    }
 }
