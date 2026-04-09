@@ -90,3 +90,16 @@ Ensure the `Wso2` block is configured in your `appsettings.json` across all back
 
 ## 📊 Observability
 Traffic passing through WSO2 APIM is monitored using the platform's integrated Prometheus/Grafana stack, providing insights into API latency, error rates, and usage patterns.
+
+---
+
+## 📸 Evidence
+
+### API Publisher - Runtime Configurations
+![API Publisher Setup](Screen%20Shot%201.jpeg)
+
+### Developer Portal - Production Keys
+![Dev Portal Setup](Screen%20Shot%202.jpeg)
+
+### API Publisher - Resources & Rate Limiting
+![API Resources](Screen%20Shot%203.jpeg)
