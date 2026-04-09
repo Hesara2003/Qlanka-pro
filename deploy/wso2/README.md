@@ -1,89 +1,195 @@
-# WSO2 Identity Server — Qlanka-Pro Setup Guide
+# Qlanka-Pro WSO2 Integration Guide
 
-WSO2 IS is deployed on Azure at `https://20.193.250.12:9443`.  
-Admin console: `https://20.193.250.12:9443/carbon`
+This document reflects the current implementation in this repository for both:
 
----
+- WSO2 Identity Server (authentication + user provisioning)
+- WSO2 API Manager (API publishing/governance artifacts)
 
-## 1. Initial Login
+Current environment values in code and docs point to:
 
-```
-URL:      https://20.193.250.12:9443/carbon
-Username: admin
-Password: <admin password>
-```
+- Base URL: https://20.193.250.12:9443
+- Carbon console: https://20.193.250.12:9443/carbon
+- Publisher: https://20.193.250.12:9443/publisher/
+- Dev Portal: https://20.193.250.12:9443/devportal/
+- Admin Portal: https://20.193.250.12:9443/admin/
 
----
+## 1. What The Codebase Currently Does
 
-## 2. Create the Qlanka Application (Service Provider)
+### 1.1 Authentication mode
 
-> This step registers Qlanka as an OAuth2 client so the backend can use the ROPC grant.
+All backend services run a dual JWT strategy:
 
-1. Navigate to **Identity → Service Providers → Add**
-2. Name: `QlankaBackend`
-3. Click **Register**
-4. Go to **Inbound Authentication Configuration → OAuth/OpenID Connect** → **Configure**
-5. Set:
-   - **Grant Types**: ✅ `Resource Owner Password` (ROPC), ✅ `Refresh Token`
-   - **Callback URL**: `https://your-frontend-url/auth/callback` *(not used for ROPC but required)*
-   - **Allowed Audiences**: leave default or add your frontend URL
-6. Click **Update**
-7. Note the generated `Client ID` and `Client Secret` — place these in:
-   - `backend/QueueLanka.Identity/appsettings.json` → `Wso2:ClientId` and `Wso2:ClientSecret`
-   - Docker/Azure env vars: `Wso2__ClientId`, `Wso2__ClientSecret`
+- `DynamicJwt` policy chooses `Wso2Jwt` or `LocalJwt`
+- WSO2 token detection uses issuer and token payload hints (for example `azp`)
+- If `Wso2:Enabled=false`, services fall back to local symmetric JWT validation
 
-> **Current Client ID**: `bOhc0ENWBPxvw_sXu8fxHv_Rz2Aa`
+Services using this pattern:
 
----
+- QueueLanka.Gateway
+- QueueLanka.Identity
+- QueueLanka.Queue
+- QueueLanka.ServiceCenter
 
-## 3. Create Application Roles
+### 1.2 Login flow
 
-> WSO2 IS uses **groups** for role-based access. Create groups matching the app roles.
+Identity login endpoint: `POST /api/auth/login`
 
-Navigate to **Identity → User and Role Management → Roles → Add Role**:
+Runtime flow in Identity service:
 
-| Role Name | Description                   |
-|-----------|-------------------------------|
-| `citizen` | End-user booking appointments |
-| `officer`  | Service counter officer       |
-| `admin`   | Platform administrator        |
+1. Validate local user/password in MySQL (BCrypt)
+2. Exchange credentials with WSO2 at `POST /oauth2/token` using ROPC
+3. Return WSO2 `access_token` and `refresh_token` to frontend
+4. Return `counterId` for officers from queue database lookup
 
----
+### 1.3 Registration and SCIM2 provisioning
 
-## 4. Configure Role Claim in Access Token
+Identity registration endpoint: `POST /api/auth/register`
 
-> Without this, the `role` claim won't appear in the WSO2 access token.
+Runtime behavior:
 
-1. Go to **Service Providers** → `QlankaBackend` → **Edit**
-2. Under **Claim Configuration** → **Requested Claims** → **Add Claim URI**
-3. Add:
-   - `http://wso2.org/claims/role` → map to local claim `Role`
-4. Under **Subject Claim URI**: set to `http://wso2.org/claims/username`
-5. Enable **Always include claims in id token and userinfo** if needed
+1. Create user in local identity MySQL
+2. Call WSO2 SCIM2 `POST /scim2/Users`
+3. Assign role via SCIM `groups` (`citizen`, `officer`, `admin`)
+4. If role is officer and `centerId` exists, send custom schema payload:
+   `urn:scim:wso2:qlanka:1.0` with `centerId`
+5. SCIM2 failures are logged and treated as non-fatal (manual sync may be required)
 
-Alternatively, configure via the **Identity Server Management Console → OIDC Scopes**:
-- Edit the `openid` scope to include the `role` claim.
+### 1.4 Frontend token/claim handling
 
----
+Frontend auth context is WSO2-aware:
 
-## 5. Custom User Attribute: `centerId` (for Officers)
+- Handles role claims from `roles`, `role`, and legacy .NET claim URI
+- Filters WSO2 internal roles and keeps app roles (`citizen|officer|admin`)
+- Does not depend on WSO2 token for `centerId`; uses login API response value
 
-> Officers need a `centerId` attribute. This is stored in the Qlanka MySQL database, not in WSO2 IS.
-> The backend reads `centerId` from MySQL and returns it alongside the WSO2 token in the login response.
-> No WSO2 configuration is needed for this step.
+## 2. WSO2 Identity Server Setup
 
----
+### 2.1 Create Service Provider
 
-## 6. SCIM2 API — User Provisioning on Registration
+Create a service provider (for example `QlankaBackend`) and configure OAuth2/OIDC:
 
-The backend calls WSO2 IS SCIM2 to create users when citizens register.  
-This uses HTTP Basic Auth with the admin credentials.
+- Enable grant types:
+  - Resource Owner Password (ROPC)
+  - Refresh Token
+- Save generated `Client ID` and `Client Secret`
 
-**Test a SCIM2 user creation manually:**
+Use those in Identity configuration:
+
+- `Wso2:ClientId`
+- `Wso2:ClientSecret`
+
+### 2.2 Required groups/roles
+
+Create groups in WSO2 matching application roles exactly:
+
+- `citizen`
+- `officer`
+- `admin`
+
+Identity SCIM provisioning sends these as SCIM group values.
+
+### 2.3 Role claim in access token
+
+Backend authorization policies expect role claims. Ensure tokens include role claim mapping.
+
+Recommended:
+
+- Include `http://wso2.org/claims/role` in the OIDC scope/claim mapping for the service provider
+- Keep subject claim stable (commonly username)
+
+### 2.4 Optional custom officer claim schema
+
+If you want `centerId` stored in WSO2 user attributes as well, define corresponding extension schema support for:
+
+- `urn:scim:wso2:qlanka:1.0`
+- attribute: `centerId`
+
+Note: the current frontend logic does not require `centerId` in WSO2 token; it uses API response data.
+
+## 3. API Manager Integration In Repo
+
+The repository includes an APIM import-ready OpenAPI contract:
+
+- `officer-api.yaml`
+
+Notable WSO2 extensions in that file:
+
+- `x-wso2-application-security`
+- `x-wso2-production-endpoints`
+- `x-wso2-sandbox-endpoints`
+- `x-wso2-basePath: /officer/v1`
+- OAuth2 security scheme with authorization URL under current IS host
+
+This file is the source artifact for publishing officer-facing API surfaces in APIM.
+
+## 4. Configuration Matrix (From Current Code)
+
+### 4.1 Common WSO2 keys (all auth-validating services)
+
+| Key | Purpose |
+|---|---|
+| `Wso2:Enabled` | Enable WSO2 token validation path |
+| `Wso2:Authority` | OIDC authority for metadata/JWKS discovery |
+| `Wso2:ValidIssuer` | Expected `iss` claim |
+| `Wso2:Audience` | Expected audience (`aud`) |
+| `Wso2:RequireHttpsMetadata` | Enforce HTTPS metadata retrieval |
+| `Wso2:AllowInvalidCertificate` | Dev-only bypass for self-signed certs |
+
+### 4.2 Identity-only keys (ROPC + SCIM2 client)
+
+| Key | Purpose |
+|---|---|
+| `Wso2:ClientId` | OAuth2 client id for token exchange |
+| `Wso2:ClientSecret` | OAuth2 client secret for token exchange |
+| `Wso2:BaseUrl` | Base URL used for `/oauth2/token` and `/scim2/Users` calls |
+| `Wso2:AdminUsername` | Basic auth user for SCIM2 provisioning |
+| `Wso2:AdminPassword` | Basic auth password for SCIM2 provisioning |
+
+### 4.3 Environment variable equivalents
+
+Use ASP.NET double underscore mapping:
+
+- `Wso2__Enabled`
+- `Wso2__Authority`
+- `Wso2__ValidIssuer`
+- `Wso2__Audience`
+- `Wso2__RequireHttpsMetadata`
+- `Wso2__AllowInvalidCertificate`
+- `Wso2__ClientId`
+- `Wso2__ClientSecret`
+- `Wso2__BaseUrl`
+- `Wso2__AdminUsername`
+- `Wso2__AdminPassword`
+
+## 5. Known Runtime Values In This Repo
+
+Current appsettings files include:
+
+- `Audience`: `bOhc0ENWBPxvw_sXu8fxHv_Rz2Aa`
+- `ValidIssuer`: `https://20.193.250.12:9443/oauth2/token`
+
+Authority currently appears in two forms in config:
+
+- Base host form: `https://20.193.250.12:9443`
+- Token-path form: `https://20.193.250.12:9443/oauth2/token`
+
+Keep this consistent per environment to avoid metadata/issuer mismatches.
+
+## 6. Smoke Tests You Can Run
+
+### 6.1 ROPC test
 
 ```bash
-curl -X POST https://20.193.250.12:9443/scim2/Users \
-  -H "Authorization: Basic $(echo -n 'admin:<password>' | base64)" \
+curl -X POST "https://20.193.250.12:9443/oauth2/token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=password&username=<username>&password=<password>&scope=openid profile&client_id=<client_id>&client_secret=<client_secret>"
+```
+
+### 6.2 SCIM2 create user test
+
+```bash
+curl -X POST "https://20.193.250.12:9443/scim2/Users" \
+  -H "Authorization: Basic <base64(admin:password)>" \
   -H "Content-Type: application/json" \
   -d '{
     "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User"],
@@ -94,75 +200,48 @@ curl -X POST https://20.193.250.12:9443/scim2/Users \
   }'
 ```
 
----
-
-## 7. ROPC Token Test
-
-**Test the ROPC flow directly:**
+### 6.3 Service-level login test
 
 ```bash
-curl -X POST https://20.193.250.12:9443/oauth2/token \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "grant_type=password&username=<user>&password=<pass>&scope=openid profile&client_id=bOhc0ENWBPxvw_sXu8fxHv_Rz2Aa&client_secret=<secret>"
+curl -X POST "http://localhost:5001/api/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"<username>","password":"<password>"}'
 ```
 
-Expected response:
-```json
-{
-  "access_token": "eyJ...",
-  "refresh_token": "...",
-  "expires_in": 3600,
-  "token_type": "Bearer",
-  "scope": "openid profile"
-}
-```
+## 7. Troubleshooting
 
----
+### 7.1 `WSO2_UNAVAILABLE` from Identity
 
-## 8. JWKS Endpoint (for backend JWT validation)
+Meaning: Identity service cannot reach WSO2 token endpoint.
 
-All backend services validate WSO2-issued JWTs against:
+Check:
 
-```
-https://20.193.250.12:9443/oauth2/jwks
-```
+- `Wso2:BaseUrl` reachability
+- TLS certificate validity
+- `Wso2:AllowInvalidCertificate` only for non-production self-signed setups
 
-The OIDC discovery document is at:
-```
-https://20.193.250.12:9443/oauth2/token/.well-known/openid-configuration
-```
+### 7.2 `401/400` during login with valid local user
 
----
+Meaning: local password passed but WSO2 ROPC rejected credentials/client.
 
-## 9. Environment Variable Reference
+Check:
 
-| Variable | Service | Description |
-|---|---|---|
-| `Wso2__Enabled` | All | `true` to enable WSO2 mode |
-| `Wso2__Authority` | All | WSO2 IS base URL for JWKS discovery |
-| `Wso2__ValidIssuer` | All | Expected `iss` claim in tokens |
-| `Wso2__Audience` | All | Expected `aud` claim (client_id) |
-| `Wso2__ClientId` | Identity only | OAuth2 client ID |
-| `Wso2__ClientSecret` | Identity only | OAuth2 client secret (**keep secret**) |
-| `Wso2__BaseUrl` | Identity only | Base URL for SCIM2 calls |
-| `Wso2__AdminUsername` | Identity only | WSO2 admin user for SCIM2 basic auth |
-| `Wso2__AdminPassword` | Identity only | WSO2 admin password (**keep secret**) |
-| `Wso2__AllowInvalidCertificate` | All | `true` only for self-signed certs in dev |
+- WSO2 user exists (or SCIM sync completed)
+- ROPC grant enabled for service provider
+- `Wso2:ClientId` / `Wso2:ClientSecret`
 
----
+### 7.3 Token accepted by one service and rejected by another
 
-## 10. Secrets Management
+Check consistency of these keys across Gateway, Identity, Queue, ServiceCenter:
 
-> [!CAUTION]
-> Never commit `ClientSecret` or `AdminPassword` to source control.
+- `Wso2:Authority`
+- `Wso2:ValidIssuer`
+- `Wso2:Audience`
+- `Wso2:RequireHttpsMetadata`
 
-Store secrets in Azure:
-- **Azure Key Vault** (recommended for production)
-- **Azure Container Apps Secrets** or **App Service Application Settings**
-- **Docker Swarm Secrets** for compose-based deployments
+## 8. Security Notes
 
-Set as environment variables using the double-underscore notation:
-```
-Wso2__ClientSecret=your_secret_here
-Wso2__AdminPassword=your_admin_password
-```
+- Never commit real values for `Wso2:ClientSecret` or `Wso2:AdminPassword`
+- Store secrets in environment/secret stores (Key Vault, Container Apps secrets, etc.)
+- Rotate any credentials that were ever committed to source history
+- Keep `AllowInvalidCertificate=false` in production
