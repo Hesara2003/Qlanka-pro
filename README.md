@@ -1,37 +1,75 @@
-# Qlanka-pro: WSO2 Identity Server Integration
+# Qlanka-pro: WSO2 Identity Server & API Manager Integration
 
-Qlanka-Pro is a smart queue management platform. This branch (`wso2`) features a full integration with **WSO2 Identity Server 7.0** as the authoritative OIDC/Identity Provider.
-
----
-
-## 🔐 WSO2 Identity Server Integration
-
-The manual symmetric-key JWT authentication has been replaced with a standards-compliant OIDC flow using WSO2 IS.
-
-### High-Level Architecture
-- **Identity Provider**: WSO2 IS 7.0 (Standalone on Azure)
-- **Authentication Flow**: Backend-mediated **Resource Owner Password Credentials (ROPC)**.
-- **User Provisioning**: Automatic **SCIM 2.0** mirroring from local MySQL to WSO2 IS.
-- **Token Validation**: **Asymmetric JWKS-based validation** across all microservices.
-- **Backward Compatibility**: Dual-scheme authentication allows both legacy local tokens and new WSO2 tokens.
-
-### Core Components
-- **Identity Service**: Now acts as a gateway to WSO2 IS. Uses `IWso2IdentityService` to exchange credentials for tokens and provision users via SCIM2.
-- **API Gateway**: Validates all incoming Bearer tokens using WSO2's JWKS endpoint (`/oauth2/jwks`).
-- **Domain Services (Queue/ServiceCenter)**: Implemented `DynamicJwt` policy to handle WSO2 tokens with role mapping.
-- **Frontend**: `AuthContext.tsx` now handles normalized claim parsing for WSO2 JWT structures (`sub`, `roles`, `azp`).
+Qlanka-Pro is an enterprise-grade smart queue management platform. This branch (`wso2`) features a full integration with the **WSO2 Identity Server 7.0** and **WSO2 API Manager 4.x**.
 
 ---
 
-## 🚀 Getting Started with WSO2
+## 🔐 WSO2 Identity Server (OIDC/IdP)
 
-### 1. Prerequisites
-- Access to WSO2 Identity Server: `https://20.193.250.12:9443`
-- Configured Service Provider in WSO2 (ROPC enabled).
-- Configured SCIM2 attributes.
+The platform uses WSO2 Identity Server as the authoritative Identity Provider, shifting from manual JWT issuance to a standards-compliant OIDC flow.
 
-### 2. Configuration
-Update `appsettings.json` in `QueueLanka.Identity`, `QueueLanka.Gateway`, `QueueLanka.Queue`, and `QueueLanka.ServiceCenter`:
+### Identity Features
+- **Authentication**: Backend-mediated **Resource Owner Password Credentials (ROPC)** flow.
+- **Provisioning**: Automatic user mirroring from the local MySQL database to WSO2 IS via **SCIM 2.0**.
+- **Asymmetric Validation**: Microservices validate tokens using WSO2's **JWKS endpoint**, ensuring security via public/private key pairs.
+- **Dual-Scheme Auth**: A `DynamicJwt` policy allows both legacy local tokens and WSO2 tokens to coexist during transition periods.
+
+---
+
+## 🚀 WSO2 API Manager (Gateway & Governance)
+
+All API traffic is governed by **WSO2 API Manager**, which acts as the primary entry point for the frontend and external clients.
+
+### API Management Features
+- **API Gateway**: Provides a single, secure endpoint for all microservices.
+- **Rate Limiting & Throttling**: Protects backend services from spikes and abuse.
+- **SignalR Support**: Dedicated WebSocket API definitions facilitate real-time queue updates.
+- **Lifecycle Management**: APIs are versioned and managed through the WSO2 Publisher and Developer Portal.
+
+---
+
+## 🏗️ System Architecture
+
+```mermaid
+flowchart TD
+    Client[React Frontend] -->|API Requests| APIM[WSO2 API Manager]
+    APIM -->|OAuth/OIDC Check| WSO2IS[WSO2 Identity Server]
+    
+    APIM -->|Authenticated Route| ID[Identity Service]
+    APIM -->|Authenticated Route| Q[Queue Service]
+    APIM -->|Authenticated Route| SC[Service Center Service]
+    
+    ID -->|SCIM2 Provisioning| WSO2IS
+    ID -->|Auth Check| DB[(MySQL)]
+    Q --> DB
+    SC --> DB
+    
+    Q -.->|SignalR WebSockets| Client
+```
+
+---
+
+## 📂 Repository Structure
+
+```
+Qlanka-pro/
+├── backend/
+│   ├── QueueLanka.Identity/      # WSO2 IS Integration (ROPC/SCIM2)
+│   ├── QueueLanka.Gateway/       # YARP Gateway (Secondary Entry Point)
+│   ├── QueueLanka.Queue/         # Real-time Queue Service
+│   └── QueueLanka.ServiceCenter/ # Service Center Management
+├── frontend/
+│   └── src/context/AuthContext.tsx # WSO2/OIDC Claim Normalization
+└── deploy/
+    └── wso2/                     # WSO2 IS & APIM Setup Guides
+```
+
+---
+
+## 🛠️ Getting Started with WSO2
+
+### 1. Configuration
+Ensure the `Wso2` block is configured in your `appsettings.json` across all backend services:
 
 ```json
 "Wso2": {
@@ -44,60 +82,11 @@ Update `appsettings.json` in `QueueLanka.Identity`, `QueueLanka.Gateway`, `Queue
 }
 ```
 
-### 3. Setup Guide
-For detailed configuration steps, see the **[WSO2 Setup Guide](deploy/wso2/README.md)**.
-
----
-
-## 📂 Repository Structure
-
-```
-Qlanka-pro/
-├── backend/
-│   ├── QueueLanka.Identity/      # WSO2 SCIM2 & ROPC Logic
-│   ├── QueueLanka.Gateway/       # JWKS Validation Chokepoint
-│   ├── QueueLanka.Queue/         # WSO2 Auth Enabled
-│   └── QueueLanka.ServiceCenter/ # WSO2 Auth Enabled
-├── frontend/
-│   └── src/context/AuthContext.tsx # WSO2 Claim Normalization
-└── deploy/
-    └── wso2/                     # WSO2 Integration Docs & Setup
-```
-
----
-
-## 🏗️ System Architecture
-
-```mermaid
-flowchart TD
-    Client[React Frontend] -->|Login| ID[Identity Service]
-    ID -->|ROPC| WSO2[WSO2 Identity Server]
-    ID -->|SCIM2| WSO2
-    ID -->|Save| DB[(MySQL)]
-    
-    Client -->|Authenticated Request| GW[API Gateway]
-    GW -->|JWKS Validation| WSO2
-    GW -->|Route| Services[Domain Services]
-    Services -->|Policy Check| WSO2
-```
-
----
-
-## 🛠️ Developer Workflow (WSO2 Branch)
-
-1. **Authentication**: Use existing React forms. The backend handles the exchange.
-2. **Claims**: WSO2 tokens use `sub` for user ID and a `roles` array. The system maps these to the internal `citizen`, `officer`, and `admin` roles.
-3. **Provisioning**: Registering a user locally via the API automatically creates a corresponding user in WSO2 IS via SCIM2.
-
----
-
-## 📄 Documentation
-
-- **[Full WSO2 Implementation Guide](deploy/wso2/README.md)**
-- **[Original Platform README](docs/README_ORIGINAL.md)** (Backup of legacy architecture)
+### 2. Documentation
+- **[WSO2 Setup Guide](deploy/wso2/README.md)**: Detailed steps for configuring Identity Server and API Manager.
+- **[Original README](docs/README_ORIGINAL.md)**: Platform background and legacy architecture.
 
 ---
 
 ## 📊 Observability
-
-Metrics for WSO2 latency and authentication success rates are being integrated into the existing Prometheus/Grafana stack.
+Traffic passing through WSO2 APIM is monitored using the platform's integrated Prometheus/Grafana stack, providing insights into API latency, error rates, and usage patterns.
