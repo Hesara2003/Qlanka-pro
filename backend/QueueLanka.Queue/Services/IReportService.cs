@@ -17,7 +17,9 @@ public interface IReportService
         DateTime toDate,
         string? centerIds,
         string? metrics,
-        string? format = "csv");
+        string? format = "csv",
+        int? page = null,
+        int pageSize = 500);
 
     DailyCenterSummaryRequestDto CreateCenterDailySummaryRequest(
         int centerId,
@@ -30,5 +32,6 @@ public interface IReportService
     Task<List<DailyCenterSummaryRowDto>> GetCustomReportDataAsync(CustomReportRequestDto request);
     Task<CustomReportPreviewDto> GetCustomReportPreviewAsync(CustomReportRequestDto request);
     Task<(byte[] fileBytes, string fileName)> GenerateCustomReportCsvAsync(CustomReportRequestDto request);
+    Task StreamCustomReportCsvAsync(Stream output, CustomReportRequestDto request, CancellationToken cancellationToken = default);
     Task<(byte[] fileBytes, string fileName)> GenerateCustomReportPdfAsync(CustomReportRequestDto request);
 }

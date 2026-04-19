@@ -4,6 +4,10 @@ import axiosInstance from "./axiosInstance";
 export interface CustomReportPreviewDto {
     fromDate: string;
     toDate: string;
+    page: number;
+    pageSize: number;
+    totalRows: number;
+    totalPages: number;
     headers: string[];
     rows: string[][];
     totalRow?: string[];
@@ -103,13 +107,17 @@ export async function getCustomReportPreview(
     fromDate: string,
     toDate: string,
     centerIds: number[] = [],
-    metrics: string[] = []
+    metrics: string[] = [],
+    page = 1,
+    pageSize = 500
 ): Promise<CustomReportPreviewDto> {
     const params = {
         fromDate,
         toDate,
         centerIds: centerIds.length > 0 ? centerIds.join(",") : undefined,
-        metrics: metrics.length > 0 ? metrics.join(",") : undefined
+        metrics: metrics.length > 0 ? metrics.join(",") : undefined,
+        page,
+        pageSize
     };
 
     const response = await axiosInstance.get<CustomReportPreviewDto>("/api/reports/custom/preview", { params });
@@ -123,6 +131,8 @@ export async function downloadCustomReport(
         centerIds?: number[];
         metrics?: string[];
         format?: "csv" | "pdf";
+        page?: number;
+        pageSize?: number;
     }
 ): Promise<void> {
     const format = options?.format ?? "csv";
@@ -131,7 +141,9 @@ export async function downloadCustomReport(
         toDate,
         centerIds: options?.centerIds && options.centerIds.length > 0 ? options.centerIds.join(",") : undefined,
         metrics: options?.metrics && options.metrics.length > 0 ? options.metrics.join(",") : undefined,
-        format
+        format,
+        page: options?.page,
+        pageSize: options?.pageSize
     };
 
     const response = await axiosInstance.get("/api/reports/custom", {

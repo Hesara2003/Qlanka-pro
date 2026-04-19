@@ -7,6 +7,7 @@ using QueueLanka.Queue.Data;
 using QueueLanka.Queue.DTOs.Reports;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace QueueLanka.Queue.Services;
@@ -32,7 +33,7 @@ public class ReportService : IReportService
             ["totalcancelled"] = new("Cancelled", row => row.TotalCancelled, true),
             ["cancelled"] = new("Cancelled", row => row.TotalCancelled, true),
             ["noshowcount"] = new("No Shows", row => row.NoShowCount, true),
-            ["noShows"] = new("No Shows", row => row.NoShowCount, true),
+            ["noshows"] = new("No Shows", row => row.NoShowCount, true),
             ["averagewaittimeseconds"] = new("Avg Wait Time (min)", row => FormatMinutes(row.AverageWaitTimeSeconds), false),
             ["avgwaittime"] = new("Avg Wait Time (min)", row => FormatMinutes(row.AverageWaitTimeSeconds), false),
             ["averageservicetimeseconds"] = new("Avg Service Time (min)", row => FormatMinutes(row.AverageServiceTimeSeconds), false),
@@ -81,7 +82,9 @@ public class ReportService : IReportService
         DateTime toDate,
         string? centerIds,
         string? metrics,
-        string? format = "csv")
+        string? format = "csv",
+        int? page = null,
+        int pageSize = 500)
     {
         var request = new CustomReportRequestDto
         {
@@ -89,11 +92,13 @@ public class ReportService : IReportService
             ToDate = toDate,
             CenterIds = ParseCenterIds(centerIds),
             Metrics = ParseMetrics(metrics),
-            Format = string.IsNullOrWhiteSpace(format) ? "csv" : format
+            Format = string.IsNullOrWhiteSpace(format) ? "csv" : format,
+            Page = page,
+            PageSize = pageSize
         };
 
         ValidateMetrics(request.Metrics);
-        ValidateSupportedFormat(request.Format);
+        ValidateRequest(request);
         return request;
     }
 
@@ -140,12 +145,17 @@ public class ReportService : IReportService
 
     public async Task<CustomReportPreviewDto> GetCustomReportPreviewAsync(CustomReportRequestDto request)
     {
-        var table = await BuildCustomReportTableAsync(request);
+        var effectiveRequest = CloneWithPage(request, request.Page ?? 1, request.PageSize);
+        var table = await BuildCustomReportTableAsync(effectiveRequest);
 
         return new CustomReportPreviewDto
         {
             FromDate = request.FromDate.Date,
             ToDate = request.ToDate.Date,
+            Page = table.Page,
+            PageSize = table.PageSize,
+            TotalRows = table.TotalRows,
+            TotalPages = table.TotalPages,
             Headers = table.Headers,
             Rows = table.Rows,
             TotalRow = table.TotalRow
@@ -168,7 +178,7 @@ public class ReportService : IReportService
         {
             csvBuilder.Append(row.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).Append(',');
             csvBuilder.Append(row.CenterId).Append(',');
-            csvBuilder.Append(EscapeCsv(row.CenterName)).Append(',');
+            csvBuilder.Append(EscapeCsvCell(row.CenterName)).Append(',');
             csvBuilder.Append(row.TotalTokensIssued).Append(',');
             csvBuilder.Append(row.TotalServed).Append(',');
             csvBuilder.Append(row.TotalSkipped).Append(',');
@@ -239,6 +249,65 @@ public class ReportService : IReportService
         return (fileBytes, fileName);
     }
 
+    public async Task StreamCustomReportCsvAsync(Stream output, CustomReportRequestDto request, CancellationToken cancellationToken = default)
+    {
+        ValidateRequest(request);
+        ValidateMetrics(request.Metrics);
+
+        var selectedMetrics = ResolveMetricDefinitions(request.Metrics);
+        var headers = new List<string> { "Date", "Center ID", "Center Name" };
+        headers.AddRange(selectedMetrics.Select(x => x.HeaderName));
+
+        await using var writer = new StreamWriter(output, new UTF8Encoding(true), leaveOpen: true);
+        await writer.WriteLineAsync(string.Join(',', headers.Select(EscapeCsvCell)));
+
+        var aggregateTotals = new int[selectedMetrics.Count];
+        var hasRows = false;
+
+        await foreach (var pageRows in EnumerateCustomReportPagesAsync(request, cancellationToken))
+        {
+            foreach (var row in pageRows)
+            {
+                hasRows = true;
+                var values = new List<string>
+                {
+                    row.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    row.CenterId.ToString(CultureInfo.InvariantCulture),
+                    row.CenterName
+                };
+
+                for (var i = 0; i < selectedMetrics.Count; i++)
+                {
+                    var metric = selectedMetrics[i];
+                    values.Add(metric.FormatValue(row));
+                    if (metric.IncludeInTotals)
+                    {
+                        aggregateTotals[i] += metric.GetTotalContribution(row);
+                    }
+                }
+
+                await writer.WriteLineAsync(string.Join(',', values.Select(EscapeCsvCell)));
+            }
+
+            await writer.FlushAsync();
+        }
+
+        if (hasRows)
+        {
+            var totalRow = new List<string> { "Total", string.Empty, string.Empty };
+            for (var i = 0; i < selectedMetrics.Count; i++)
+            {
+                totalRow.Add(selectedMetrics[i].IncludeInTotals
+                    ? aggregateTotals[i].ToString(CultureInfo.InvariantCulture)
+                    : string.Empty);
+            }
+
+            await writer.WriteLineAsync(string.Join(',', totalRow.Select(EscapeCsvCell)));
+        }
+
+        await writer.FlushAsync();
+    }
+
     public async Task<(byte[] fileBytes, string fileName)> GenerateCustomReportPdfAsync(CustomReportRequestDto request)
     {
         var table = await BuildCustomReportTableAsync(request);
@@ -256,6 +325,7 @@ public class ReportService : IReportService
                 {
                     col.Item().Text("QueueLanka Custom Report").Bold().FontSize(16);
                     col.Item().Text($"Range: {request.FromDate:yyyy-MM-dd} to {request.ToDate:yyyy-MM-dd}").FontSize(10);
+                    col.Item().Text($"Page Size: {table.PageSize} | Rows: {table.TotalRows}").FontSize(9);
                 });
 
                 page.Content().PaddingTop(10).Table(tableBuilder =>
@@ -298,23 +368,6 @@ public class ReportService : IReportService
         return (pdfBytes, fileName);
     }
 
-    private static string EscapeCsv(string value)
-    {
-        if (string.IsNullOrEmpty(value))
-        {
-            return string.Empty;
-        }
-
-        var escaped = value.Replace("\"", "\"\"");
-        return $"\"{escaped}\"";
-    }
-
-    private static string FormatMinutes(int totalSeconds)
-    {
-        var minutes = totalSeconds / 60d;
-        return minutes.ToString("0.0", CultureInfo.InvariantCulture);
-    }
-
     private static void ValidateRequest(DailyCenterSummaryRequestDto request)
     {
         if (request.FromDate == default || request.ToDate == default)
@@ -348,6 +401,16 @@ public class ReportService : IReportService
         if ((request.ToDate.Date - request.FromDate.Date).TotalDays > 90)
         {
             throw new ValidationException("Date range cannot exceed 90 days.");
+        }
+
+        if (request.Page.HasValue && request.Page.Value <= 0)
+        {
+            throw new ValidationException("Page must be greater than zero.");
+        }
+
+        if (request.PageSize is <= 0 or > 5000)
+        {
+            throw new ValidationException("PageSize must be between 1 and 5000.");
         }
 
         ValidateSupportedFormat(request.Format);
@@ -397,27 +460,31 @@ public class ReportService : IReportService
             .ToList();
     }
 
-    private static string SumMetric(List<DailyCenterSummaryRowDto> rows, CustomReportMetricDefinition metric)
-    {
-        return metric.SumSelector(rows).ToString(CultureInfo.InvariantCulture);
-    }
-
     private async Task<CustomReportTable> BuildCustomReportTableAsync(CustomReportRequestDto request)
     {
         ValidateRequest(request);
         ValidateMetrics(request.Metrics);
 
         var selectedMetrics = ResolveMetricDefinitions(request.Metrics);
-        var rows = await _reportRepository.GetDailyCenterSummaryAsync(
+
+        var totalRows = await _reportRepository.GetDailyCenterSummaryCountAsync(
             request.FromDate.Date,
             request.ToDate.Date,
             request.CenterIds);
 
+        var totalPages = totalRows == 0
+            ? 0
+            : (int)Math.Ceiling(totalRows / (double)request.PageSize);
+
         var headers = new List<string> { "Date", "Center ID", "Center Name" };
         headers.AddRange(selectedMetrics.Select(x => x.HeaderName));
 
-        var dataRows = rows
-            .Select(row =>
+        var dataRows = new List<IReadOnlyList<string>>();
+        var aggregateTotals = new int[selectedMetrics.Count];
+
+        await foreach (var pageRows in EnumerateCustomReportPagesAsync(request))
+        {
+            foreach (var row in pageRows)
             {
                 var values = new List<string>
                 {
@@ -426,24 +493,99 @@ public class ReportService : IReportService
                     row.CenterName
                 };
 
-                values.AddRange(selectedMetrics.Select(metric => metric.FormatValue(row)));
-                return (IReadOnlyList<string>)values;
-            })
-            .ToList();
+                for (var i = 0; i < selectedMetrics.Count; i++)
+                {
+                    var metric = selectedMetrics[i];
+                    values.Add(metric.FormatValue(row));
+                    if (metric.IncludeInTotals)
+                    {
+                        aggregateTotals[i] += metric.GetTotalContribution(row);
+                    }
+                }
+
+                dataRows.Add(values);
+            }
+        }
 
         IReadOnlyList<string>? totalRow = null;
-        if (rows.Count > 0)
+        if (dataRows.Count > 0)
         {
             var totals = new List<string> { "Total", string.Empty, string.Empty };
-            totals.AddRange(selectedMetrics.Select(metric => metric.IncludeInTotals ? SumMetric(rows, metric) : string.Empty));
+            for (var i = 0; i < selectedMetrics.Count; i++)
+            {
+                totals.Add(selectedMetrics[i].IncludeInTotals
+                    ? aggregateTotals[i].ToString(CultureInfo.InvariantCulture)
+                    : string.Empty);
+            }
+
             totalRow = totals;
         }
 
         return new CustomReportTable
         {
+            Page = request.Page ?? 1,
+            PageSize = request.PageSize,
+            TotalRows = totalRows,
+            TotalPages = totalPages,
             Headers = headers,
             Rows = dataRows,
             TotalRow = totalRow
+        };
+    }
+
+    private async IAsyncEnumerable<List<DailyCenterSummaryRowDto>> EnumerateCustomReportPagesAsync(
+        CustomReportRequestDto request,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        if (request.Page.HasValue)
+        {
+            yield return await _reportRepository.GetDailyCenterSummaryPageAsync(
+                request.FromDate.Date,
+                request.ToDate.Date,
+                request.CenterIds,
+                request.Page.Value,
+                request.PageSize);
+
+            yield break;
+        }
+
+        var page = 1;
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            var rows = await _reportRepository.GetDailyCenterSummaryPageAsync(
+                request.FromDate.Date,
+                request.ToDate.Date,
+                request.CenterIds,
+                page,
+                request.PageSize);
+
+            if (rows.Count == 0)
+            {
+                yield break;
+            }
+
+            yield return rows;
+
+            if (rows.Count < request.PageSize)
+            {
+                yield break;
+            }
+
+            page++;
+        }
+    }
+
+    private static CustomReportRequestDto CloneWithPage(CustomReportRequestDto request, int page, int pageSize)
+    {
+        return new CustomReportRequestDto
+        {
+            FromDate = request.FromDate,
+            ToDate = request.ToDate,
+            CenterIds = request.CenterIds,
+            Metrics = request.Metrics,
+            Format = request.Format,
+            Page = page,
+            PageSize = pageSize
         };
     }
 
@@ -496,6 +638,12 @@ public class ReportService : IReportService
         return $"\"{escaped}\"";
     }
 
+    private static string FormatMinutes(int totalSeconds)
+    {
+        var minutes = totalSeconds / 60d;
+        return minutes.ToString("0.0", CultureInfo.InvariantCulture);
+    }
+
     private sealed record CustomReportMetricDefinition(
         string HeaderName,
         Func<DailyCenterSummaryRowDto, object> ValueSelector,
@@ -506,21 +654,23 @@ public class ReportService : IReportService
             return ValueSelector(row).ToString() ?? string.Empty;
         }
 
-        public Func<List<DailyCenterSummaryRowDto>, int> SumSelector => rows =>
-        {
-            var sum = rows.Sum(row => ValueSelector(row) switch
+        public int GetTotalContribution(DailyCenterSummaryRowDto row)
+         {
+            return ValueSelector(row) switch
             {
                 int intValue => intValue,
                 string stringValue when int.TryParse(stringValue, out var parsed) => parsed,
                 _ => 0
-            });
-
-            return sum;
-        };
-    }
+            };
+         }
+     }
 
     private sealed class CustomReportTable
     {
+        public int Page { get; set; }
+        public int PageSize { get; set; }
+        public int TotalRows { get; set; }
+        public int TotalPages { get; set; }
         public IReadOnlyList<string> Headers { get; set; } = Array.Empty<string>();
         public IReadOnlyList<IReadOnlyList<string>> Rows { get; set; } = Array.Empty<IReadOnlyList<string>>();
         public IReadOnlyList<string>? TotalRow { get; set; }

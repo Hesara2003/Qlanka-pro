@@ -21,6 +21,28 @@ public class ReportRepository : IReportRepository
         DateTime toDate,
         List<int>? centerIds)
     {
+        return await GetDailyCenterSummaryPageAsync(fromDate, toDate, centerIds, 1, int.MaxValue);
+    }
+
+    public async Task<List<DailyCenterSummaryRowDto>> GetDailyCenterSummaryPageAsync(
+        DateTime fromDate,
+        DateTime toDate,
+        List<int>? centerIds,
+        int page,
+        int pageSize)
+    {
+        if (page <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(page));
+        }
+
+        if (pageSize <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(pageSize));
+        }
+
+        var offset = (page - 1) * pageSize;
+
         await using var conn = new MySqlConnection(_connectionString);
         await conn.OpenAsync();
 
@@ -100,6 +122,13 @@ public class ReportRepository : IReportRepository
             GROUP BY DATE(" + issuedExpr + @"), t.center_id
             ORDER BY summary_date ASC, center_name ASC");
 
+        if (pageSize != int.MaxValue)
+        {
+            sqlBuilder.Append("\n            LIMIT @PageSize OFFSET @Offset");
+            cmd.Parameters.AddWithValue("@PageSize", pageSize);
+            cmd.Parameters.AddWithValue("@Offset", offset);
+        }
+
         cmd.CommandText = sqlBuilder.ToString();
 
         var rows = new List<DailyCenterSummaryRowDto>();
@@ -126,6 +155,50 @@ public class ReportRepository : IReportRepository
         }
 
         return rows;
+    }
+
+    public async Task<int> GetDailyCenterSummaryCountAsync(
+        DateTime fromDate,
+        DateTime toDate,
+        List<int>? centerIds)
+    {
+        await using var conn = new MySqlConnection(_connectionString);
+        await conn.OpenAsync();
+
+        var tokenColumns = await GetTokenColumnNamesAsync(conn);
+        var issuedExpr = ResolveDateTimeExpression(tokenColumns, "t");
+
+        var sqlBuilder = new StringBuilder(@"
+            SELECT COUNT(*)
+            FROM (
+                SELECT DATE(" + issuedExpr + @") AS summary_date, t.center_id
+                FROM tokens t
+                WHERE DATE(" + issuedExpr + @") BETWEEN @FromDate AND @ToDate");
+
+        await using var cmd = new MySqlCommand(string.Empty, conn);
+        cmd.Parameters.AddWithValue("@FromDate", fromDate.Date);
+        cmd.Parameters.AddWithValue("@ToDate", toDate.Date);
+
+        if (centerIds is { Count: > 0 })
+        {
+            var inParameters = new List<string>();
+            for (var i = 0; i < centerIds.Count; i++)
+            {
+                var parameterName = $"@CenterId{i}";
+                inParameters.Add(parameterName);
+                cmd.Parameters.AddWithValue(parameterName, centerIds[i]);
+            }
+
+            sqlBuilder.Append($"\n                  AND t.center_id IN ({string.Join(",", inParameters)})");
+        }
+
+        sqlBuilder.Append(@"
+                GROUP BY DATE(" + issuedExpr + @"), t.center_id
+            ) summary_rows");
+
+        cmd.CommandText = sqlBuilder.ToString();
+        var result = await cmd.ExecuteScalarAsync();
+        return Convert.ToInt32(result, System.Globalization.CultureInfo.InvariantCulture);
     }
 
     private static async Task<HashSet<string>> GetTokenColumnNamesAsync(MySqlConnection conn)

@@ -6,6 +6,7 @@ using QueueLanka.Queue.DTOs.Reports;
 using QueueLanka.Queue.Services;
 using QueueLanka.Shared.DTOs.Common;
 using System.ComponentModel.DataAnnotations;
+using System.Net.Mime;
 
 namespace QueueLanka.Queue.Controllers;
 
@@ -73,11 +74,13 @@ public class ReportsController : ControllerBase
         [FromQuery] DateTime toDate,
         [FromQuery] string? centerIds,
         [FromQuery] string? metrics,
-        [FromQuery] string? format = "csv")
+        [FromQuery] string? format = "csv",
+        [FromQuery] int? page = null,
+        [FromQuery] int pageSize = 500)
     {
         try
         {
-            var request = _reportService.CreateCustomReportRequest(fromDate, toDate, centerIds, metrics, format);
+            var request = _reportService.CreateCustomReportRequest(fromDate, toDate, centerIds, metrics, format, page, pageSize);
 
             if (!TryValidateModel(request))
             {
@@ -96,8 +99,16 @@ public class ReportsController : ControllerBase
                 return File(pdfBytes, "application/pdf", pdfFileName);
             }
 
-            var (fileBytes, fileName) = await _reportService.GenerateCustomReportCsvAsync(request);
-            return File(fileBytes, "text/csv", fileName);
+            var fileName = $"QueueLanka_CustomReport_{request.FromDate:yyyyMMdd}_{request.ToDate:yyyyMMdd}.csv";
+            Response.ContentType = "text/csv";
+            Response.Headers.ContentDisposition = new ContentDisposition
+            {
+                FileName = fileName,
+                Inline = false
+            }.ToString();
+
+            await _reportService.StreamCustomReportCsvAsync(Response.Body, request, HttpContext.RequestAborted);
+            return new EmptyResult();
         }
         catch (ValidationException ex)
         {
@@ -119,11 +130,13 @@ public class ReportsController : ControllerBase
         [FromQuery] DateTime fromDate,
         [FromQuery] DateTime toDate,
         [FromQuery] string? centerIds,
-        [FromQuery] string? metrics)
+        [FromQuery] string? metrics,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 500)
     {
         try
         {
-            var request = _reportService.CreateCustomReportRequest(fromDate, toDate, centerIds, metrics, "csv");
+            var request = _reportService.CreateCustomReportRequest(fromDate, toDate, centerIds, metrics, "csv", page, pageSize);
 
             if (!TryValidateModel(request))
             {

@@ -10,4 +10,16 @@ public interface IReportRepository
         DateTime fromDate,
         DateTime toDate,
         List<int>? centerIds);
+
+    Task<List<DailyCenterSummaryRowDto>> GetDailyCenterSummaryPageAsync(
+        DateTime fromDate,
+        DateTime toDate,
+        List<int>? centerIds,
+        int page,
+        int pageSize);
+
+    Task<int> GetDailyCenterSummaryCountAsync(
+        DateTime fromDate,
+        DateTime toDate,
+        List<int>? centerIds);
 }
