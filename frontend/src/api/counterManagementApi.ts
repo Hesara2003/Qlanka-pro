@@ -269,7 +269,7 @@ export async function getCounters(centerId: number): Promise<ListCountersRespons
     }
 
     const counters = (data ?? []).map(mapDbCounter);
-    const openCount = counters.filter((counter) => counter.isOpen).length;
+    const openCount = counters.filter((counter: any) => counter.isOpen).length;
 
     return {
       counters,

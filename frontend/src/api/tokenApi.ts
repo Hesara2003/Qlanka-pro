@@ -94,7 +94,7 @@ export const tokenApi = {
                 throw new Error(tokenError.message);
             }
 
-            const centerIds = [...new Set((tokens ?? []).map((item) => item.center_id))];
+            const centerIds = [...new Set((tokens ?? []).map((item: any) => item.center_id))];
             let centerNameById = new Map<number, string>();
 
             if (centerIds.length > 0) {
@@ -104,11 +104,11 @@ export const tokenApi = {
                     .in("center_id", centerIds);
 
                 if (!centerError) {
-                    centerNameById = new Map((centers ?? []).map((item) => [item.center_id, item.name]));
+                    centerNameById = new Map((centers ?? []).map((item: any) => [item.center_id, item.name]));
                 }
             }
 
-            return (tokens ?? []).map((item) => ({
+            return (tokens ?? []).map((item: any) => ({
                 tokenId: item.token_id,
                 centerId: item.center_id,
                 centerName: centerNameById.get(item.center_id) ?? `Center ${item.center_id}`,
@@ -146,7 +146,7 @@ export const tokenApi = {
                     throw new Error(dbError.message);
                 }
 
-                return (data ?? []).map((token, index) => ({
+                return (data ?? []).map((token: any, index: number) => ({
                     tokenId: token.token_id,
                     tokenNumber: token.token_number,
                     status: token.status,

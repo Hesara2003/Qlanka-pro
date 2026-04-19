@@ -218,8 +218,8 @@ async function getStatsForCounter(counterId: number): Promise<CounterStatsDto | 
     }
 
     const rows = data ?? [];
-    const servedCount = rows.filter((row) => String(row.status).toLowerCase() === "completed").length;
-    const skippedCount = rows.filter((row) => String(row.status).toLowerCase() === "skipped").length;
+    const servedCount = rows.filter((row: any) => String(row.status).toLowerCase() === "completed").length;
+    const skippedCount = rows.filter((row: any) => String(row.status).toLowerCase() === "skipped").length;
 
     return {
         servedCount,
@@ -503,7 +503,7 @@ export const counterApi = {
                     throw new Error(dbError.message);
                 }
 
-                return (data ?? []).map((item, index) => ({
+                return (data ?? []).map((item: any, index: number) => ({
                     tokenId: item.token_id,
                     tokenNumber: item.token_number,
                     queuePosition: item.queue_position ?? index + 1,
@@ -573,7 +573,7 @@ export const counterApi = {
                     counterName: counter.name,
                     isOpen: String(counter.status).toLowerCase() === "open",
                     currentToken,
-                    waitingTokens: (waitingData ?? []).map((item, index) => ({
+                    waitingTokens: (waitingData ?? []).map((item: any, index: number) => ({
                         tokenId: item.token_id,
                         tokenNumber: item.token_number,
                         queuePosition: item.queue_position ?? index + 1,
@@ -643,7 +643,7 @@ export const counterApi = {
                     throw new Error(dbError.message);
                 }
 
-                return (data ?? []).map((counter) => ({
+                return (data ?? []).map((counter: any) => ({
                     counterId: counter.counter_id,
                     centerId: counter.center_id,
                     name: counter.name,

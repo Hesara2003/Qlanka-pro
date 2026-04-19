@@ -106,7 +106,7 @@ export async function downloadDailyCenterSummaryCsv(
 
             const rows = [
                 ["Token Number", "Issued Date", "Status", "Issued Time", "Served Time"],
-                ...data.map((row) => [
+                ...data.map((row: any) => [
                     row.token_number,
                     row.issued_date,
                     row.status,
@@ -116,7 +116,7 @@ export async function downloadDailyCenterSummaryCsv(
             ];
 
             const csv = rows
-                .map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(","))
+                .map((row) => row.map((value: any) => `"${String(value).replace(/"/g, '""')}"`).join(","))
                 .join("\n");
 
             const filename = `QueueLanka_DailySummary_${fromDate}_${toDate}.csv`;

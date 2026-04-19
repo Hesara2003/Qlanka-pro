@@ -136,7 +136,7 @@ export const getMyAppointments = async (): Promise<AppointmentResponseDto[]> => 
             throw new Error(dbError.message);
         }
 
-        return (data ?? []).map((item) => ({
+        return (data ?? []).map((item: any) => ({
             appointmentId: item.appointment_id,
             centerId: item.center_id,
             userId: item.user_id,

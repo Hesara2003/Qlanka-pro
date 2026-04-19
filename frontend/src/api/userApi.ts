@@ -74,7 +74,7 @@ export async function getAdminUsers(params?: GetUsersParams): Promise<AdminUser[
       throw new Error(dbError.message);
     }
 
-    return (data ?? []).map((user) => ({
+    return (data ?? []).map((user: any) => ({
       userId: user.user_id,
       username: user.username,
       email: user.email,
