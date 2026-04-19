@@ -138,27 +138,10 @@ export default function ReportAnalyticsPanel() {
           "peakHourTokenCount",
         ];
 
-        const firstPage = await getCustomReportPreview(fromDate, toDate, centerIds, metrics, 1, 500);
+        const firstPage = await getCustomReportPreview(fromDate, toDate, centerIds, metrics, 1, 5000);
         if (cancelled) return;
 
-        if (firstPage.totalPages <= 1) {
-          setPreview(firstPage);
-          return;
-        }
-
-        const allRows = [...firstPage.rows];
-        for (let p = 2; p <= firstPage.totalPages; p++) {
-          const pageData = await getCustomReportPreview(fromDate, toDate, centerIds, metrics, p, 500);
-          if (cancelled) return;
-          allRows.push(...pageData.rows);
-        }
-
-        setPreview({
-          ...firstPage,
-          page: 1,
-          rows: allRows,
-          pageSize: allRows.length,
-        });
+        setPreview(firstPage);
       } catch (e: any) {
         if (!cancelled) {
           setError(e?.message ?? "Failed to load analytics data.");
