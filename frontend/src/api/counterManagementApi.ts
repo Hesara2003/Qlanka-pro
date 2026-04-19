@@ -2,6 +2,8 @@
 
 import { AxiosError } from "axios";
 import axiosInstance, { AuthorizationError } from "./axiosInstance";
+import { supabase } from "../lib/supabaseClient";
+import { shouldUseSupabaseFallback } from "./fallbackUtils";
 import type {
   CounterApiError,
   CreateCounterApiResponse,
@@ -20,6 +22,29 @@ import type {
 interface ApiErrorBody {
   code?: string;
   message?: string;
+}
+
+function mapDbCounter(counter: {
+  counter_id: number;
+  center_id: number;
+  name: string;
+  status: string;
+  officer_user_id: number | null;
+  current_token_id?: number | null;
+  updated_at: string;
+}): Counter {
+  return {
+    counterId: counter.counter_id,
+    name: counter.name,
+    centerId: counter.center_id,
+    centerName: `Center ${counter.center_id}`,
+    isOpen: String(counter.status).toLowerCase() === "open",
+    currentTokenNumber: counter.current_token_id ?? null,
+    assignedOfficerUserId: counter.officer_user_id,
+    assignedOfficerName: null,
+    createdAt: counter.updated_at,
+    warningMessage: null,
+  };
 }
 
 function createCounterApiError<TCode extends string>(
@@ -169,7 +194,55 @@ export async function createCounter(
 
     return data.data;
   } catch (error) {
-    throw mapCreateCounterError(error);
+    if (!shouldUseSupabaseFallback(error)) {
+      throw mapCreateCounterError(error);
+    }
+
+    const { data: centerExists, error: centerError } = await supabase
+      .from("service_centers")
+      .select("center_id")
+      .eq("center_id", centerId)
+      .maybeSingle();
+
+    if (centerError) {
+      throw mapCreateCounterError(new Error(centerError.message));
+    }
+
+    if (!centerExists) {
+      throw createCounterApiError("CENTER_NOT_FOUND", "Selected center was not found.");
+    }
+
+    const { data: duplicate, error: duplicateError } = await supabase
+      .from("counters")
+      .select("counter_id")
+      .eq("center_id", centerId)
+      .ilike("name", request.name)
+      .maybeSingle();
+
+    if (duplicateError) {
+      throw mapCreateCounterError(new Error(duplicateError.message));
+    }
+
+    if (duplicate) {
+      throw createCounterApiError("DUPLICATE_NAME", "A counter with this name already exists at this center");
+    }
+
+    const { data: created, error: createError } = await supabase
+      .from("counters")
+      .insert({
+        center_id: centerId,
+        name: request.name,
+        status: "Open",
+        officer_user_id: request.assignedOfficerUserId ?? null,
+      })
+      .select("counter_id, center_id, name, status, officer_user_id, current_token_id, updated_at")
+      .single();
+
+    if (createError) {
+      throw mapCreateCounterError(new Error(createError.message));
+    }
+
+    return mapDbCounter(created);
   }
 }
 
@@ -181,7 +254,30 @@ export async function getCounters(centerId: number): Promise<ListCountersRespons
 
     return data.data;
   } catch (error) {
-    throw mapListCountersError(error);
+    if (!shouldUseSupabaseFallback(error)) {
+      throw mapListCountersError(error);
+    }
+
+    const { data, error: dbError } = await supabase
+      .from("counters")
+      .select("counter_id, center_id, name, status, officer_user_id, current_token_id, updated_at")
+      .eq("center_id", centerId)
+      .order("counter_id", { ascending: true });
+
+    if (dbError) {
+      throw mapListCountersError(new Error(dbError.message));
+    }
+
+    const counters = (data ?? []).map(mapDbCounter);
+    const openCount = counters.filter((counter) => counter.isOpen).length;
+
+    return {
+      counters,
+      totalCount: counters.length,
+      centerId,
+      openCount,
+      closedCount: counters.length - openCount,
+    };
   }
 }
 
@@ -196,7 +292,26 @@ export async function getCounterById(
 
     return data.data;
   } catch (error) {
-    throw mapListCountersError(error);
+    if (!shouldUseSupabaseFallback(error)) {
+      throw mapListCountersError(error);
+    }
+
+    const { data, error: dbError } = await supabase
+      .from("counters")
+      .select("counter_id, center_id, name, status, officer_user_id, current_token_id, updated_at")
+      .eq("center_id", centerId)
+      .eq("counter_id", counterId)
+      .maybeSingle();
+
+    if (dbError) {
+      throw mapListCountersError(new Error(dbError.message));
+    }
+
+    if (!data) {
+      throw createCounterApiError("CENTER_NOT_FOUND", "Selected center was not found.");
+    }
+
+    return mapDbCounter(data);
   }
 }
 
@@ -213,6 +328,26 @@ export async function updateCounterStatus(
 
     return data.data;
   } catch (error) {
-    throw mapStatusUpdateError(error);
+    if (!shouldUseSupabaseFallback(error)) {
+      throw mapStatusUpdateError(error);
+    }
+
+    const { data, error: dbError } = await supabase
+      .from("counters")
+      .update({ status: request.isOpen ? "Open" : "Closed" })
+      .eq("center_id", centerId)
+      .eq("counter_id", counterId)
+      .select("counter_id, center_id, name, status, officer_user_id, current_token_id, updated_at")
+      .maybeSingle();
+
+    if (dbError) {
+      throw mapStatusUpdateError(new Error(dbError.message));
+    }
+
+    if (!data) {
+      throw createCounterApiError("COUNTER_NOT_FOUND", "Counter was not found.");
+    }
+
+    return mapDbCounter(data);
   }
 }

@@ -1,0 +1,8 @@
+{
+  "files.exclude": {
+    "supabase-backup/.env": true,
+    "supabase-backup/.env.local": true,
+    "supabase-backup/.env.secret": true,
+    "supabase-backup/secrets": true
+  }
+}

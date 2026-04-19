@@ -2,6 +2,9 @@
 
 import { AxiosError } from "axios";
 import axiosInstance from "./axiosInstance";
+import { supabase } from "../lib/supabaseClient";
+import { requireSessionUser } from "../lib/authSession";
+import { shouldUseSupabaseFallback } from "./fallbackUtils";
 
 export type CallNextErrorCode =
     | "NO_WAITING_TOKENS"
@@ -155,12 +158,160 @@ function extractErrorMessage(error: unknown): string {
     return "An unexpected error occurred.";
 }
 
+function todayIsoDate(): string {
+    return new Date().toISOString().slice(0, 10);
+}
+
+async function getCounterRecord(counterId: number) {
+    const { data, error } = await supabase
+        .from("counters")
+        .select("counter_id, center_id, name, status, current_token_id")
+        .eq("counter_id", counterId)
+        .maybeSingle();
+
+    if (error) {
+        throw new Error(error.message);
+    }
+
+    return data;
+}
+
+function computeAverageServiceTimeSeconds(rows: Array<{ called_at: string | null; served_time: string | null }>): number {
+    const values = rows
+        .map((row) => {
+            if (!row.called_at || !row.served_time) {
+                return null;
+            }
+
+            const calledAt = new Date(row.called_at).getTime();
+            const servedAt = new Date(row.served_time).getTime();
+
+            if (Number.isNaN(calledAt) || Number.isNaN(servedAt) || servedAt < calledAt) {
+                return null;
+            }
+
+            return Math.floor((servedAt - calledAt) / 1000);
+        })
+        .filter((value): value is number => value !== null);
+
+    if (values.length === 0) {
+        return 0;
+    }
+
+    return Math.floor(values.reduce((sum, value) => sum + value, 0) / values.length);
+}
+
+async function getStatsForCounter(counterId: number): Promise<CounterStatsDto | null> {
+    const counter = await getCounterRecord(counterId);
+    if (!counter) {
+        return null;
+    }
+
+    const { data, error } = await supabase
+        .from("tokens")
+        .select("status, called_at, served_time")
+        .eq("center_id", counter.center_id)
+        .eq("issued_date", todayIsoDate());
+
+    if (error) {
+        throw new Error(error.message);
+    }
+
+    const rows = data ?? [];
+    const servedCount = rows.filter((row) => String(row.status).toLowerCase() === "completed").length;
+    const skippedCount = rows.filter((row) => String(row.status).toLowerCase() === "skipped").length;
+
+    return {
+        servedCount,
+        skippedCount,
+        averageServiceTimeSeconds: computeAverageServiceTimeSeconds(rows),
+    };
+}
+
 export const counterApi = {
     async callNext(counterId: number): Promise<CalledTokenDto> {
         try {
             const response = await axiosInstance.post(`/api/counters/${counterId}/call-next`);
             return response.data?.data ?? response.data;
         } catch (error) {
+            if (shouldUseSupabaseFallback(error)) {
+                try {
+                    const counter = await getCounterRecord(counterId);
+                    if (!counter) {
+                        throw new CallNextError("NO_WAITING_TOKENS", "Counter not found.");
+                    }
+
+                    if (String(counter.status).toLowerCase() !== "open") {
+                        throw new CallNextError("COUNTER_CLOSED", "This counter is currently closed.");
+                    }
+
+                    const { data: waitingToken, error: waitingError } = await supabase
+                        .from("tokens")
+                        .select("token_id, center_id, user_id, token_number, issued_date, issued_time")
+                        .eq("center_id", counter.center_id)
+                        .eq("issued_date", todayIsoDate())
+                        .eq("status", "Waiting")
+                        .order("queue_position", { ascending: true })
+                        .order("token_id", { ascending: true })
+                        .limit(1)
+                        .maybeSingle();
+
+                    if (waitingError) {
+                        throw new CallNextError("UNKNOWN_ERROR", waitingError.message);
+                    }
+
+                    if (!waitingToken) {
+                        throw new CallNextError("NO_WAITING_TOKENS", "No waiting tokens are available.");
+                    }
+
+                    const nowIso = new Date().toISOString();
+
+                    const { error: updateTokenError } = await supabase
+                        .from("tokens")
+                        .update({
+                            status: "Called",
+                            called_at: nowIso,
+                            updated_at: nowIso,
+                            counter_id: counterId,
+                        })
+                        .eq("token_id", waitingToken.token_id);
+
+                    if (updateTokenError) {
+                        throw new CallNextError("UNKNOWN_ERROR", updateTokenError.message);
+                    }
+
+                    const { error: updateCounterError } = await supabase
+                        .from("counters")
+                        .update({
+                            current_token_id: waitingToken.token_id,
+                            updated_at: nowIso,
+                        })
+                        .eq("counter_id", counterId);
+
+                    if (updateCounterError) {
+                        throw new CallNextError("UNKNOWN_ERROR", updateCounterError.message);
+                    }
+
+                    return {
+                        tokenId: waitingToken.token_id,
+                        centerId: waitingToken.center_id,
+                        counterId,
+                        userId: waitingToken.user_id,
+                        tokenNumber: waitingToken.token_number,
+                        issuedDate: waitingToken.issued_date,
+                        status: "Called",
+                        issuedTime: waitingToken.issued_time,
+                        calledAt: nowIso,
+                    };
+                } catch (fallbackError) {
+                    if (fallbackError instanceof CallNextError) {
+                        throw fallbackError;
+                    }
+
+                    throw new CallNextError("UNKNOWN_ERROR", extractErrorMessage(fallbackError));
+                }
+            }
+
             if (error instanceof AxiosError) {
                 const status = error.response?.status;
                 const data = error.response?.data as { code?: string; message?: string } | undefined;
@@ -196,6 +347,105 @@ export const counterApi = {
             const response = await axiosInstance.put(`/api/counters/${counterId}/tokens/${tokenId}/status`, { status });
             return response.data?.data ?? response.data;
         } catch (error) {
+            if (shouldUseSupabaseFallback(error)) {
+                try {
+                    const session = requireSessionUser();
+                    const { data: token, error: tokenError } = await supabase
+                        .from("tokens")
+                        .select("token_id, center_id, user_id, token_number, issued_date, issued_time, called_at, status, counter_id")
+                        .eq("token_id", tokenId)
+                        .maybeSingle();
+
+                    if (tokenError) {
+                        throw new UpdateTokenStatusError("UNKNOWN_ERROR", tokenError.message);
+                    }
+
+                    if (!token) {
+                        throw new UpdateTokenStatusError("TOKEN_NOT_FOUND", "Token not found.");
+                    }
+
+                    if (token.counter_id !== counterId) {
+                        throw new UpdateTokenStatusError("NOT_YOUR_TOKEN", "This token does not belong to your counter.");
+                    }
+
+                    if (String(token.status).toLowerCase() !== "called") {
+                        throw new UpdateTokenStatusError("INVALID_STATUS", "Token is not in called state.");
+                    }
+
+                    if (session.role === "officer") {
+                        const { data: officerCounter } = await supabase
+                            .from("counters")
+                            .select("counter_id")
+                            .eq("counter_id", counterId)
+                            .eq("officer_user_id", session.userId)
+                            .maybeSingle();
+
+                        if (!officerCounter) {
+                            throw new UpdateTokenStatusError("NOT_YOUR_TOKEN", "This token does not belong to your counter.");
+                        }
+                    }
+
+                    const nowIso = new Date().toISOString();
+                    const finalStatus = status === "served" ? "Completed" : "Skipped";
+
+                    const { error: updateError } = await supabase
+                        .from("tokens")
+                        .update({
+                            status: finalStatus,
+                            served_time: status === "served" ? nowIso : null,
+                            updated_at: nowIso,
+                        })
+                        .eq("token_id", tokenId);
+
+                    if (updateError) {
+                        throw new UpdateTokenStatusError("UNKNOWN_ERROR", updateError.message);
+                    }
+
+                    const { error: clearCounterError } = await supabase
+                        .from("counters")
+                        .update({
+                            current_token_id: null,
+                            updated_at: nowIso,
+                        })
+                        .eq("counter_id", counterId);
+
+                    if (clearCounterError) {
+                        throw new UpdateTokenStatusError("UNKNOWN_ERROR", clearCounterError.message);
+                    }
+
+                    const { data: nextToken } = await supabase
+                        .from("tokens")
+                        .select("token_id")
+                        .eq("center_id", token.center_id)
+                        .eq("issued_date", todayIsoDate())
+                        .eq("status", "Waiting")
+                        .order("queue_position", { ascending: true })
+                        .order("token_id", { ascending: true })
+                        .limit(1)
+                        .maybeSingle();
+
+                    return {
+                        tokenId: token.token_id,
+                        centerId: token.center_id,
+                        counterId,
+                        userId: token.user_id,
+                        tokenNumber: token.token_number,
+                        issuedDate: token.issued_date,
+                        issuedTime: token.issued_time,
+                        calledAt: token.called_at,
+                        servedAt: status === "served" ? nowIso : null,
+                        status: finalStatus,
+                        nextTokenId: nextToken?.token_id ?? null,
+                    };
+                } catch (fallbackError) {
+                    if (fallbackError instanceof UpdateTokenStatusError) {
+                        throw fallbackError;
+                    }
+
+                    throw new UpdateTokenStatusError("UNKNOWN_ERROR", extractErrorMessage(fallbackError));
+                }
+            }
+
             if (error instanceof AxiosError) {
                 const statusCode = error.response?.status;
                 const data = error.response?.data as { code?: string; message?: string } | undefined;
@@ -234,6 +484,36 @@ export const counterApi = {
             const response = await axiosInstance.get(`/api/counters/${counterId}/tokens/waiting`);
             return response.data?.data ?? response.data;
         } catch (error) {
+            if (shouldUseSupabaseFallback(error)) {
+                const counter = await getCounterRecord(counterId);
+                if (!counter) {
+                    throw new Error("Counter not found.");
+                }
+
+                const { data, error: dbError } = await supabase
+                    .from("tokens")
+                    .select("token_id, token_number, queue_position, issued_time, status")
+                    .eq("center_id", counter.center_id)
+                    .eq("issued_date", todayIsoDate())
+                    .eq("status", "Waiting")
+                    .order("queue_position", { ascending: true })
+                    .order("token_id", { ascending: true });
+
+                if (dbError) {
+                    throw new Error(dbError.message);
+                }
+
+                return (data ?? []).map((item, index) => ({
+                    tokenId: item.token_id,
+                    tokenNumber: item.token_number,
+                    queuePosition: item.queue_position ?? index + 1,
+                    issuedAt: item.issued_time,
+                    estimatedWaitSeconds: (item.queue_position ?? index + 1) * 300,
+                    issuedTime: item.issued_time,
+                    status: item.status,
+                }));
+            }
+
             throw new Error(extractErrorMessage(error));
         }
     },
@@ -243,6 +523,71 @@ export const counterApi = {
             const response = await axiosInstance.get(`/api/counters/${counterId}/dashboard`);
             return response.data?.data ?? response.data;
         } catch (error) {
+            if (shouldUseSupabaseFallback(error)) {
+                const counter = await getCounterRecord(counterId);
+                if (!counter) {
+                    throw new Error("Counter not found.");
+                }
+
+                const stats = await getStatsForCounter(counterId);
+
+                const { data: waitingData, error: waitingError } = await supabase
+                    .from("tokens")
+                    .select("token_id, token_number, queue_position, issued_time, status")
+                    .eq("center_id", counter.center_id)
+                    .eq("issued_date", todayIsoDate())
+                    .eq("status", "Waiting")
+                    .order("queue_position", { ascending: true })
+                    .order("token_id", { ascending: true });
+
+                if (waitingError) {
+                    throw new Error(waitingError.message);
+                }
+
+                let currentToken: DashboardCurrentTokenDto | null = null;
+                if (counter.current_token_id) {
+                    const { data: current, error: currentError } = await supabase
+                        .from("tokens")
+                        .select("token_id, token_number, status, called_at")
+                        .eq("token_id", counter.current_token_id)
+                        .maybeSingle();
+
+                    if (currentError) {
+                        throw new Error(currentError.message);
+                    }
+
+                    if (current) {
+                        const calledAtMs = current.called_at ? new Date(current.called_at).getTime() : null;
+                        currentToken = {
+                            tokenId: current.token_id,
+                            tokenNumber: current.token_number,
+                            status: current.status,
+                            calledAt: current.called_at,
+                            waitedSeconds: calledAtMs ? Math.max(0, Math.floor((Date.now() - calledAtMs) / 1000)) : 0,
+                        };
+                    }
+                }
+
+                return {
+                    counterId: counter.counter_id,
+                    counterName: counter.name,
+                    isOpen: String(counter.status).toLowerCase() === "open",
+                    currentToken,
+                    waitingTokens: (waitingData ?? []).map((item, index) => ({
+                        tokenId: item.token_id,
+                        tokenNumber: item.token_number,
+                        queuePosition: item.queue_position ?? index + 1,
+                        issuedAt: item.issued_time,
+                        estimatedWaitSeconds: (item.queue_position ?? index + 1) * 300,
+                        issuedTime: item.issued_time,
+                        status: item.status,
+                    })),
+                    servedCount: stats?.servedCount ?? 0,
+                    skippedCount: stats?.skippedCount ?? 0,
+                    averageServiceTimeSeconds: stats?.averageServiceTimeSeconds ?? 0,
+                };
+            }
+
             throw new Error(extractErrorMessage(error));
         }
     },
@@ -252,6 +597,14 @@ export const counterApi = {
             const response = await axiosInstance.get(`/api/counters/${counterId}/stats`);
             return response.data?.data ?? response.data;
         } catch (error) {
+            if (shouldUseSupabaseFallback(error)) {
+                const stats = await getStatsForCounter(counterId);
+                if (!stats) {
+                    throw new Error("Counter not found.");
+                }
+                return stats;
+            }
+
             throw new Error(extractErrorMessage(error));
         }
     },
@@ -279,6 +632,25 @@ export const counterApi = {
                     : (counter.isOpen ? "Open" : "Closed"),
             }));
         } catch (error) {
+            if (shouldUseSupabaseFallback(error)) {
+                const { data, error: dbError } = await supabase
+                    .from("counters")
+                    .select("counter_id, center_id, name, status")
+                    .eq("center_id", centerId)
+                    .order("counter_id", { ascending: true });
+
+                if (dbError) {
+                    throw new Error(dbError.message);
+                }
+
+                return (data ?? []).map((counter) => ({
+                    counterId: counter.counter_id,
+                    centerId: counter.center_id,
+                    name: counter.name,
+                    status: counter.status,
+                }));
+            }
+
             throw new Error(extractErrorMessage(error));
         }
     },
@@ -297,6 +669,94 @@ export const counterApi = {
 
             return response.data?.data ?? response.data;
         } catch (error) {
+            if (shouldUseSupabaseFallback(error)) {
+                try {
+                    const session = requireSessionUser();
+
+                    if (session.role === "officer") {
+                        const { data: ownerCounter } = await supabase
+                            .from("counters")
+                            .select("counter_id")
+                            .eq("counter_id", sourceCounterId)
+                            .eq("officer_user_id", session.userId)
+                            .maybeSingle();
+
+                        if (!ownerCounter) {
+                            throw new ReassignTokenError("NOT_YOUR_TOKEN", "This token does not belong to your counter.");
+                        }
+                    }
+
+                    const { data: token, error: tokenError } = await supabase
+                        .from("tokens")
+                        .select("token_id, center_id, user_id, token_number, status, issued_date, issued_time, queue_position, counter_id")
+                        .eq("token_id", tokenId)
+                        .maybeSingle();
+
+                    if (tokenError) {
+                        throw new ReassignTokenError("UNKNOWN_ERROR", tokenError.message);
+                    }
+
+                    if (!token) {
+                        throw new ReassignTokenError("TOKEN_NOT_FOUND", "Token not found.");
+                    }
+
+                    if (token.counter_id !== sourceCounterId) {
+                        throw new ReassignTokenError("NOT_YOUR_TOKEN", "This token does not belong to your counter.");
+                    }
+
+                    if (["completed", "skipped", "cancelled"].includes(String(token.status).toLowerCase())) {
+                        throw new ReassignTokenError("ALREADY_SERVED", "This token cannot be reassigned anymore.");
+                    }
+
+                    const { data: targetCounter, error: targetError } = await supabase
+                        .from("counters")
+                        .select("counter_id, status")
+                        .eq("counter_id", targetCounterId)
+                        .maybeSingle();
+
+                    if (targetError) {
+                        throw new ReassignTokenError("UNKNOWN_ERROR", targetError.message);
+                    }
+
+                    if (!targetCounter || String(targetCounter.status).toLowerCase() !== "open") {
+                        throw new ReassignTokenError("TARGET_COUNTER_CLOSED", "Target counter is closed.");
+                    }
+
+                    const nowIso = new Date().toISOString();
+                    const { error: reassignError } = await supabase
+                        .from("tokens")
+                        .update({
+                            counter_id: targetCounterId,
+                            updated_at: nowIso,
+                        })
+                        .eq("token_id", tokenId);
+
+                    if (reassignError) {
+                        throw new ReassignTokenError("UNKNOWN_ERROR", reassignError.message);
+                    }
+
+                    return {
+                        tokenId: token.token_id,
+                        centerId: token.center_id,
+                        userId: token.user_id,
+                        tokenNumber: token.token_number,
+                        status: token.status,
+                        issuedDate: token.issued_date,
+                        issuedTime: token.issued_time,
+                        queuePosition: token.queue_position,
+                        sourceCounterId,
+                        targetCounterId,
+                        reassignedAt: nowIso,
+                    };
+                } catch (fallbackError) {
+                    if (fallbackError instanceof ReassignTokenError) {
+                        throw fallbackError;
+                    }
+
+                    throw new ReassignTokenError("UNKNOWN_ERROR", extractErrorMessage(fallbackError));
+                }
+            }
+
             if (error instanceof AxiosError) {
                 const statusCode = error.response?.status;
                 const data = error.response?.data as { code?: string; message?: string } | undefined;

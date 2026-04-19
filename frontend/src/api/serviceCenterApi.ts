@@ -1,6 +1,8 @@
 // Service Center API Integration - SCRUM-25
 import { AxiosError } from "axios";
 import axiosInstance from "./axiosInstance";
+import { supabase } from "../lib/supabaseClient";
+import { shouldUseSupabaseFallback } from "./fallbackUtils";
 import type {
   ServiceCenter,
   ServiceCenterApiError,
@@ -26,6 +28,38 @@ function extractErrorMessage(error: unknown): string {
   }
 
   return "Failed to connect to service. Please try again.";
+}
+
+function mapDbCenter(center: {
+  center_id: number;
+  name: string;
+  address: string;
+  phone: string | null;
+  email: string | null;
+  description: string | null;
+  timezone: string | null;
+  capacity: number | null;
+  opening_time: string | null;
+  closing_time: string | null;
+  is_active: boolean | null;
+  created_at: string;
+}): ServiceCenter {
+  return {
+    centerId: center.center_id,
+    name: center.name,
+    address: center.address,
+    phone: center.phone ?? undefined,
+    email: center.email ?? undefined,
+    description: center.description ?? undefined,
+    timezone: center.timezone ?? "Asia/Colombo",
+    capacity: center.capacity ?? 100,
+    averageServiceTimeMinutes: 10,
+    openingTime: center.opening_time ?? "08:00:00",
+    closingTime: center.closing_time ?? "17:00:00",
+    isAvailable: Boolean(center.is_active),
+    isActive: Boolean(center.is_active),
+    createdAt: center.created_at,
+  };
 }
 
 // Retry utility with exponential backoff
@@ -75,7 +109,20 @@ export async function getAllServiceCenters(): Promise<ServiceCenter[]> {
       return data.data;
     });
   } catch (error) {
-    throw new Error(extractErrorMessage(error));
+    if (!shouldUseSupabaseFallback(error)) {
+      throw new Error(extractErrorMessage(error));
+    }
+
+    const { data, error: dbError } = await supabase
+      .from("service_centers")
+      .select("center_id, name, address, phone, email, description, timezone, capacity, opening_time, closing_time, is_active, created_at")
+      .order("name", { ascending: true });
+
+    if (dbError) {
+      throw new Error(dbError.message);
+    }
+
+    return (data ?? []).map(mapDbCenter);
   }
 }
 
@@ -93,7 +140,25 @@ export async function getServiceCenterById(
       return data.data;
     });
   } catch (error) {
-    throw new Error(extractErrorMessage(error));
+    if (!shouldUseSupabaseFallback(error)) {
+      throw new Error(extractErrorMessage(error));
+    }
+
+    const { data, error: dbError } = await supabase
+      .from("service_centers")
+      .select("center_id, name, address, phone, email, description, timezone, capacity, opening_time, closing_time, is_active, created_at")
+      .eq("center_id", centerId)
+      .maybeSingle();
+
+    if (dbError) {
+      throw new Error(dbError.message);
+    }
+
+    if (!data) {
+      throw new Error("Service center not found.");
+    }
+
+    return mapDbCenter(data);
   }
 }
 
@@ -125,9 +190,34 @@ export async function createServiceCenter(
     );
     return data.data;
   } catch (error) {
-    // Re-throw AxiosError so the page can inspect .response.data.code
-    if (error instanceof AxiosError) throw error;
-    throw new Error(extractErrorMessage(error));
+    if (!shouldUseSupabaseFallback(error)) {
+      // Re-throw AxiosError so the page can inspect .response.data.code
+      if (error instanceof AxiosError) throw error;
+      throw new Error(extractErrorMessage(error));
+    }
+
+    const { data, error: dbError } = await supabase
+      .from("service_centers")
+      .insert({
+        name: payload.name,
+        address: payload.address,
+        phone: payload.phone ?? null,
+        email: payload.email ?? null,
+        description: payload.description ?? null,
+        timezone: payload.timezone,
+        capacity: payload.capacity,
+        opening_time: payload.openingTime,
+        closing_time: payload.closingTime,
+        is_active: payload.isActive,
+      })
+      .select("center_id, name, address, phone, email, description, timezone, capacity, opening_time, closing_time, is_active, created_at")
+      .single();
+
+    if (dbError) {
+      throw new Error(dbError.message);
+    }
+
+    return mapDbCenter(data);
   }
 }
 
@@ -161,8 +251,27 @@ export async function updateServiceCenterStatus(
     );
     return data.data;
   } catch (error) {
-    if (error instanceof AxiosError) throw error;
-    throw new Error(extractErrorMessage(error));
+    if (!shouldUseSupabaseFallback(error)) {
+      if (error instanceof AxiosError) throw error;
+      throw new Error(extractErrorMessage(error));
+    }
+
+    const { data, error: dbError } = await supabase
+      .from("service_centers")
+      .update({ is_active: isActive })
+      .eq("center_id", centerId)
+      .select("center_id, name, address, phone, email, description, timezone, capacity, opening_time, closing_time, is_active, created_at")
+      .maybeSingle();
+
+    if (dbError) {
+      throw new Error(dbError.message);
+    }
+
+    if (!data) {
+      throw new Error("Service center not found.");
+    }
+
+    return mapDbCenter(data);
   }
 }
 

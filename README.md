@@ -83,6 +83,43 @@ See the [docs/](docs/) directory for comprehensive documentation including:
 - **[Technical API Guide](docs/call-next-token-technical-guide.md)**: Developer documentation
 - **[API Contract](docs/call-next-token-api-contract.md)**: Detailed specification for Call Next Token endpoint
 - **[Branching Strategy](docs/branching-strategy.md)**: Git workflow guidelines
+- **[Supabase Backup Demo Guide](docs/supabase-backup-demo-guide.md)**: Emergency fallback backend setup for demo day
+
+---
+
+## Supabase Backup Mode (Demo Failover)
+
+QueueLanka Pro now includes a backup backend that uses Supabase Postgres. Use this mode only when the primary microservices stack is unavailable during demos.
+
+### Backup Components
+
+- Backup API service: `supabase-backup/server.js`
+- Schema + seed scripts: `supabase-backup/sql/001_schema.sql`, `supabase-backup/sql/002_seed.sql`
+- Setup guide: `docs/supabase-backup-demo-guide.md`
+
+### Start Backup API Locally
+
+```bash
+cd supabase-backup
+npm install
+npm run start
+```
+
+Required environment variables (recommended via local shell/user environment):
+
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `BACKUP_JWT_SECRET`
+
+### Switch Frontend to Backup API
+
+Set:
+
+```env
+VITE_API_BASE_URL=http://localhost:7000
+```
+
+Then restart frontend. To rollback, restore `VITE_API_BASE_URL` to your gateway URL.
 
 ---
 

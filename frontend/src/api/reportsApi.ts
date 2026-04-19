@@ -1,5 +1,7 @@
 import { AxiosError, type AxiosResponse } from "axios";
 import axiosInstance from "./axiosInstance";
+import { supabase } from "../lib/supabaseClient";
+import { shouldUseSupabaseFallback } from "./fallbackUtils";
 
 async function extractErrorMessage(error: unknown): Promise<string> {
     if (error instanceof AxiosError && error.response?.data) {
@@ -84,6 +86,52 @@ export async function downloadDailyCenterSummaryCsv(
         link.parentNode?.removeChild(link);
         window.URL.revokeObjectURL(url);
     } catch (error) {
+        if (shouldUseSupabaseFallback(error)) {
+            const { data, error: dbError } = await supabase
+                .from("tokens")
+                .select("token_number, issued_date, status, issued_time, served_time")
+                .eq("center_id", centerId)
+                .gte("issued_date", fromDate)
+                .lte("issued_date", toDate)
+                .order("issued_date", { ascending: true })
+                .order("token_number", { ascending: true });
+
+            if (dbError) {
+                throw new Error(dbError.message);
+            }
+
+            if (!data || data.length === 0) {
+                throw new Error("No data available for the selected dates.");
+            }
+
+            const rows = [
+                ["Token Number", "Issued Date", "Status", "Issued Time", "Served Time"],
+                ...data.map((row) => [
+                    row.token_number,
+                    row.issued_date,
+                    row.status,
+                    row.issued_time ?? "",
+                    row.served_time ?? "",
+                ]),
+            ];
+
+            const csv = rows
+                .map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(","))
+                .join("\n");
+
+            const filename = `QueueLanka_DailySummary_${fromDate}_${toDate}.csv`;
+            const blob = new Blob([csv], { type: "text/csv" });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download", filename);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode?.removeChild(link);
+            window.URL.revokeObjectURL(url);
+            return;
+        }
+
         if (error instanceof Error && error.message === "No data available for the selected dates.") {
             throw error;
         }
