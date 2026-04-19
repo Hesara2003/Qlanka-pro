@@ -34,11 +34,20 @@ jobs:
       working-directory: frontend
       run: npm ci
 
+    - name: Validate fallback secrets
+      run: |
+        if [ -z "${{ secrets.VITE_SUPABASE_URL }}" ] || [ -z "${{ secrets.VITE_SUPABASE_ANON_KEY }}" ]; then
+          echo "Missing required frontend fallback secrets: VITE_SUPABASE_URL and/or VITE_SUPABASE_ANON_KEY"
+          exit 1
+        fi
+
     - name: Build frontend
       working-directory: frontend
       run: npm run build
       env:
         VITE_API_BASE_URL: ${{ env.AZURE_API_BASE_URL }}
+        VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+        VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
     - name: Prune dev dependencies
       working-directory: frontend
