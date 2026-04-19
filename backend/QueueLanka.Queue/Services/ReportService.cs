@@ -1,5 +1,8 @@
 // backend/QueueLanka.Queue/Services/ReportService.cs
 
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
 using QueueLanka.Queue.Data;
 using QueueLanka.Queue.DTOs.Reports;
 using System.ComponentModel.DataAnnotations;
@@ -11,6 +14,12 @@ namespace QueueLanka.Queue.Services;
 public class ReportService : IReportService
 {
     private readonly IReportRepository _reportRepository;
+
+    static ReportService()
+    {
+        QuestPDF.Settings.License = LicenseType.Community;
+    }
+
     private static readonly IReadOnlyDictionary<string, CustomReportMetricDefinition> CustomMetrics =
         new Dictionary<string, CustomReportMetricDefinition>(StringComparer.OrdinalIgnoreCase)
         {
@@ -84,6 +93,7 @@ public class ReportService : IReportService
         };
 
         ValidateMetrics(request.Metrics);
+        ValidateSupportedFormat(request.Format);
         return request;
     }
 
@@ -126,6 +136,20 @@ public class ReportService : IReportService
             request.FromDate.Date,
             request.ToDate.Date,
             request.CenterIds);
+    }
+
+    public async Task<CustomReportPreviewDto> GetCustomReportPreviewAsync(CustomReportRequestDto request)
+    {
+        var table = await BuildCustomReportTableAsync(request);
+
+        return new CustomReportPreviewDto
+        {
+            FromDate = request.FromDate.Date,
+            ToDate = request.ToDate.Date,
+            Headers = table.Headers,
+            Rows = table.Rows,
+            TotalRow = table.TotalRow
+        };
     }
 
     public async Task<(byte[] fileBytes, string fileName)> GenerateDailyCenterSummaryCsvAsync(DailyCenterSummaryRequestDto request)
@@ -190,53 +214,19 @@ public class ReportService : IReportService
 
     public async Task<(byte[] fileBytes, string fileName)> GenerateCustomReportCsvAsync(CustomReportRequestDto request)
     {
-        ValidateRequest(request);
-
-        var selectedMetrics = ResolveMetricDefinitions(request.Metrics);
-        var rows = await _reportRepository.GetDailyCenterSummaryAsync(
-            request.FromDate.Date,
-            request.ToDate.Date,
-            request.CenterIds);
+        var table = await BuildCustomReportTableAsync(request);
 
         var csvBuilder = new StringBuilder();
-        csvBuilder.Append("Date,Center ID,Center Name");
+        csvBuilder.AppendLine(string.Join(',', table.Headers.Select(EscapeCsvCell)));
 
-        foreach (var metric in selectedMetrics)
+        foreach (var row in table.Rows)
         {
-            csvBuilder.Append(',').Append(metric.HeaderName);
+            csvBuilder.AppendLine(string.Join(',', row.Select(EscapeCsvCell)));
         }
 
-        csvBuilder.AppendLine();
-
-        foreach (var row in rows)
+        if (table.TotalRow is not null)
         {
-            csvBuilder.Append(row.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).Append(',');
-            csvBuilder.Append(row.CenterId).Append(',');
-            csvBuilder.Append(EscapeCsv(row.CenterName));
-
-            foreach (var metric in selectedMetrics)
-            {
-                csvBuilder.Append(',').Append(metric.FormatValue(row));
-            }
-
-            csvBuilder.AppendLine();
-        }
-
-        if (rows.Count > 0)
-        {
-            csvBuilder.Append("Total,,,");
-
-            for (var i = 0; i < selectedMetrics.Count; i++)
-            {
-                if (i > 0)
-                {
-                    csvBuilder.Append(',');
-                }
-
-                csvBuilder.Append(selectedMetrics[i].IncludeInTotals ? SumMetric(rows, selectedMetrics[i]) : string.Empty);
-            }
-
-            csvBuilder.AppendLine();
+            csvBuilder.AppendLine(string.Join(',', table.TotalRow.Select(EscapeCsvCell)));
         }
 
         var fileName = $"QueueLanka_CustomReport_{request.FromDate:yyyyMMdd}_{request.ToDate:yyyyMMdd}.csv";
@@ -247,6 +237,65 @@ public class ReportService : IReportService
         Buffer.BlockCopy(csvBytes, 0, fileBytes, bom.Length, csvBytes.Length);
 
         return (fileBytes, fileName);
+    }
+
+    public async Task<(byte[] fileBytes, string fileName)> GenerateCustomReportPdfAsync(CustomReportRequestDto request)
+    {
+        var table = await BuildCustomReportTableAsync(request);
+
+        var fileName = $"QueueLanka_CustomReport_{request.FromDate:yyyyMMdd}_{request.ToDate:yyyyMMdd}.pdf";
+        var pdfBytes = Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Size(PageSizes.A4.Landscape());
+                page.Margin(20);
+                page.DefaultTextStyle(x => x.FontSize(10));
+
+                page.Header().Column(col =>
+                {
+                    col.Item().Text("QueueLanka Custom Report").Bold().FontSize(16);
+                    col.Item().Text($"Range: {request.FromDate:yyyy-MM-dd} to {request.ToDate:yyyy-MM-dd}").FontSize(10);
+                });
+
+                page.Content().PaddingTop(10).Table(tableBuilder =>
+                {
+                    tableBuilder.ColumnsDefinition(cols =>
+                    {
+                        for (var i = 0; i < table.Headers.Count; i++)
+                        {
+                            cols.RelativeColumn();
+                        }
+                    });
+
+                    tableBuilder.Header(header =>
+                    {
+                        foreach (var heading in table.Headers)
+                        {
+                            header.Cell().Background(Colors.Grey.Lighten3).Padding(4).Text(heading).SemiBold();
+                        }
+                    });
+
+                    foreach (var row in table.Rows)
+                    {
+                        foreach (var cell in row)
+                        {
+                            tableBuilder.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(4).Text(cell);
+                        }
+                    }
+
+                    if (table.TotalRow is not null)
+                    {
+                        foreach (var totalCell in table.TotalRow)
+                        {
+                            tableBuilder.Cell().Background(Colors.Grey.Lighten4).Padding(4).Text(totalCell).SemiBold();
+                        }
+                    }
+                });
+            });
+        }).GeneratePdf();
+
+        return (pdfBytes, fileName);
     }
 
     private static string EscapeCsv(string value)
@@ -300,6 +349,19 @@ public class ReportService : IReportService
         {
             throw new ValidationException("Date range cannot exceed 90 days.");
         }
+
+        ValidateSupportedFormat(request.Format);
+    }
+
+    private static void ValidateSupportedFormat(string format)
+    {
+        if (string.Equals(format, "csv", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(format, "pdf", StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        throw new ValidationException("format must be either 'csv' or 'pdf'.");
     }
 
     private static void ValidateMetrics(List<string> metrics)
@@ -338,6 +400,51 @@ public class ReportService : IReportService
     private static string SumMetric(List<DailyCenterSummaryRowDto> rows, CustomReportMetricDefinition metric)
     {
         return metric.SumSelector(rows).ToString(CultureInfo.InvariantCulture);
+    }
+
+    private async Task<CustomReportTable> BuildCustomReportTableAsync(CustomReportRequestDto request)
+    {
+        ValidateRequest(request);
+        ValidateMetrics(request.Metrics);
+
+        var selectedMetrics = ResolveMetricDefinitions(request.Metrics);
+        var rows = await _reportRepository.GetDailyCenterSummaryAsync(
+            request.FromDate.Date,
+            request.ToDate.Date,
+            request.CenterIds);
+
+        var headers = new List<string> { "Date", "Center ID", "Center Name" };
+        headers.AddRange(selectedMetrics.Select(x => x.HeaderName));
+
+        var dataRows = rows
+            .Select(row =>
+            {
+                var values = new List<string>
+                {
+                    row.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    row.CenterId.ToString(CultureInfo.InvariantCulture),
+                    row.CenterName
+                };
+
+                values.AddRange(selectedMetrics.Select(metric => metric.FormatValue(row)));
+                return (IReadOnlyList<string>)values;
+            })
+            .ToList();
+
+        IReadOnlyList<string>? totalRow = null;
+        if (rows.Count > 0)
+        {
+            var totals = new List<string> { "Total", string.Empty, string.Empty };
+            totals.AddRange(selectedMetrics.Select(metric => metric.IncludeInTotals ? SumMetric(rows, metric) : string.Empty));
+            totalRow = totals;
+        }
+
+        return new CustomReportTable
+        {
+            Headers = headers,
+            Rows = dataRows,
+            TotalRow = totalRow
+        };
     }
 
     private static List<int> ParseCenterIds(string? centerIds)
@@ -383,6 +490,12 @@ public class ReportService : IReportService
             .Trim();
     }
 
+    private static string EscapeCsvCell(string value)
+    {
+        var escaped = value.Replace("\"", "\"\"");
+        return $"\"{escaped}\"";
+    }
+
     private sealed record CustomReportMetricDefinition(
         string HeaderName,
         Func<DailyCenterSummaryRowDto, object> ValueSelector,
@@ -404,5 +517,12 @@ public class ReportService : IReportService
 
             return sum;
         };
+    }
+
+    private sealed class CustomReportTable
+    {
+        public IReadOnlyList<string> Headers { get; set; } = Array.Empty<string>();
+        public IReadOnlyList<IReadOnlyList<string>> Rows { get; set; } = Array.Empty<IReadOnlyList<string>>();
+        public IReadOnlyList<string>? TotalRow { get; set; }
     }
 }

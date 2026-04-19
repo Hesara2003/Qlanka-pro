@@ -68,7 +68,7 @@ public class ReportsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> GetCustomReportCsv(
+    public async Task<IActionResult> GetCustomReport(
         [FromQuery] DateTime fromDate,
         [FromQuery] DateTime toDate,
         [FromQuery] string? centerIds,
@@ -90,8 +90,48 @@ public class ReportsController : ControllerBase
                 return NoContent();
             }
 
+            if (string.Equals(request.Format, "pdf", StringComparison.OrdinalIgnoreCase))
+            {
+                var (pdfBytes, pdfFileName) = await _reportService.GenerateCustomReportPdfAsync(request);
+                return File(pdfBytes, "application/pdf", pdfFileName);
+            }
+
             var (fileBytes, fileName) = await _reportService.GenerateCustomReportCsvAsync(request);
             return File(fileBytes, "text/csv", fileName);
+        }
+        catch (ValidationException ex)
+        {
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", ex.Message));
+        }
+        catch (FormatException ex)
+        {
+            return BadRequest(new ErrorResponse("INVALID_METRIC_FILTER", ex.Message));
+        }
+    }
+
+    [HttpGet("/reports/custom/preview")]
+    [HttpGet("custom/preview")]
+    [ResponseCache(NoStore = true)]
+    [ProducesResponseType(typeof(CustomReportPreviewDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetCustomReportPreview(
+        [FromQuery] DateTime fromDate,
+        [FromQuery] DateTime toDate,
+        [FromQuery] string? centerIds,
+        [FromQuery] string? metrics)
+    {
+        try
+        {
+            var request = _reportService.CreateCustomReportRequest(fromDate, toDate, centerIds, metrics, "csv");
+
+            if (!TryValidateModel(request))
+            {
+                return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid report request parameters."));
+            }
+
+            var preview = await _reportService.GetCustomReportPreviewAsync(request);
+            return Ok(preview);
         }
         catch (ValidationException ex)
         {

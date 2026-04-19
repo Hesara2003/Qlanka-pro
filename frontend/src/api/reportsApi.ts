@@ -1,6 +1,14 @@
 import { AxiosError, type AxiosResponse } from "axios";
 import axiosInstance from "./axiosInstance";
 
+export interface CustomReportPreviewDto {
+    fromDate: string;
+    toDate: string;
+    headers: string[];
+    rows: string[][];
+    totalRow?: string[];
+}
+
 async function extractErrorMessage(error: unknown): Promise<string> {
     if (error instanceof AxiosError && error.response?.data) {
         if (error.response.data instanceof Blob) {
@@ -89,4 +97,69 @@ export async function downloadDailyCenterSummaryCsv(
         }
         throw new Error(await extractErrorMessage(error));
     }
+}
+
+export async function getCustomReportPreview(
+    fromDate: string,
+    toDate: string,
+    centerIds: number[] = [],
+    metrics: string[] = []
+): Promise<CustomReportPreviewDto> {
+    const params = {
+        fromDate,
+        toDate,
+        centerIds: centerIds.length > 0 ? centerIds.join(",") : undefined,
+        metrics: metrics.length > 0 ? metrics.join(",") : undefined
+    };
+
+    const response = await axiosInstance.get<CustomReportPreviewDto>("/api/reports/custom/preview", { params });
+    return response.data;
+}
+
+export async function downloadCustomReport(
+    fromDate: string,
+    toDate: string,
+    options?: {
+        centerIds?: number[];
+        metrics?: string[];
+        format?: "csv" | "pdf";
+    }
+): Promise<void> {
+    const format = options?.format ?? "csv";
+    const params = {
+        fromDate,
+        toDate,
+        centerIds: options?.centerIds && options.centerIds.length > 0 ? options.centerIds.join(",") : undefined,
+        metrics: options?.metrics && options.metrics.length > 0 ? options.metrics.join(",") : undefined,
+        format
+    };
+
+    const response = await axiosInstance.get("/api/reports/custom", {
+        params,
+        responseType: "blob"
+    });
+
+    if (response.status === 204) {
+        throw new Error("No data available for the selected filters.");
+    }
+
+    let filename = `QueueLanka_CustomReport_${fromDate}_${toDate}.${format}`;
+    const disposition = response.headers["content-disposition"];
+    if (disposition && disposition.indexOf("filename=") !== -1) {
+        const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(disposition);
+        if (matches != null && matches[1]) {
+            filename = matches[1].replace(/['"]/g, "");
+        }
+    }
+
+    const mimeType = format === "pdf" ? "application/pdf" : "text/csv";
+    const blob = new Blob([response.data], { type: mimeType });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    link.parentNode?.removeChild(link);
+    window.URL.revokeObjectURL(url);
 }
