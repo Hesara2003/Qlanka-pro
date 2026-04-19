@@ -68,4 +68,23 @@ describe('userApi', () => {
     mockedAxios.delete.mockRejectedValueOnce(new AxiosError('timeout', 'ECONNABORTED'))
     await expect(deleteAdminUser(5)).rejects.toThrow('Request timeout. Please try again.')
   })
+
+  it('uses backend message when code is unknown', async () => {
+    mockedAxios.get.mockRejectedValueOnce(
+      new AxiosError(
+        'bad request',
+        undefined,
+        undefined,
+        undefined,
+        axiosResponse({ code: 'SOME_NEW_CODE', message: 'Custom backend message' }, 400),
+      ),
+    )
+
+    await expect(getAdminUsers()).rejects.toThrow('Custom backend message')
+  })
+
+  it('maps no-response axios errors to network message', async () => {
+    mockedAxios.get.mockRejectedValueOnce(new AxiosError('network down'))
+    await expect(getAdminUsers()).rejects.toThrow('Network error. Please check your connection and try again.')
+  })
 })

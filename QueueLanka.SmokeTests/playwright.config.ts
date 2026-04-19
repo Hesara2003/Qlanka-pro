@@ -2,7 +2,7 @@ import { defineConfig } from "@playwright/test";
 
 const baseURL =
   process.env.SMOKE_BASE_URL ??
-  "https://queuelanka-api-fwhthqd4g9e0aee2.centralindia-01.azurewebsites.net";
+  "https://20.193.250.12:9443";
 
 export default defineConfig({
   testDir: "./tests",

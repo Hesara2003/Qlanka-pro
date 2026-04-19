@@ -1,4 +1,5 @@
-import { test, expect, type APIRequestContext } from "@playwright/test";
+import { test, expect } from "@playwright/test";
+import { getAuthToken } from "../helpers/auth.helper";
 
 // ─────────────────────────────────────────────────────────────
 // Token Smoke Tests — /api/Token
@@ -8,7 +9,7 @@ test.describe("Token Smoke Tests", () => {
   test("GET /api/Token/my-tokens — with auth returns 200", async ({
     request,
   }) => {
-    const token = await getAdminAuthToken(request);
+    const token = await getAuthToken(request);
 
     const response = await request.get("/api/Token/my-tokens", {
       headers: { Authorization: `Bearer ${token}` },
@@ -17,8 +18,12 @@ test.describe("Token Smoke Tests", () => {
     expect(response.status()).toBe(200);
 
     const body = await response.json();
-    const tokens = Array.isArray(body) ? body : body.data;
-    expect(Array.isArray(tokens)).toBe(true);
+    const tokenList = Array.isArray(body)
+      ? body
+      : Array.isArray(body?.data)
+        ? body.data
+        : null;
+    expect(Array.isArray(tokenList)).toBe(true);
   });
 
   test("GET /api/Token/my-tokens — without auth returns 401", async ({
@@ -32,7 +37,7 @@ test.describe("Token Smoke Tests", () => {
   test("PUT /api/Token/999999/cancel — invalid token ID returns 404", async ({
     request,
   }) => {
-    const token = await getAdminAuthToken(request);
+    const token = await getAuthToken(request);
 
     const response = await request.put("/api/Token/999999/cancel", {
       headers: { Authorization: `Bearer ${token}` },
@@ -50,19 +55,3 @@ test.describe("Token Smoke Tests", () => {
     expect(response.status()).toBe(401);
   });
 });
-
-async function getAdminAuthToken(request: APIRequestContext): Promise<string> {
-  const response = await request.post("/api/auth/login", {
-    data: {
-      username: process.env.SMOKE_ADMIN_USERNAME ?? "healthcheck_admin",
-      password: process.env.SMOKE_ADMIN_PASSWORD ?? "Health@Check1",
-    },
-  });
-
-  if (!response.ok()) {
-    throw new Error(`Admin login failed (${response.status()}).`);
-  }
-
-  const body = await response.json();
-  return body.token;
-}

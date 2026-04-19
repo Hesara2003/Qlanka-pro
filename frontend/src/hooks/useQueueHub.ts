@@ -112,8 +112,20 @@ const RECONNECT_DELAYS_MS = [1000, 2000, 4000, 8000, 16000, 30000];
 const SESSION_CENTER_ID_KEY = "queuehub:centerId";
 const SESSION_COUNTER_ID_KEY = "queuehub:counterId";
 
+const isWso2Enabled = (import.meta.env.VITE_WSO2_ENABLED ?? "false").toLowerCase() === "true";
+const wso2PublicContext = (import.meta.env.VITE_WSO2_PUBLIC_CONTEXT ?? "/public/v1").replace(/\/+$/, "");
+
 const getHubUrl = () => {
-    const rawBaseUrl = (import.meta.env.VITE_API_BASE_URL ?? window.location.origin).replace(/\/+$/, "");
+    const explicitHubUrl = import.meta.env.VITE_QUEUE_HUB_URL;
+    if (explicitHubUrl && explicitHubUrl.trim().length > 0) {
+        return explicitHubUrl.replace(/\/+$/, "");
+    }
+
+    const rawBaseUrl = (
+        import.meta.env.VITE_API_BASE_URL ??
+        import.meta.env.VITE_WSO2_API_BASE_URL ??
+        window.location.origin
+    ).replace(/\/+$/, "");
     const baseUrl = rawBaseUrl.replace(/\/api$/i, "");
     return `${baseUrl}/hubs/queue`;
 };
@@ -160,7 +172,8 @@ export function useQueueHub(options: UseQueueHubOptions): UseQueueHubResult {
     const onReconnectedRef = useRef<UseQueueHubOptions["onReconnected"]>(onReconnected);
 
     const effectiveCenterId = (centerId ?? Number(sessionStorage.getItem(SESSION_CENTER_ID_KEY) || "")) || undefined;
-    const effectiveCounterId = (counterId ?? Number(sessionStorage.getItem(SESSION_COUNTER_ID_KEY) || "")) || undefined;
+    // Do not fall back to a cached counter ID to avoid stale officer assignments.
+    const effectiveCounterId = (counterId && !Number.isNaN(counterId)) ? counterId : undefined;
     const hasValidCenterId = Boolean(effectiveCenterId && !Number.isNaN(effectiveCenterId));
     const hasValidCounterId = Boolean(effectiveCounterId && !Number.isNaN(effectiveCounterId));
     const canConnect = enabled && (hasValidCenterId || (isOfficer && hasValidCounterId));
@@ -186,9 +199,22 @@ export function useQueueHub(options: UseQueueHubOptions): UseQueueHubResult {
     }, [onReconnected]);
 
     const resolveApiBaseUrl = useCallback(() => {
-        const rawBaseUrl = (import.meta.env.VITE_API_BASE_URL ?? window.location.origin).replace(/\/+$/, "");
+        const rawBaseUrl = (
+            import.meta.env.VITE_API_BASE_URL ??
+            import.meta.env.VITE_WSO2_API_BASE_URL ??
+            window.location.origin
+        ).replace(/\/+$/, "");
         return rawBaseUrl.replace(/\/api$/i, "");
     }, []);
+
+    const resolveRefreshUrl = useCallback(() => {
+        const base = resolveApiBaseUrl();
+        if (isWso2Enabled) {
+            return `${base}${wso2PublicContext}/api/auth/refresh`;
+        }
+
+        return `${base}/api/auth/refresh`;
+    }, [resolveApiBaseUrl]);
 
     const isTokenExpired = useCallback((token: string) => {
         try {
@@ -215,7 +241,7 @@ export function useQueueHub(options: UseQueueHubOptions): UseQueueHubResult {
         }
 
         try {
-            const response = await fetch(`${resolveApiBaseUrl()}/api/auth/refresh`, {
+            const response = await fetch(resolveRefreshUrl(), {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -241,7 +267,7 @@ export function useQueueHub(options: UseQueueHubOptions): UseQueueHubResult {
         } catch {
             return false;
         }
-    }, [resolveApiBaseUrl]);
+    }, [resolveRefreshUrl]);
 
     const ensureValidAccessToken = useCallback(async () => {
         const token = getAccessToken();
@@ -376,6 +402,8 @@ export function useQueueHub(options: UseQueueHubOptions): UseQueueHubResult {
 
         if (effectiveCounterId) {
             sessionStorage.setItem(SESSION_COUNTER_ID_KEY, String(effectiveCounterId));
+        } else {
+            sessionStorage.removeItem(SESSION_COUNTER_ID_KEY);
         }
 
         const onReconnectedCallback = onReconnectedRef.current;
@@ -507,6 +535,8 @@ export function useQueueHub(options: UseQueueHubOptions): UseQueueHubResult {
 
         if (counterId && !Number.isNaN(counterId)) {
             sessionStorage.setItem(SESSION_COUNTER_ID_KEY, String(counterId));
+        } else {
+            sessionStorage.removeItem(SESSION_COUNTER_ID_KEY);
         }
 
         void connect();
