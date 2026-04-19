@@ -43,6 +43,37 @@ public class ReportServiceTests
     }
 
     [Fact]
+    public void CreateCustomReportRequest_ParsesFiltersAndMetricSelection()
+    {
+        var service = CreateService();
+
+        var request = service.CreateCustomReportRequest(
+            new DateTime(2026, 1, 1),
+            new DateTime(2026, 1, 2),
+            "1, 2",
+            "served, peakHour, activeCounters",
+            null);
+
+        request.CenterIds.Should().Equal(1, 2);
+        request.Metrics.Should().Equal("served", "peakHour", "activeCounters");
+        request.Format.Should().Be("csv");
+    }
+
+    [Fact]
+    public void CreateCustomReportRequest_InvalidMetric_ThrowsFormatException()
+    {
+        var service = CreateService();
+
+        Action act = () => service.CreateCustomReportRequest(
+            new DateTime(2026, 1, 1),
+            new DateTime(2026, 1, 2),
+            null,
+            "served,unknownMetric");
+
+        act.Should().Throw<FormatException>();
+    }
+
+    [Fact]
     public void CreateCenterDailySummaryRequest_InvalidCenterId_ThrowsValidationException()
     {
         var service = CreateService();
@@ -139,5 +170,58 @@ public class ReportServiceTests
         var (bytes, _) = await service.GenerateDailyCenterSummaryCsvAsync(request);
         var csv = Encoding.UTF8.GetString(bytes.Skip(3).ToArray());
         csv.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Should().HaveCount(1);
+    }
+
+    [Fact]
+    public async Task GenerateCustomReportCsvAsync_UsesOnlySelectedMetrics_AndUtf8Bom()
+    {
+        _repo.Setup(x => x.GetDailyCenterSummaryAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<int>?>()))
+            .ReturnsAsync(new List<DailyCenterSummaryRowDto>
+            {
+                new()
+                {
+                    Date = new DateOnly(2026, 1, 1),
+                    CenterId = 1,
+                    CenterName = "Main Center",
+                    TotalServed = 7,
+                    PeakHour = 10,
+                    ActiveCounters = 2
+                }
+            });
+
+        var service = CreateService();
+        var request = new CustomReportRequestDto
+        {
+            FromDate = new DateTime(2026, 1, 1),
+            ToDate = new DateTime(2026, 1, 1),
+            Metrics = new List<string> { "served", "peakHour", "activeCounters" },
+            CenterIds = new List<int> { 1 }
+        };
+
+        var (bytes, fileName) = await service.GenerateCustomReportCsvAsync(request);
+
+        fileName.Should().Be("QueueLanka_CustomReport_20260101_20260101.csv");
+        bytes.Take(3).Should().Equal(Encoding.UTF8.GetPreamble());
+
+        var csv = Encoding.UTF8.GetString(bytes.Skip(3).ToArray());
+        csv.Should().Contain("Date,Center ID,Center Name,Served,Peak Hour,Active Counters");
+        csv.Should().Contain("2026-01-01,1,\"Main Center\",7,10:00,2");
+        csv.Should().Contain("Total,,,7,,2");
+    }
+
+    [Fact]
+    public async Task GenerateCustomReportCsvAsync_InvalidMetric_ThrowsFormatException()
+    {
+        var service = CreateService();
+        var request = new CustomReportRequestDto
+        {
+            FromDate = new DateTime(2026, 1, 1),
+            ToDate = new DateTime(2026, 1, 1),
+            Metrics = new List<string> { "served", "not-real" }
+        };
+
+        Func<Task> act = async () => await service.GenerateCustomReportCsvAsync(request);
+
+        await act.Should().ThrowAsync<FormatException>();
     }
 }

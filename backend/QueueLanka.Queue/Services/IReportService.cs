@@ -12,6 +12,13 @@ public interface IReportService
         string? centerIds,
         string? format = "csv");
 
+    CustomReportRequestDto CreateCustomReportRequest(
+        DateTime fromDate,
+        DateTime toDate,
+        string? centerIds,
+        string? metrics,
+        string? format = "csv");
+
     DailyCenterSummaryRequestDto CreateCenterDailySummaryRequest(
         int centerId,
         DateTime fromDate,
@@ -20,4 +27,6 @@ public interface IReportService
 
     Task<(byte[] fileBytes, string fileName)> GenerateDailyCenterSummaryCsvAsync(DailyCenterSummaryRequestDto request);
     Task<List<DailyCenterSummaryRowDto>> GetDailyCenterSummaryDataAsync(DailyCenterSummaryRequestDto request);
+    Task<List<DailyCenterSummaryRowDto>> GetCustomReportDataAsync(CustomReportRequestDto request);
+    Task<(byte[] fileBytes, string fileName)> GenerateCustomReportCsvAsync(CustomReportRequestDto request);
 }

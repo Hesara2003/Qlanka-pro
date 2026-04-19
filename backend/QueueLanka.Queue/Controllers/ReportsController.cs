@@ -61,6 +61,48 @@ public class ReportsController : ControllerBase
         }
     }
 
+    [HttpGet("/reports/custom")]
+    [HttpGet("custom")]
+    [ResponseCache(NoStore = true)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetCustomReportCsv(
+        [FromQuery] DateTime fromDate,
+        [FromQuery] DateTime toDate,
+        [FromQuery] string? centerIds,
+        [FromQuery] string? metrics,
+        [FromQuery] string? format = "csv")
+    {
+        try
+        {
+            var request = _reportService.CreateCustomReportRequest(fromDate, toDate, centerIds, metrics, format);
+
+            if (!TryValidateModel(request))
+            {
+                return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid report request parameters."));
+            }
+
+            var data = await _reportService.GetCustomReportDataAsync(request);
+            if (data.Count == 0)
+            {
+                return NoContent();
+            }
+
+            var (fileBytes, fileName) = await _reportService.GenerateCustomReportCsvAsync(request);
+            return File(fileBytes, "text/csv", fileName);
+        }
+        catch (ValidationException ex)
+        {
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", ex.Message));
+        }
+        catch (FormatException ex)
+        {
+            return BadRequest(new ErrorResponse("INVALID_METRIC_FILTER", ex.Message));
+        }
+    }
+
     [HttpGet("/reports/centers/{id}/summary")]
     [HttpGet("centers/{id}/summary")]
     [ResponseCache(NoStore = true)]
