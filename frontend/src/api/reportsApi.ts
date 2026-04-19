@@ -13,6 +13,23 @@ export interface CustomReportPreviewDto {
     totalRow?: string[];
 }
 
+export interface DashboardAnalyticsDailyBookingDto {
+    date: string;
+    bookings: number;
+}
+
+export interface DashboardAnalyticsDto {
+    fromDate: string;
+    toDate: string;
+    totalBookings: number;
+    totalServed: number;
+    totalSkipped: number;
+    averageWaitTimeSeconds: number;
+    peakHour: number;
+    peakHourTokenCount: number;
+    dailyBookings: DashboardAnalyticsDailyBookingDto[];
+}
+
 async function extractErrorMessage(error: unknown): Promise<string> {
     if (error instanceof AxiosError && error.response?.data) {
         if (error.response.data instanceof Blob) {
@@ -121,6 +138,21 @@ export async function getCustomReportPreview(
     };
 
     const response = await axiosInstance.get<CustomReportPreviewDto>("/api/reports/custom/preview", { params });
+    return response.data;
+}
+
+export async function getDashboardAnalytics(
+    fromDate: string,
+    toDate: string,
+    centerIds: number[] = []
+): Promise<DashboardAnalyticsDto> {
+    const params = {
+        fromDate,
+        toDate,
+        centerIds: centerIds.length > 0 ? centerIds.join(",") : undefined,
+    };
+
+    const response = await axiosInstance.get<DashboardAnalyticsDto>("/api/reports/custom/analytics", { params });
     return response.data;
 }
 

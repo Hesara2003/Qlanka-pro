@@ -2,6 +2,7 @@
 
 using MySqlConnector;
 using QueueLanka.Queue.DTOs.Reports;
+using System.Globalization;
 using System.Text;
 
 namespace QueueLanka.Queue.Data;
@@ -14,6 +15,36 @@ public class ReportRepository : IReportRepository
     {
         _connectionString = configuration.GetConnectionString("Default")
             ?? throw new InvalidOperationException("Connection string 'Default' is not configured.");
+    }
+
+    public async Task<DashboardAnalyticsResponseDto> GetDashboardAnalyticsAsync(
+        DateTime fromDate,
+        DateTime toDate,
+        List<int>? centerIds)
+    {
+        await using var conn = new MySqlConnection(_connectionString);
+        await conn.OpenAsync();
+
+        var tokenColumns = await GetTokenColumnNamesAsync(conn);
+        var issuedExpr = ResolveDateTimeExpression(tokenColumns, "t");
+        var calledExpr = ResolveOptionalExpression(tokenColumns, "called_at", "t");
+        var subqueryIssuedExpr = ResolveDateTimeExpression(tokenColumns, "tp");
+
+        var dailyBookings = await GetDashboardDailyBookingsAsync(conn, issuedExpr, fromDate, toDate, centerIds);
+        var summary = await GetDashboardSummaryAsync(conn, issuedExpr, calledExpr, subqueryIssuedExpr, fromDate, toDate, centerIds);
+
+        return new DashboardAnalyticsResponseDto
+        {
+            FromDate = fromDate.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            ToDate = toDate.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            TotalBookings = dailyBookings.Sum(point => point.Bookings),
+            TotalServed = summary.TotalServed,
+            TotalSkipped = summary.TotalSkipped,
+            AverageWaitTimeSeconds = summary.AverageWaitTimeSeconds,
+            PeakHour = summary.PeakHour,
+            PeakHourTokenCount = summary.PeakHourTokenCount,
+            DailyBookings = dailyBookings
+        };
     }
 
     public async Task<List<DailyCenterSummaryRowDto>> GetDailyCenterSummaryAsync(
@@ -201,6 +232,110 @@ public class ReportRepository : IReportRepository
         return Convert.ToInt32(result, System.Globalization.CultureInfo.InvariantCulture);
     }
 
+    private async Task<List<DashboardAnalyticsDailyBookingDto>> GetDashboardDailyBookingsAsync(
+        MySqlConnection conn,
+        string issuedExpr,
+        DateTime fromDate,
+        DateTime toDate,
+        List<int>? centerIds)
+    {
+        var sqlBuilder = new StringBuilder(@"
+            SELECT
+                DATE(" + issuedExpr + @") AS summary_date,
+                COUNT(*) AS bookings
+            FROM tokens t
+            WHERE DATE(" + issuedExpr + @") BETWEEN @FromDate AND @ToDate");
+
+        await using var cmd = new MySqlCommand(string.Empty, conn);
+        cmd.Parameters.AddWithValue("@FromDate", fromDate.Date);
+        cmd.Parameters.AddWithValue("@ToDate", toDate.Date);
+
+        AppendCenterFilter(sqlBuilder, "t", cmd, centerIds);
+
+        sqlBuilder.Append(@"
+            GROUP BY DATE(" + issuedExpr + @")
+            ORDER BY summary_date ASC");
+
+        cmd.CommandText = sqlBuilder.ToString();
+
+        var rows = new List<DashboardAnalyticsDailyBookingDto>();
+        await using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            rows.Add(new DashboardAnalyticsDailyBookingDto
+            {
+                Date = DateOnly.FromDateTime(reader.GetDateTime(reader.GetOrdinal("summary_date"))).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                Bookings = reader.GetInt32(reader.GetOrdinal("bookings"))
+            });
+        }
+
+        return rows;
+    }
+
+    private async Task<DashboardAnalyticsSummaryResult> GetDashboardSummaryAsync(
+        MySqlConnection conn,
+        string issuedExpr,
+        string calledExpr,
+        string subqueryIssuedExpr,
+        DateTime fromDate,
+        DateTime toDate,
+        List<int>? centerIds)
+    {
+        var centerFilterMain = BuildCenterFilterClause("t", centerIds);
+        var centerFilterSubquery = BuildCenterFilterClause("tp", centerIds);
+
+        var sqlBuilder = new StringBuilder(@"
+            SELECT
+                COUNT(*) AS total_bookings,
+                SUM(CASE WHEN t.status IN ('Served', 'Completed') THEN 1 ELSE 0 END) AS total_served,
+                SUM(CASE WHEN t.status = 'Skipped' THEN 1 ELSE 0 END) AS total_skipped,
+                COALESCE(ROUND(AVG(CASE
+                    WHEN " + calledExpr + @" IS NOT NULL THEN TIMESTAMPDIFF(SECOND, " + issuedExpr + @", " + calledExpr + @")
+                    ELSE NULL
+                END)), 0) AS avg_wait_time_seconds,
+                COALESCE((
+                    SELECT HOUR(" + subqueryIssuedExpr + @")
+                    FROM tokens tp
+                    WHERE DATE(" + subqueryIssuedExpr + @") BETWEEN @FromDate AND @ToDate" + centerFilterSubquery + @"
+                    GROUP BY HOUR(" + subqueryIssuedExpr + @")
+                    ORDER BY COUNT(*) DESC, HOUR(" + subqueryIssuedExpr + @") ASC
+                    LIMIT 1
+                ), 0) AS peak_hour,
+                COALESCE((
+                    SELECT COUNT(*)
+                    FROM tokens tp
+                    WHERE DATE(" + subqueryIssuedExpr + @") BETWEEN @FromDate AND @ToDate" + centerFilterSubquery + @"
+                    GROUP BY HOUR(" + subqueryIssuedExpr + @")
+                    ORDER BY COUNT(*) DESC, HOUR(" + subqueryIssuedExpr + @") ASC
+                    LIMIT 1
+                ), 0) AS peak_hour_token_count
+            FROM tokens t
+            WHERE DATE(" + issuedExpr + @") BETWEEN @FromDate AND @ToDate" + centerFilterMain);
+
+        await using var cmd = new MySqlCommand(string.Empty, conn);
+        cmd.Parameters.AddWithValue("@FromDate", fromDate.Date);
+        cmd.Parameters.AddWithValue("@ToDate", toDate.Date);
+        AddCenterParameters(cmd, centerIds);
+
+        cmd.CommandText = sqlBuilder.ToString();
+
+        await using var reader = await cmd.ExecuteReaderAsync();
+        if (!await reader.ReadAsync())
+        {
+            return new DashboardAnalyticsSummaryResult();
+        }
+
+        return new DashboardAnalyticsSummaryResult
+        {
+            TotalBookings = reader.GetInt32(reader.GetOrdinal("total_bookings")),
+            TotalServed = reader.GetInt32(reader.GetOrdinal("total_served")),
+            TotalSkipped = reader.GetInt32(reader.GetOrdinal("total_skipped")),
+            AverageWaitTimeSeconds = reader.GetInt32(reader.GetOrdinal("avg_wait_time_seconds")),
+            PeakHour = reader.GetInt32(reader.GetOrdinal("peak_hour")),
+            PeakHourTokenCount = reader.GetInt32(reader.GetOrdinal("peak_hour_token_count"))
+        };
+    }
+
     private static async Task<HashSet<string>> GetTokenColumnNamesAsync(MySqlConnection conn)
     {
         await using var cmd = new MySqlCommand(@"
@@ -217,6 +352,47 @@ public class ReportRepository : IReportRepository
         }
 
         return columns;
+    }
+
+    private static void AddCenterParameters(MySqlCommand cmd, List<int>? centerIds)
+    {
+        if (centerIds is not { Count: > 0 })
+        {
+            return;
+        }
+
+        for (var i = 0; i < centerIds.Count; i++)
+        {
+            cmd.Parameters.AddWithValue($"@CenterId{i}", centerIds[i]);
+        }
+    }
+
+    private static void AppendCenterFilter(StringBuilder sqlBuilder, string alias, MySqlCommand cmd, List<int>? centerIds)
+    {
+        var clause = BuildCenterFilterClause(alias, centerIds);
+        if (string.IsNullOrWhiteSpace(clause))
+        {
+            return;
+        }
+
+        AddCenterParameters(cmd, centerIds);
+        sqlBuilder.Append(clause);
+    }
+
+    private static string BuildCenterFilterClause(string alias, List<int>? centerIds)
+    {
+        if (centerIds is not { Count: > 0 })
+        {
+            return string.Empty;
+        }
+
+        var inParameters = new List<string>();
+        for (var i = 0; i < centerIds.Count; i++)
+        {
+            inParameters.Add($"@CenterId{i}");
+        }
+
+        return $"\n              AND {alias}.center_id IN ({string.Join(",", inParameters)})";
     }
 
     private static string ResolveDateTimeExpression(HashSet<string> columns, string alias)
@@ -256,5 +432,15 @@ public class ReportRepository : IReportRepository
         }
 
         return "NULL";
+    }
+
+    private sealed class DashboardAnalyticsSummaryResult
+    {
+        public int TotalBookings { get; set; }
+        public int TotalServed { get; set; }
+        public int TotalSkipped { get; set; }
+        public int AverageWaitTimeSeconds { get; set; }
+        public int PeakHour { get; set; }
+        public int PeakHourTokenCount { get; set; }
     }
 }

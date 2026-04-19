@@ -77,6 +77,19 @@ public class ReportService : IReportService
         };
     }
 
+    public DashboardAnalyticsRequestDto CreateDashboardAnalyticsRequest(
+        DateTime fromDate,
+        DateTime toDate,
+        string? centerIds)
+    {
+        return new DashboardAnalyticsRequestDto
+        {
+            FromDate = fromDate,
+            ToDate = toDate,
+            CenterIds = ParseCenterIds(centerIds)
+        };
+    }
+
     public CustomReportRequestDto CreateCustomReportRequest(
         DateTime fromDate,
         DateTime toDate,
@@ -127,6 +140,16 @@ public class ReportService : IReportService
         ValidateRequest(request);
 
         return await _reportRepository.GetDailyCenterSummaryAsync(
+            request.FromDate.Date,
+            request.ToDate.Date,
+            request.CenterIds);
+    }
+
+    public async Task<DashboardAnalyticsResponseDto> GetDashboardAnalyticsAsync(DashboardAnalyticsRequestDto request)
+    {
+        ValidateRequest(request);
+
+        return await _reportRepository.GetDashboardAnalyticsAsync(
             request.FromDate.Date,
             request.ToDate.Date,
             request.CenterIds);
@@ -370,38 +393,12 @@ public class ReportService : IReportService
 
     private static void ValidateRequest(DailyCenterSummaryRequestDto request)
     {
-        if (request.FromDate == default || request.ToDate == default)
-        {
-            throw new ValidationException("from/to dates are required.");
-        }
-
-        if (request.ToDate.Date < request.FromDate.Date)
-        {
-            throw new ValidationException("ToDate must be greater than or equal to FromDate.");
-        }
-
-        if ((request.ToDate.Date - request.FromDate.Date).TotalDays > 90)
-        {
-            throw new ValidationException("Date range cannot exceed 90 days.");
-        }
+        ValidateDateRange(request.FromDate, request.ToDate);
     }
 
     private static void ValidateRequest(CustomReportRequestDto request)
     {
-        if (request.FromDate == default || request.ToDate == default)
-        {
-            throw new ValidationException("from/to dates are required.");
-        }
-
-        if (request.ToDate.Date < request.FromDate.Date)
-        {
-            throw new ValidationException("ToDate must be greater than or equal to FromDate.");
-        }
-
-        if ((request.ToDate.Date - request.FromDate.Date).TotalDays > 90)
-        {
-            throw new ValidationException("Date range cannot exceed 90 days.");
-        }
+        ValidateDateRange(request.FromDate, request.ToDate);
 
         if (request.Page.HasValue && request.Page.Value <= 0)
         {
@@ -414,6 +411,29 @@ public class ReportService : IReportService
         }
 
         ValidateSupportedFormat(request.Format);
+    }
+
+    private static void ValidateRequest(DashboardAnalyticsRequestDto request)
+    {
+        ValidateDateRange(request.FromDate, request.ToDate);
+    }
+
+    private static void ValidateDateRange(DateTime fromDate, DateTime toDate)
+    {
+        if (fromDate == default || toDate == default)
+        {
+            throw new ValidationException("from/to dates are required.");
+        }
+
+        if (toDate.Date < fromDate.Date)
+        {
+            throw new ValidationException("ToDate must be greater than or equal to FromDate.");
+        }
+
+        if ((toDate.Date - fromDate.Date).TotalDays > 90)
+        {
+            throw new ValidationException("Date range cannot exceed 90 days.");
+        }
     }
 
     private static void ValidateSupportedFormat(string format)

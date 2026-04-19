@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { getAllServiceCenters } from "../../api/serviceCenterApi";
 import {
   downloadCustomReport,
-  getCustomReportPreview,
-  type CustomReportPreviewDto,
+  getDashboardAnalytics,
+  type DashboardAnalyticsDto,
 } from "../../api/reportsApi";
 import {
   ResponsiveContainer,
@@ -33,68 +33,13 @@ function today(): string {
   return new Date().toISOString().split("T")[0];
 }
 
-function parseMetricNumber(value: string | undefined): number {
-  if (!value) return 0;
-  const n = Number(value.replace(/[^0-9.-]/g, ""));
-  return Number.isFinite(n) ? n : 0;
+function formatMinutes(totalSeconds: number): string {
+  return `${(totalSeconds / 60).toFixed(1)} min`;
 }
 
-function mapRows(headers: string[], rows: string[][]) {
-  const idxDate = headers.indexOf("Date");
-  const idxIssued = headers.indexOf("Tokens Issued");
-  const idxServed = headers.indexOf("Served");
-  const idxSkipped = headers.indexOf("Skipped");
-  const idxAvgWait = headers.indexOf("Avg Wait Time (min)");
-  const idxPeakHour = headers.indexOf("Peak Hour");
-  const idxPeakHourTokens = headers.indexOf("Peak Hour Tokens");
-
-  const dailyMap = new Map<string, number>();
-  let totalServed = 0;
-  let totalSkipped = 0;
-  let waitSum = 0;
-  let waitCount = 0;
-  let peakHour = "-";
-  let peakHourTokens = 0;
-
-  for (const row of rows) {
-    const date = idxDate >= 0 ? row[idxDate] : "";
-    const issued = idxIssued >= 0 ? parseMetricNumber(row[idxIssued]) : 0;
-    const served = idxServed >= 0 ? parseMetricNumber(row[idxServed]) : 0;
-    const skipped = idxSkipped >= 0 ? parseMetricNumber(row[idxSkipped]) : 0;
-    const avgWait = idxAvgWait >= 0 ? parseMetricNumber(row[idxAvgWait]) : 0;
-    const pHour = idxPeakHour >= 0 ? row[idxPeakHour] : "-";
-    const pHourTokens = idxPeakHourTokens >= 0 ? parseMetricNumber(row[idxPeakHourTokens]) : 0;
-
-    if (date) {
-      dailyMap.set(date, (dailyMap.get(date) ?? 0) + issued);
-    }
-
-    totalServed += served;
-    totalSkipped += skipped;
-
-    if (avgWait > 0) {
-      waitSum += avgWait;
-      waitCount += 1;
-    }
-
-    if (pHourTokens > peakHourTokens) {
-      peakHourTokens = pHourTokens;
-      peakHour = pHour;
-    }
-  }
-
-  const dailyBookings: DailyPoint[] = Array.from(dailyMap.entries())
-    .sort((a, b) => a[0].localeCompare(b[0]))
-    .map(([date, bookings]) => ({ date, bookings }));
-
-  return {
-    dailyBookings,
-    totalServed,
-    totalSkipped,
-    avgWaitTime: waitCount > 0 ? waitSum / waitCount : 0,
-    peakHour,
-    peakHourTokens,
-  };
+function formatHour(hour: number): string {
+  if (!Number.isFinite(hour) || hour < 0) return "-";
+  return `${hour.toString().padStart(2, "0")}:00`;
 }
 
 export default function ReportAnalyticsPanel() {
@@ -107,7 +52,7 @@ export default function ReportAnalyticsPanel() {
   const [toDate, setToDate] = useState(today());
   const [selectedCenterId, setSelectedCenterId] = useState<string>("all");
 
-  const [preview, setPreview] = useState<CustomReportPreviewDto | null>(null);
+  const [analytics, setAnalytics] = useState<DashboardAnalyticsDto | null>(null);
 
   useEffect(() => {
     getAllServiceCenters()
@@ -129,23 +74,14 @@ export default function ReportAnalyticsPanel() {
       setError("");
 
       try {
-        const metrics = [
-          "totalTokensIssued",
-          "served",
-          "skipped",
-          "avgWaitTime",
-          "peakHour",
-          "peakHourTokenCount",
-        ];
-
-        const firstPage = await getCustomReportPreview(fromDate, toDate, centerIds, metrics, 1, 5000);
+        const payload = await getDashboardAnalytics(fromDate, toDate, centerIds);
         if (cancelled) return;
 
-        setPreview(firstPage);
+        setAnalytics(payload);
       } catch (e: any) {
         if (!cancelled) {
           setError(e?.message ?? "Failed to load analytics data.");
-          setPreview(null);
+          setAnalytics(null);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -158,27 +94,27 @@ export default function ReportAnalyticsPanel() {
     };
   }, [fromDate, toDate, centerIds]);
 
-  const analytics = useMemo(() => {
-    if (!preview) {
-      return {
-        dailyBookings: [] as DailyPoint[],
-        totalServed: 0,
-        totalSkipped: 0,
-        avgWaitTime: 0,
-        peakHour: "-",
-        peakHourTokens: 0,
-      };
-    }
+  const dailyBookings = useMemo<DailyPoint[]>(() => {
+    if (!analytics) return [];
 
-    return mapRows(preview.headers, preview.rows);
-  }, [preview]);
+    return analytics.dailyBookings.map((point) => ({
+      date: point.date,
+      bookings: point.bookings,
+    }));
+  }, [analytics]);
+
+  const totalBookings = analytics?.totalBookings ?? 0;
+  const totalServed = analytics?.totalServed ?? 0;
+  const totalSkipped = analytics?.totalSkipped ?? 0;
+  const servedRate = totalBookings > 0 ? Math.round((totalServed / totalBookings) * 100) : 0;
+  const skippedRate = totalBookings > 0 ? Math.round((totalSkipped / totalBookings) * 100) : 0;
 
   const servedSkippedData = useMemo(
     () => [
-      { label: "Served", value: analytics.totalServed },
-      { label: "Skipped", value: analytics.totalSkipped },
+      { label: "Served", value: analytics?.totalServed ?? 0 },
+      { label: "Skipped", value: analytics?.totalSkipped ?? 0 },
     ],
-    [analytics.totalServed, analytics.totalSkipped]
+    [analytics]
   );
 
   async function onDownload(format: "csv" | "pdf") {
@@ -272,14 +208,55 @@ export default function ReportAnalyticsPanel() {
         <div className="mb-4 px-3 py-2 rounded-lg border border-red-100 bg-red-50 text-red-600 text-sm">{error}</div>
       )}
 
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 mb-6">
+        {[
+          {
+            label: "Total bookings",
+            value: totalBookings,
+            note: `${fromDate} to ${toDate}`,
+          },
+          {
+            label: "Served",
+            value: totalServed,
+            note: `${servedRate}% of filtered tokens`,
+          },
+          {
+            label: "Skipped",
+            value: totalSkipped,
+            note: `${skippedRate}% of filtered tokens`,
+          },
+          {
+            label: "Avg wait time",
+            value: analytics ? formatMinutes(analytics.averageWaitTimeSeconds) : "0.0 min",
+            note: "Filtered service timing",
+          },
+          {
+            label: "Peak hour",
+            value: analytics ? formatHour(analytics.peakHour) : "-",
+            note: `${analytics?.peakHourTokenCount ?? 0} bookings at peak`,
+          },
+        ].map((card) => (
+          <div key={card.label} className="rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4 shadow-[0_1px_0_rgba(17,24,39,0.02)]">
+            <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2">{card.label}</div>
+            <div className="text-3xl font-semibold text-gray-900 tracking-tight leading-none">{card.value}</div>
+            <div className="text-[11px] text-gray-500 mt-2">{card.note}</div>
+          </div>
+        ))}
+      </div>
+
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="xl:col-span-2 bg-gray-50 rounded-2xl p-4 border border-gray-100 min-h-65">
-          <div className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-3">Daily bookings</div>
+          <div className="flex items-center justify-between gap-4 mb-3">
+            <div className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Daily bookings</div>
+            <div className="text-[10px] text-gray-400 uppercase tracking-[0.2em]">Filtered</div>
+          </div>
           {loading ? (
             <div className="h-52.5 flex items-center justify-center text-gray-400 text-sm">Loading chart...</div>
+          ) : dailyBookings.length === 0 ? (
+            <div className="h-52.5 flex items-center justify-center text-gray-400 text-sm">No bookings match the selected filters.</div>
           ) : (
             <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={analytics.dailyBookings} margin={{ top: 8, left: -20, right: 8, bottom: 0 }}>
+              <LineChart data={dailyBookings} margin={{ top: 8, left: -20, right: 8, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
                 <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: "#6B7280", fontSize: 11 }} />
                 <YAxis axisLine={false} tickLine={false} tick={{ fill: "#6B7280", fontSize: 11 }} />
@@ -291,7 +268,10 @@ export default function ReportAnalyticsPanel() {
         </div>
 
         <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100 min-h-65">
-          <div className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-3">Served vs skipped</div>
+          <div className="flex items-center justify-between gap-4 mb-3">
+            <div className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Served vs skipped</div>
+            <div className="text-[10px] text-gray-400 uppercase tracking-[0.2em]">Filtered</div>
+          </div>
           {loading ? (
             <div className="h-52.5 flex items-center justify-center text-gray-400 text-sm">Loading chart...</div>
           ) : (
@@ -305,19 +285,6 @@ export default function ReportAnalyticsPanel() {
               </BarChart>
             </ResponsiveContainer>
           )}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-        <div className="rounded-2xl border border-gray-100 px-5 py-4">
-          <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Average wait time</div>
-          <div className="text-3xl font-semibold text-gray-900">{analytics.avgWaitTime.toFixed(1)} min</div>
-        </div>
-
-        <div className="rounded-2xl border border-gray-100 px-5 py-4">
-          <div className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Peak hour</div>
-          <div className="text-3xl font-semibold text-gray-900">{analytics.peakHour}</div>
-          <div className="text-[11px] text-gray-500 mt-1">{analytics.peakHourTokens} bookings at peak</div>
         </div>
       </div>
     </section>

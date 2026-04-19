@@ -6,6 +6,11 @@ namespace QueueLanka.Queue.Data;
 
 public interface IReportRepository
 {
+    Task<DashboardAnalyticsResponseDto> GetDashboardAnalyticsAsync(
+        DateTime fromDate,
+        DateTime toDate,
+        List<int>? centerIds);
+
     Task<List<DailyCenterSummaryRowDto>> GetDailyCenterSummaryAsync(
         DateTime fromDate,
         DateTime toDate,

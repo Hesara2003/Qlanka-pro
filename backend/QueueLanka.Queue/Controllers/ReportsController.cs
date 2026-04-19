@@ -156,6 +156,39 @@ public class ReportsController : ControllerBase
         }
     }
 
+    [HttpGet("/reports/custom/analytics")]
+    [HttpGet("custom/analytics")]
+    [ResponseCache(NoStore = true)]
+    [ProducesResponseType(typeof(DashboardAnalyticsResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetDashboardAnalytics(
+        [FromQuery] DateTime fromDate,
+        [FromQuery] DateTime toDate,
+        [FromQuery] string? centerIds)
+    {
+        try
+        {
+            var request = _reportService.CreateDashboardAnalyticsRequest(fromDate, toDate, centerIds);
+
+            if (!TryValidateModel(request))
+            {
+                return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid analytics request parameters."));
+            }
+
+            var analytics = await _reportService.GetDashboardAnalyticsAsync(request);
+            return Ok(analytics);
+        }
+        catch (ValidationException ex)
+        {
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", ex.Message));
+        }
+        catch (FormatException ex)
+        {
+            return BadRequest(new ErrorResponse("INVALID_CENTER_FILTER", ex.Message));
+        }
+    }
+
     [HttpGet("/reports/centers/{id}/summary")]
     [HttpGet("centers/{id}/summary")]
     [ResponseCache(NoStore = true)]
