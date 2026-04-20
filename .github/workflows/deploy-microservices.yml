@@ -13,6 +13,8 @@ env:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    environment:
+      name: Production
     permissions:
       id-token: write
       contents: read
@@ -47,6 +49,8 @@ jobs:
         shell: bash
         env:
           AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+          ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+          ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
           SERVICE_CLIENT_ID: ${{ secrets[matrix.service.azure_client_id_secret] }}
           SERVICE_TENANT_ID: ${{ secrets[matrix.service.azure_tenant_id_secret] }}
           SERVICE_SUBSCRIPTION_ID: ${{ secrets[matrix.service.azure_subscription_id_secret] }}
@@ -54,12 +58,19 @@ jobs:
           if [ -n "$AZURE_CREDENTIALS" ]; then
             echo "use_sp=true" >> "$GITHUB_OUTPUT"
             echo "use_oidc=false" >> "$GITHUB_OUTPUT"
+            echo "use_acr_basic=false" >> "$GITHUB_OUTPUT"
+          elif [ -n "$ACR_USERNAME" ] && [ -n "$ACR_PASSWORD" ]; then
+            echo "use_sp=false" >> "$GITHUB_OUTPUT"
+            echo "use_oidc=false" >> "$GITHUB_OUTPUT"
+            echo "use_acr_basic=true" >> "$GITHUB_OUTPUT"
           elif [ -n "$SERVICE_CLIENT_ID" ] && [ -n "$SERVICE_TENANT_ID" ] && [ -n "$SERVICE_SUBSCRIPTION_ID" ]; then
             echo "use_sp=false" >> "$GITHUB_OUTPUT"
             echo "use_oidc=true" >> "$GITHUB_OUTPUT"
+            echo "use_acr_basic=false" >> "$GITHUB_OUTPUT"
           else
             echo "use_sp=false" >> "$GITHUB_OUTPUT"
             echo "use_oidc=false" >> "$GITHUB_OUTPUT"
+            echo "use_acr_basic=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Azure login with service principal JSON
@@ -76,17 +87,26 @@ jobs:
           tenant-id: ${{ secrets[matrix.service.azure_tenant_id_secret] }}
           subscription-id: ${{ secrets[matrix.service.azure_subscription_id_secret] }}
 
-      - name: Validate Azure auth configuration
-        if: ${{ steps.authmode.outputs.use_sp != 'true' && steps.authmode.outputs.use_oidc != 'true' }}
+      - name: Validate build auth configuration
+        if: ${{ steps.authmode.outputs.use_sp != 'true' && steps.authmode.outputs.use_oidc != 'true' && steps.authmode.outputs.use_acr_basic != 'true' }}
         shell: bash
         run: |
-          echo "Missing Azure auth configuration for ${{ matrix.service.name }}."
-          echo "Provide AZURE_CREDENTIALS or service-specific OIDC secrets."
+          echo "Missing registry auth configuration for ${{ matrix.service.name }}."
+          echo "Provide ACR_USERNAME/ACR_PASSWORD or Azure credentials."
           exit 1
 
       - name: Log in to Azure Container Registry
+        if: ${{ steps.authmode.outputs.use_sp == 'true' || steps.authmode.outputs.use_oidc == 'true' }}
         shell: bash
         run: az acr login --name "${{ env.ACR_NAME }}"
+
+      - name: Log in to Azure Container Registry with admin credentials
+        if: ${{ steps.authmode.outputs.use_acr_basic == 'true' }}
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ env.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
 
       - name: Build and push ${{ matrix.service.name }}
         run: |
@@ -99,6 +119,8 @@ jobs:
 
   deploy-containerapps:
     runs-on: ubuntu-latest
+    environment:
+      name: Production
     needs: build-and-push
     permissions:
       id-token: write
