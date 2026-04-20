@@ -2,10 +2,10 @@ const mysql = require('mysql2/promise');
 
 async function main() {
     const conn = await mysql.createConnection({
-        host: 'qlanka-dbserver.mysql.database.azure.com',
+        host: 'identity-db.mysql.database.azure.com',
         user: 'admin_malin',
         password: 'Password123!',
-        database: 'identity_db',
+        database: 'identity',
         ssl: { rejectUnauthorized: false }
     });
 

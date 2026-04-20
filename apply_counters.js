@@ -4,11 +4,11 @@ const path = require('path');
 
 async function run() {
   const conn = await mysql.createConnection({
-      host: 'qlanka-dbserver.mysql.database.azure.com',
-      user: 'qlankaadmin',
-      password: 'Diabalo666',
+      host: 'identity-db.mysql.database.azure.com',
+      user: 'admin_identity',
+      password: 'Diabalo@666',
       ssl: { rejectUnauthorized: false },
-      database: 'queue_db',
+      database: 'queue',
       multipleStatements: true
   });
 

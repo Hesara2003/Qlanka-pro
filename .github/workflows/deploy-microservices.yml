@@ -2,8 +2,12 @@ name: Build & Push Microservices
 
 on:
   push:
-    branches: [feature/microservices, main]
+    branches: [feature/microservices, main, final-production]
   workflow_dispatch:
+
+env:
+  ACR_LOGIN_SERVER: qlanka-hrhza8d0ccd6dqa4.azurecr.io
+  QUEUE_SERVICECENTER_URL: https://qlanka-micro-servicecentre.salmonisland-da9fa0a9.eastasia.azurecontainerapps.io
 
 jobs:
   build-and-push:
@@ -11,21 +15,15 @@ jobs:
     strategy:
       matrix:
         service:
-          - name: qlanka-gateway
-            dockerfile: QueueLanka.Gateway/Dockerfile
-            containerapp: qlanka-gateway
-          - name: qlanka-identity
+          - name: qlanka-micro-identity
             dockerfile: QueueLanka.Identity/Dockerfile
-            containerapp: qlanka-identity
-          - name: qlanka-servicecenter
+            containerapp: qlanka-micro-identity
+          - name: qlanka-micro-servicecentre
             dockerfile: QueueLanka.ServiceCenter/Dockerfile
-            containerapp: qlanka-servicecenter
-          - name: qlanka-queue
+            containerapp: qlanka-micro-servicecentre
+          - name: qlanka-micro-queue
             dockerfile: QueueLanka.Queue/Dockerfile
-            containerapp: qlanka-queue
-          - name: qlanka-notification
-            dockerfile: QueueLanka.Notification/Dockerfile
-            containerapp: qlanka-notification
+            containerapp: qlanka-micro-queue
 
     steps:
       - name: Checkout code
@@ -34,18 +32,18 @@ jobs:
       - name: Log in to Azure Container Registry
         uses: azure/docker-login@v2
         with:
-          login-server: qlankaregistry.azurecr.io
+          login-server: ${{ env.ACR_LOGIN_SERVER }}
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
       - name: Build and push ${{ matrix.service.name }}
         run: |
           docker build \
-            -t qlankaregistry.azurecr.io/${{ matrix.service.name }}:${{ github.sha }} \
-            -t qlankaregistry.azurecr.io/${{ matrix.service.name }}:latest \
+            -t ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service.name }}:${{ github.sha }} \
+            -t ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service.name }}:latest \
             -f backend/${{ matrix.service.dockerfile }} backend
-          docker push qlankaregistry.azurecr.io/${{ matrix.service.name }}:${{ github.sha }}
-          docker push qlankaregistry.azurecr.io/${{ matrix.service.name }}:latest
+          docker push ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service.name }}:${{ github.sha }}
+          docker push ${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service.name }}:latest
 
   deploy-containerapps:
     runs-on: ubuntu-latest
@@ -56,16 +54,12 @@ jobs:
     strategy:
       matrix:
         service:
-          - name: qlanka-gateway
-            containerapp: qlanka-gateway
-          - name: qlanka-identity
-            containerapp: qlanka-identity
-          - name: qlanka-servicecenter
-            containerapp: qlanka-servicecenter
-          - name: qlanka-queue
-            containerapp: qlanka-queue
-          - name: qlanka-notification
-            containerapp: qlanka-notification
+          - name: qlanka-micro-identity
+            containerapp: qlanka-micro-identity
+          - name: qlanka-micro-servicecentre
+            containerapp: qlanka-micro-servicecentre
+          - name: qlanka-micro-queue
+            containerapp: qlanka-micro-queue
 
     steps:
       - name: Resolve Azure auth mode
@@ -100,17 +94,17 @@ jobs:
           az containerapp update \
             --name "${{ matrix.service.containerapp }}" \
             --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
-            --image "qlankaregistry.azurecr.io/${{ matrix.service.name }}:${{ github.sha }}"
+            --image "${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service.name }}:${{ github.sha }}"
 
       - name: Set Queue env vars
-        if: ${{ matrix.service.name == 'qlanka-queue' }}
+        if: ${{ matrix.service.name == 'qlanka-micro-queue' }}
         shell: bash
         run: |
           az containerapp update \
             --name "${{ matrix.service.containerapp }}" \
             --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
             --set-env-vars \
-              ServiceUrls__ServiceCenter=https://qlanka-servicecenter.internal.redrock-2a740b8b.centralindia.azurecontainerapps.io/ \
+              ServiceUrls__ServiceCenter=${{ env.QUEUE_SERVICECENTER_URL }} \
               Jwt__Issuer=queuelanka-api \
               Jwt__Audience=queuelanka-client
 
@@ -133,7 +127,8 @@ jobs:
         shell: bash
         run: |
           if [ -z "${GATEWAY_URL}" ]; then
-            echo "GATEWAY_URL=https://qlanka-gateway.redrock-2a740b8b.centralindia.azurecontainerapps.io" >> "$GITHUB_ENV"
+            echo "GATEWAY_PUBLIC_URL repository variable is required for smoke checks."
+            exit 1
           fi
 
       - name: Verify gateway health endpoint

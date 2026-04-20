@@ -4,10 +4,10 @@
 const mysql = require('mysql2/promise');
 
 const config = {
-  host: 'qlanka-dbserver.mysql.database.azure.com',
+  host: 'identity-db.mysql.database.azure.com',
   port: 3306,
-  user: 'qlankaadmin',
-  password: 'Diabalo666',
+  user: 'admin_identity',
+  password: 'Diabalo@666',
   ssl: {
     rejectUnauthorized: false
   },
@@ -192,8 +192,8 @@ async function run() {
   console.log('Seeding microservice databases...\n');
 
   // ── 1. Update Identity DB ──────────────────────────────────────────────────
-  const connIdentity = await mysql.createConnection({ ...config, database: 'identity_db' });
-  console.log('Connected to identity_db ✓');
+  const connIdentity = await mysql.createConnection({ ...config, database: 'identity' });
+  console.log('Connected to identity ✓');
 
   await connIdentity.execute(
     `UPDATE users SET role = 'admin' WHERE user_id = 1`
@@ -202,8 +202,8 @@ async function run() {
   await connIdentity.end();
 
   // ── 2. Insert centers + locations + operating days into ServiceCenter DB ───
-  const connSC = await mysql.createConnection({ ...config, database: 'servicecenters_db' });
-  console.log('Connected to servicecenters_db ✓');
+  const connSC = await mysql.createConnection({ ...config, database: 'service-centre' });
+  console.log('Connected to service-centre ✓');
 
   // Clear existing to avoid duplicate conflicts
   await connSC.execute('SET FOREIGN_KEY_CHECKS = 0');
@@ -212,7 +212,7 @@ async function run() {
   await connSC.execute('TRUNCATE center_availability');
   await connSC.execute('TRUNCATE centers');
   await connSC.execute('SET FOREIGN_KEY_CHECKS = 1');
-  console.log('✓ Tables truncated in servicecenters_db');
+  console.log('✓ Tables truncated in service-centre');
 
   for (const center of CENTERS) {
     const [cResult] = await connSC.execute(

@@ -1,12 +1,12 @@
 const mysql = require('mysql2/promise');
 
 const cfg = {
-  host: 'qlanka-dbserver.mysql.database.azure.com',
+  host: 'identity-db.mysql.database.azure.com',
   port: 3306,
-  user: 'qlankaadmin',
-  password: 'Diabalo666',
+  user: 'admin_identity',
+  password: 'Diabalo@666',
   ssl: { rejectUnauthorized: false },
-  database: 'identity_db'
+  database: 'identity'
 };
 
 async function run() {
@@ -15,7 +15,7 @@ async function run() {
   const [tables] = await c.query(`
     SELECT TABLE_NAME
     FROM information_schema.TABLES
-    WHERE TABLE_SCHEMA = 'identity_db'
+    WHERE TABLE_SCHEMA = 'identity'
       AND TABLE_NAME IN ('users', 'centers')
     ORDER BY TABLE_NAME
   `);
@@ -28,7 +28,7 @@ async function run() {
       REFERENCED_TABLE_NAME,
       REFERENCED_COLUMN_NAME
     FROM information_schema.KEY_COLUMN_USAGE
-    WHERE TABLE_SCHEMA = 'identity_db'
+    WHERE TABLE_SCHEMA = 'identity'
       AND TABLE_NAME = 'users'
       AND REFERENCED_TABLE_NAME IS NOT NULL
     ORDER BY CONSTRAINT_NAME

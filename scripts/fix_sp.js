@@ -1,11 +1,11 @@
 const mysql = require('mysql2/promise');
 
 const config = {
-  host: 'qlanka-dbserver.mysql.database.azure.com',
+  host: 'identity-db.mysql.database.azure.com',
   port: 3306,
-  user: 'qlankaadmin',
-  password: 'Diabalo666',
-  database: 'queue_db',
+  user: 'admin_identity',
+  password: 'Diabalo@666',
+  database: 'queue',
   multipleStatements: true,
   ssl: {
     rejectUnauthorized: false

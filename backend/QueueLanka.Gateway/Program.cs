@@ -112,7 +112,7 @@ builder.Services.AddAuthorization(options =>
             .Build();
     }
 
-    options.AddPolicy("anonymous", policy =>
+    options.AddPolicy("allow-anonymous-route", policy =>
     {
         policy.RequireAssertion(_ => true);
     });

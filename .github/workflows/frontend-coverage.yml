@@ -2,12 +2,12 @@ name: Frontend Coverage
 
 on:
   push:
-    branches: [feature/microservices, main]
+    branches: [feature/microservices, main, final-production]
     paths:
       - 'frontend/**'
       - '.github/workflows/frontend-coverage.yml'
   pull_request:
-    branches: [feature/microservices, main]
+    branches: [feature/microservices, main, final-production]
     paths:
       - 'frontend/**'
       - '.github/workflows/frontend-coverage.yml'

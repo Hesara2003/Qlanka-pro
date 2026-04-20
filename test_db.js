@@ -1,10 +1,10 @@
 const mysql = require('mysql2/promise');
 
 const config = {
-  host: 'qlanka-dbserver.mysql.database.azure.com',
+  host: 'identity-db.mysql.database.azure.com',
   port: 3306,
-  user: 'qlankaadmin',
-  password: 'Diabalo666',
+  user: 'admin_identity',
+  password: 'Diabalo@666',
   ssl: { rejectUnauthorized: false }
 };
 
@@ -15,7 +15,7 @@ async function check() {
     const [dbs] = await conn.execute("SHOW DATABASES;");
     console.log("Databases:", dbs.map(d => d.Database));
 
-    const connSC = await mysql.createConnection({ ...config, database: 'servicecenters_db' });
+    const connSC = await mysql.createConnection({ ...config, database: 'service-centre' });
     const [centers] = await connSC.execute("SELECT * FROM centers LIMIT 2;");
     console.log("Centers:", centers);
     await connSC.end();

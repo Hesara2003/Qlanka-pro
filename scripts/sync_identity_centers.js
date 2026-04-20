@@ -1,12 +1,12 @@
 const mysql = require('mysql2/promise');
 
 const cfg = {
-  host: 'qlanka-dbserver.mysql.database.azure.com',
+  host: 'identity-db.mysql.database.azure.com',
   port: 3306,
-  user: 'qlankaadmin',
-  password: 'Diabalo666',
+  user: 'admin_identity',
+  password: 'Diabalo@666',
   ssl: { rejectUnauthorized: false },
-  database: 'identity_db'
+  database: 'identity'
 };
 
 async function run() {
@@ -15,7 +15,7 @@ async function run() {
   await conn.beginTransaction();
 
   await conn.query(`
-    INSERT INTO identity_db.centers (
+    INSERT INTO identity.centers (
       center_id,
       name,
       address,
@@ -46,7 +46,7 @@ async function run() {
       closing_time,
       updated_at,
       average_service_time_minutes
-    FROM servicecenters_db.centers
+    FROM \`service-centre\`.centers
     ON DUPLICATE KEY UPDATE
       name = VALUES(name),
       address = VALUES(address),
@@ -62,7 +62,7 @@ async function run() {
       average_service_time_minutes = VALUES(average_service_time_minutes)
   `);
 
-  const [[count]] = await conn.query('SELECT COUNT(*) AS c FROM identity_db.centers');
+  const [[count]] = await conn.query('SELECT COUNT(*) AS c FROM identity.centers');
 
   await conn.commit();
 

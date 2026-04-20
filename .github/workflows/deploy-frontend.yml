@@ -2,14 +2,14 @@ name: Deploy Frontend
 
 on:
   push:
-    branches: [feature/microservices, main]
+    branches: [feature/microservices, main, final-production]
     paths:
       - 'frontend/**'
       - '.github/workflows/deploy-frontend.yml'
   workflow_dispatch:
 
 env:
-  AZURE_API_BASE_URL: https://qlanka-gateway.redrock-2a740b8b.centralindia.azurecontainerapps.io
+  AZURE_API_BASE_URL: https://qlanka-gateway.salmonisland-da9fa0a9.eastasia.azurecontainerapps.io
   AZURE_FRONTEND_URL: https://queuelanka-frontend-hrcvdec5dnach0aj.centralindia-01.azurewebsites.net
 
 jobs:

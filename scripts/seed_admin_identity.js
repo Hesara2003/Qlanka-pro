@@ -1,17 +1,18 @@
 const mysql = require('mysql2/promise');
 
 const cfg = {
-  host: 'qlanka-dbserver.mysql.database.azure.com',
+  host: 'identity-db.mysql.database.azure.com',
   port: 3306,
-  user: 'qlankaadmin',
-  password: 'Diabalo666',
+  user: 'admin_identity',
+  password: 'Diabalo@666',
   ssl: { rejectUnauthorized: false },
-  database: 'identity_db'
+  database: 'identity'
 };
 
 const TARGET_USERNAME = 'seed_admin';
 const TARGET_EMAIL = 'seed.admin@queuelanka.test';
 const TARGET_PASSWORD_NOTE = 'Test@1234';
+const FALLBACK_BCRYPT_HASH = '$2a$11$qbLgm.P0bCupCpQ6A71mLOcC/7FDeUmFOlmC5qnfBqweIOjlNBdk2';
 
 async function run() {
   const conn = await mysql.createConnection(cfg);
@@ -51,11 +52,9 @@ async function run() {
      LIMIT 1`
   );
 
-  if (templateRows.length === 0) {
-    throw new Error('No template password hash found. Create any user via /api/auth/register first, then retry.');
-  }
-
-  const templateHash = templateRows[0].password_hash;
+  const templateHash = templateRows.length > 0
+    ? templateRows[0].password_hash
+    : FALLBACK_BCRYPT_HASH;
 
   const [insertResult] = await conn.query(
     `INSERT INTO users
