@@ -279,4 +279,39 @@ internal sealed class ConsistencyReportServiceStub : IReportService
             }
         });
     }
+
+    public Task<CustomReportResponseDto> GetCustomReportAsync(CustomReportQueryDto request)
+    {
+        var metrics = request.Metrics
+            .Select(metric => metric.Trim().ToLowerInvariant())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        var row = new CustomReportRowDto
+        {
+            Date = new DateOnly(2026, 3, 10),
+            CenterId = 11,
+            CenterName = "Main Center"
+        };
+
+        foreach (var metric in metrics)
+        {
+            row.Metrics[metric] = metric switch
+            {
+                "total_served" => 42,
+                "total_skipped" => 5,
+                _ => 0
+            };
+        }
+
+        return Task.FromResult(new CustomReportResponseDto
+        {
+            GroupBy = request.GroupBy,
+            Metrics = metrics,
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalGroups = 1,
+            Rows = new List<CustomReportRowDto> { row }
+        });
+    }
 }

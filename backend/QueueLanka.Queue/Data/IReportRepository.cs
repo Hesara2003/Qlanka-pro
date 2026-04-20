@@ -10,4 +10,8 @@ public interface IReportRepository
         DateTime fromDate,
         DateTime toDate,
         List<int>? centerIds);
+
+    Task<(List<CustomReportRowDto> rows, int totalGroups)> GetCustomReportAsync(
+        CustomReportQueryDto request,
+        IReadOnlyCollection<string> selectedMetrics);
 }

@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
@@ -79,6 +80,53 @@ public class ReportsAuthorizationTests : IClassFixture<ReportsAuthorizationWebAp
         Assert.Equal("text/csv", response.Content.Headers.ContentType?.MediaType);
         Assert.NotNull(response.Content.Headers.ContentDisposition);
         Assert.EndsWith(".csv", response.Content.Headers.ContentDisposition?.FileName?.Trim('"'));
+    }
+
+    [Fact]
+    public async Task NoJwt_CustomReport_Returns401()
+    {
+        using var client = _factory.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+
+        var response = await client.GetAsync("/api/reports/custom?fromDate=2026-03-10&toDate=2026-03-10&metrics=total_served");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task AdminJwt_CustomReport_WithMetricsAndPaging_ReturnsAggregates()
+    {
+        using var client = CreateClientWithRole("admin");
+
+        var response = await client.GetAsync("/api/reports/custom?fromDate=2026-03-10&toDate=2026-03-10&centerIds=11&statuses=Served,Skipped&metrics=total_served,total_skipped&groupBy=center&page=1&pageSize=50");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var payload = await response.Content.ReadAsStringAsync();
+        using var document = JsonDocument.Parse(payload);
+        var root = document.RootElement;
+
+        Assert.True(root.GetProperty("success").GetBoolean());
+        Assert.Equal("center", root.GetProperty("data").GetProperty("groupBy").GetString());
+        Assert.True(root.GetProperty("metadata").GetProperty("totalCount").GetInt32() > 0);
+
+        var firstRow = root.GetProperty("data").GetProperty("rows")[0];
+        Assert.Equal(11, firstRow.GetProperty("centerId").GetInt32());
+        Assert.Equal(42, firstRow.GetProperty("metrics").GetProperty("total_served").GetDouble());
+        Assert.Equal(5, firstRow.GetProperty("metrics").GetProperty("total_skipped").GetDouble());
+    }
+
+    [Fact]
+    public async Task AdminJwt_CustomReport_InvalidMetric_Returns400()
+    {
+        using var client = CreateClientWithRole("admin");
+
+        var response = await client.GetAsync("/api/reports/custom?fromDate=2026-03-10&toDate=2026-03-10&metrics=unknown_metric");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+        var payload = await response.Content.ReadAsStringAsync();
+        using var document = JsonDocument.Parse(payload);
+        Assert.Equal("VALIDATION_ERROR", document.RootElement.GetProperty("code").GetString());
     }
 
     private HttpClient CreateClientWithRole(string role)
@@ -178,5 +226,65 @@ internal sealed class FakeReportService : IReportService
                 ActiveCounters = 4,
             }
         });
+    }
+
+    public Task<CustomReportResponseDto> GetCustomReportAsync(CustomReportQueryDto request)
+    {
+        var metrics = request.Metrics
+            .Select(metric => metric.Trim().ToLowerInvariant())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        var supportedMetrics = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "total_tokens_issued",
+            "total_served",
+            "total_skipped",
+            "total_cancelled",
+            "no_show_count",
+            "avg_wait_time_seconds",
+            "avg_service_time_seconds",
+            "active_counters"
+        };
+
+        var unsupported = metrics.Where(metric => !supportedMetrics.Contains(metric)).ToList();
+        if (unsupported.Count > 0)
+        {
+            throw new ValidationException($"Unsupported metrics: {string.Join(", ", unsupported)}");
+        }
+
+        var row = new CustomReportRowDto
+        {
+            CenterId = 11,
+            CenterName = "Main Center"
+        };
+
+        foreach (var metric in metrics)
+        {
+            row.Metrics[metric] = metric switch
+            {
+                "total_tokens_issued" => 50,
+                "total_served" => 42,
+                "total_skipped" => 5,
+                "total_cancelled" => 1,
+                "no_show_count" => 2,
+                "avg_wait_time_seconds" => 270,
+                "avg_service_time_seconds" => 180,
+                "active_counters" => 4,
+                _ => 0
+            };
+        }
+
+        var response = new CustomReportResponseDto
+        {
+            GroupBy = request.GroupBy,
+            Metrics = metrics,
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalGroups = 1,
+            Rows = new List<CustomReportRowDto> { row }
+        };
+
+        return Task.FromResult(response);
     }
 }

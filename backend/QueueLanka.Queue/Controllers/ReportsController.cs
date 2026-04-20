@@ -21,6 +21,64 @@ public class ReportsController : ControllerBase
         _reportService = reportService;
     }
 
+    [HttpGet("/reports/custom")]
+    [HttpGet("custom")]
+    [ResponseCache(NoStore = true)]
+    [ProducesResponseType(typeof(ApiResponse<CustomReportResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetCustomReport(
+        [FromQuery] DateTime fromDate,
+        [FromQuery] DateTime toDate,
+        [FromQuery] string? centerIds,
+        [FromQuery] string? statuses,
+        [FromQuery] string metrics,
+        [FromQuery] string groupBy = "date_center",
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 100)
+    {
+        try
+        {
+            var request = new CustomReportQueryDto
+            {
+                FromDate = fromDate,
+                ToDate = toDate,
+                CenterIds = ParseCenterIds(centerIds),
+                Statuses = ParseCsvValues(statuses),
+                Metrics = ParseCsvValues(metrics),
+                GroupBy = string.IsNullOrWhiteSpace(groupBy) ? "date_center" : groupBy,
+                Page = page,
+                PageSize = pageSize
+            };
+
+            if (!TryValidateModel(request))
+            {
+                return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid custom report request parameters."));
+            }
+
+            var result = await _reportService.GetCustomReportAsync(request);
+            var response = new ApiResponse<CustomReportResponseDto>(
+                result,
+                new ResponseMetadata
+                {
+                    TotalCount = result.TotalGroups,
+                    Page = result.Page,
+                    PageSize = result.PageSize
+                },
+                "Custom report generated successfully.");
+
+            return Ok(response);
+        }
+        catch (ValidationException ex)
+        {
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", ex.Message));
+        }
+        catch (FormatException ex)
+        {
+            return BadRequest(new ErrorResponse("INVALID_FILTERS", ex.Message));
+        }
+    }
+
     [HttpGet("daily-summary/csv")]
     [ResponseCache(NoStore = true)]
     [Produces("text/csv")]
@@ -140,5 +198,19 @@ public class ReportsController : ControllerBase
             .ToList();
 
         return values;
+    }
+
+    private static List<string> ParseCsvValues(string? values)
+    {
+        if (string.IsNullOrWhiteSpace(values))
+        {
+            return new List<string>();
+        }
+
+        return values
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
     }
 }

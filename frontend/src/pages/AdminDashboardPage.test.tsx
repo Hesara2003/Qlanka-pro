@@ -1,6 +1,7 @@
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { ReactNode } from 'react'
 import type { ServiceCenter } from '../types/serviceCenter'
 import type { AdminUser } from '../types/user'
 
@@ -19,9 +20,9 @@ async function renderAdminDashboard() {
   }))
 
   vi.doMock('recharts', () => ({
-    ResponsiveContainer: ({ children }: { children: unknown }) => <div data-testid="chart-container">{children}</div>,
-    BarChart: ({ children }: { children: unknown }) => <div>{children}</div>,
-    Bar: ({ children }: { children: unknown }) => <div>{children}</div>,
+    ResponsiveContainer: ({ children }: { children?: ReactNode }) => <div data-testid="chart-container">{children}</div>,
+    BarChart: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+    Bar: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
     Cell: () => null,
     XAxis: () => null,
     YAxis: () => null,
