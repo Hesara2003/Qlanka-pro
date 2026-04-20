@@ -6,6 +6,7 @@ using QueueLanka.Queue.DTOs.Reports;
 using QueueLanka.Queue.Services;
 using QueueLanka.Shared.DTOs.Common;
 using System.ComponentModel.DataAnnotations;
+using System.Net.Mime;
 
 namespace QueueLanka.Queue.Controllers;
 
@@ -53,11 +54,138 @@ public class ReportsController : ControllerBase
         }
         catch (ValidationException ex)
         {
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid report request parameters."));
+        }
+        catch (FormatException ex)
+        {
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid report request parameters."));
+        }
+    }
+
+    [HttpGet("/reports/custom")]
+    [HttpGet("custom")]
+    [ResponseCache(NoStore = true)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetCustomReport(
+        [FromQuery] DateTime fromDate,
+        [FromQuery] DateTime toDate,
+        [FromQuery] string? centerIds,
+        [FromQuery] string? metrics,
+        [FromQuery] string? format = "csv",
+        [FromQuery] int? page = null,
+        [FromQuery] int pageSize = 500)
+    {
+        try
+        {
+            var request = _reportService.CreateCustomReportRequest(fromDate, toDate, centerIds, metrics, format, page, pageSize);
+
+            if (!TryValidateModel(request))
+            {
+                return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid report request parameters."));
+            }
+
+            var data = await _reportService.GetCustomReportDataAsync(request);
+            if (data.Count == 0)
+            {
+                return NoContent();
+            }
+
+            if (string.Equals(request.Format, "pdf", StringComparison.OrdinalIgnoreCase))
+            {
+                var (pdfBytes, pdfFileName) = await _reportService.GenerateCustomReportPdfAsync(request);
+                return File(pdfBytes, "application/pdf", pdfFileName);
+            }
+
+            var fileName = $"QueueLanka_CustomReport_{request.FromDate:yyyyMMdd}_{request.ToDate:yyyyMMdd}.csv";
+            Response.ContentType = "text/csv";
+            Response.Headers.ContentDisposition = new ContentDisposition
+            {
+                FileName = fileName,
+                Inline = false
+            }.ToString();
+
+            await _reportService.StreamCustomReportCsvAsync(Response.Body, request, HttpContext.RequestAborted);
+            return new EmptyResult();
+        }
+        catch (ValidationException ex)
+        {
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid report request parameters."));
+        }
+        catch (FormatException ex)
+        {
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid report request parameters."));
+        }
+    }
+
+    [HttpGet("/reports/custom/preview")]
+    [HttpGet("custom/preview")]
+    [ResponseCache(NoStore = true)]
+    [ProducesResponseType(typeof(CustomReportPreviewDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetCustomReportPreview(
+        [FromQuery] DateTime fromDate,
+        [FromQuery] DateTime toDate,
+        [FromQuery] string? centerIds,
+        [FromQuery] string? metrics,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 500)
+    {
+        try
+        {
+            var request = _reportService.CreateCustomReportRequest(fromDate, toDate, centerIds, metrics, "csv", page, pageSize);
+
+            if (!TryValidateModel(request))
+            {
+                return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid report request parameters."));
+            }
+
+            var preview = await _reportService.GetCustomReportPreviewAsync(request);
+            return Ok(preview);
+        }
+        catch (ValidationException ex)
+        {
             return BadRequest(new ErrorResponse("VALIDATION_ERROR", ex.Message));
         }
         catch (FormatException ex)
         {
-            return BadRequest(new ErrorResponse("INVALID_CENTER_FILTER", ex.Message));
+            return BadRequest(new ErrorResponse("INVALID_METRIC_FILTER", ex.Message));
+        }
+    }
+
+    [HttpGet("/reports/custom/analytics")]
+    [HttpGet("custom/analytics")]
+    [ResponseCache(NoStore = true)]
+    [ProducesResponseType(typeof(DashboardAnalyticsResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetDashboardAnalytics(
+        [FromQuery] DateTime fromDate,
+        [FromQuery] DateTime toDate,
+        [FromQuery] string? centerIds)
+    {
+        try
+        {
+            var request = _reportService.CreateDashboardAnalyticsRequest(fromDate, toDate, centerIds);
+
+            if (!TryValidateModel(request))
+            {
+                return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid analytics request parameters."));
+            }
+
+            var analytics = await _reportService.GetDashboardAnalyticsAsync(request);
+            return Ok(analytics);
+        }
+        catch (ValidationException ex)
+        {
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid report request parameters."));
+        }
+        catch (FormatException ex)
+        {
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid report request parameters."));
         }
     }
 
@@ -94,11 +222,11 @@ public class ReportsController : ControllerBase
         }
         catch (ValidationException ex)
         {
-            return BadRequest(new ErrorResponse("VALIDATION_ERROR", ex.Message));
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid report request parameters."));
         }
         catch (FormatException ex)
         {
-            return BadRequest(new ErrorResponse("INVALID_CENTER_FILTER", ex.Message));
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid report request parameters."));
         }
     }
 }

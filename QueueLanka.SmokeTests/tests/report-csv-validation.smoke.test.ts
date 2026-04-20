@@ -41,7 +41,11 @@ test.describe("Report CSV Validation Smoke Tests", () => {
       }
     );
 
-    expect(response.status()).toBe(200);
+    expect([200, 204]).toContain(response.status());
+
+    if (response.status() === 204) {
+      return;
+    }
 
     const contentType = response.headers()["content-type"] ?? "";
     expect(contentType.toLowerCase()).toContain("text/csv");

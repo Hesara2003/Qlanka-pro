@@ -39,6 +39,11 @@ public class CounterController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> CallNext(int counterId)
     {
+        if (counterId <= 0)
+        {
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid request parameters."));
+        }
+
         try
         {
             var calledToken = await _counterService.CallNextTokenAsync(counterId);
@@ -76,6 +81,11 @@ public class CounterController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateTokenStatus(int counterId, int tokenId, [FromBody] UpdateTokenStatusRequestDto request)
     {
+        if (counterId <= 0 || tokenId <= 0)
+        {
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid request parameters."));
+        }
+
         try
         {
             var updated = await _counterService.UpdateTokenStatusAsync(counterId, tokenId, request.Status);
@@ -93,13 +103,13 @@ public class CounterController : ControllerBase
             return StatusCode(StatusCodes.Status403Forbidden,
                 new ErrorResponse("TOKEN_COUNTER_MISMATCH", ex.Message));
         }
-        catch (ArgumentException ex)
+        catch (ArgumentException)
         {
-            return BadRequest(new ErrorResponse("INVALID_STATUS", ex.Message));
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid request parameters."));
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
-            return BadRequest(new ErrorResponse("INVALID_TOKEN_STATE", ex.Message));
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid request parameters."));
         }
     }
 
@@ -120,6 +130,11 @@ public class CounterController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ReassignToken(int counterId, [FromBody] ReassignTokenRequestDto request)
     {
+        if (counterId <= 0)
+        {
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid request parameters."));
+        }
+
         if (!TryGetUserId(out var performedByUserId, out var forbiddenResult))
         {
             return forbiddenResult;
@@ -147,13 +162,13 @@ public class CounterController : ControllerBase
             return StatusCode(StatusCodes.Status403Forbidden,
                 new ErrorResponse("TOKEN_COUNTER_MISMATCH", ex.Message));
         }
-        catch (ArgumentException ex)
+        catch (ArgumentException)
         {
-            return BadRequest(new ErrorResponse("INVALID_REQUEST", ex.Message));
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid request parameters."));
         }
-        catch (InvalidOperationException ex)
+        catch (InvalidOperationException)
         {
-            return BadRequest(new ErrorResponse("INVALID_TOKEN_STATE", ex.Message));
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid request parameters."));
         }
     }
 
@@ -171,6 +186,11 @@ public class CounterController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetDashboard(int counterId)
     {
+        if (counterId <= 0)
+        {
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid request parameters."));
+        }
+
         if (!TryGetUserId(out var officerUserId, out var forbiddenResult))
         {
             return forbiddenResult;
@@ -206,6 +226,11 @@ public class CounterController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetWaitingTokens(int counterId)
     {
+        if (counterId <= 0)
+        {
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid request parameters."));
+        }
+
         if (!TryGetUserId(out var officerUserId, out var forbiddenResult))
         {
             return forbiddenResult;
@@ -239,6 +264,11 @@ public class CounterController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetCounterStats(int counterId)
     {
+        if (counterId <= 0)
+        {
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid request parameters."));
+        }
+
         var role = User.GetRole();
         var officerUserId = string.Equals(role, "officer", StringComparison.OrdinalIgnoreCase)
             ? User.GetUserId()
@@ -281,6 +311,11 @@ public class CounterController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> CreateCounter(int centerId, [FromBody] CreateCounterRequestDto request)
     {
+        if (centerId <= 0)
+        {
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid request parameters."));
+        }
+
         if (!TryGetUserId(out var adminUserId, out var forbiddenResult))
         {
             return forbiddenResult;
@@ -294,9 +329,9 @@ public class CounterController : ControllerBase
             var location = $"/api/admin/centers/{centerId}/counters/{created.CounterId}";
             return Created(location, new ApiResponse<CounterResponseDto>(created, "Counter created successfully."));
         }
-        catch (ValidationException ex)
+        catch (ValidationException)
         {
-            return BadRequest(new ErrorResponse("VALIDATION_ERROR", ex.Message));
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid request parameters."));
         }
         catch (KeyNotFoundException ex)
         {
@@ -314,6 +349,11 @@ public class CounterController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetCountersByCenter(int centerId)
     {
+        if (centerId <= 0)
+        {
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid request parameters."));
+        }
+
         if (!TryGetUserId(out var adminUserId, out var forbiddenResult))
         {
             return forbiddenResult;
@@ -336,6 +376,11 @@ public class CounterController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetCounterById(int centerId, int counterId)
     {
+        if (centerId <= 0 || counterId <= 0)
+        {
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid request parameters."));
+        }
+
         if (!TryGetUserId(out var adminUserId, out var forbiddenResult))
         {
             return forbiddenResult;
@@ -359,6 +404,11 @@ public class CounterController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateCounterStatus(int centerId, int counterId, [FromBody] UpdateCounterStatusRequestDto request)
     {
+        if (centerId <= 0 || counterId <= 0)
+        {
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid request parameters."));
+        }
+
         if (!TryGetUserId(out var adminUserId, out var forbiddenResult))
         {
             return forbiddenResult;
@@ -373,9 +423,9 @@ public class CounterController : ControllerBase
 
             return Ok(new ApiResponse<CounterResponseDto>(updated, message));
         }
-        catch (ValidationException ex)
+        catch (ValidationException)
         {
-            return BadRequest(new ErrorResponse("VALIDATION_ERROR", ex.Message));
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid request parameters."));
         }
         catch (KeyNotFoundException ex)
         {

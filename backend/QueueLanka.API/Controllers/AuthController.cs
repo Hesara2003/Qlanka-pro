@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using QueueLanka.API.DTOs.Common;
 using QueueLanka.API.DTOs.Auth;
+using QueueLanka.API.Exceptions;
 using QueueLanka.API.Services;
 
 namespace QueueLanka.API.Controllers;
@@ -31,10 +33,17 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Register([FromBody] RegisterRequestDto dto)
     {
         if (!ModelState.IsValid)
-            return UnprocessableEntity(ModelState);
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid request parameters."));
 
-        var result = await _authService.RegisterAsync(dto);
-        return StatusCode(StatusCodes.Status201Created, result);
+        try
+        {
+            var result = await _authService.RegisterAsync(dto);
+            return StatusCode(StatusCodes.Status201Created, result);
+        }
+        catch (AppException ex) when (ex.StatusCode == 422)
+        {
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid request parameters."));
+        }
     }
 
     /// <summary>Authenticate a user and receive a JWT access token.</summary>
@@ -50,7 +59,7 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Login([FromBody] LoginRequestDto dto)
     {
         if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid request parameters."));
 
         var result = await _authService.LoginAsync(dto);
         return Ok(result);

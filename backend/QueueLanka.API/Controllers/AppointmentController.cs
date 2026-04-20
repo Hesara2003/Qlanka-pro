@@ -59,7 +59,7 @@ public class AppointmentController : ApiControllerBase
         catch (ArgumentException ex)
         {
             _logger.LogWarning(ex, "BookToken: resource not found for user {UserId}", userId);
-            return NotFound(new ErrorResponse("RESOURCE_NOT_FOUND", ex.Message));
+            return NotFound(new ErrorResponse("RESOURCE_NOT_FOUND", "Resource not found."));
         }
         catch (InvalidOperationException ex)
         {

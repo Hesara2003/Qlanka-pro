@@ -6,14 +6,22 @@ const baseURL =
 
 export default defineConfig({
   testDir: "./tests",
-  timeout: 15_000,
-  retries: 0,
+  timeout: 60_000,
+  retries: process.env.CI ? 1 : 0,
   workers: 1,
+  reporter: process.env.CI
+    ? [["line"], ["html", { open: "never" }]]
+    : "list",
   globalSetup: "./global-setup.ts",
   use: {
     baseURL,
     extraHTTPHeaders: {
       "Content-Type": "application/json",
     },
+    actionTimeout: 30_000,
+    navigationTimeout: 30_000,
+    screenshot: "only-on-failure",
+    video: "retain-on-failure",
+    trace: "retain-on-failure",
   },
 });

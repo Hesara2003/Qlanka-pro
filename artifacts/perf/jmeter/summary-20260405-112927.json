@@ -1,0 +1,30 @@
+{
+  "generatedAt": "2026-04-05T06:02:53.844Z",
+  "totalRequests": 461,
+  "totalErrors": 461,
+  "errorRate": 100,
+  "p95Ms": 547,
+  "scenarios": [
+    {
+      "file": "C:\\Users\\moham\\Desktop\\Qlanka-pro\\artifacts\\perf\\jmeter\\booking-surge-20260405-112927.jtl",
+      "requests": 312,
+      "errors": 312,
+      "errorRate": 100,
+      "p95Ms": 435
+    },
+    {
+      "file": "C:\\Users\\moham\\Desktop\\Qlanka-pro\\artifacts\\perf\\jmeter\\queue-polling-20260405-112927.jtl",
+      "requests": 125,
+      "errors": 125,
+      "errorRate": 100,
+      "p95Ms": 561
+    },
+    {
+      "file": "C:\\Users\\moham\\Desktop\\Qlanka-pro\\artifacts\\perf\\jmeter\\websocket-updates-20260405-112927.jtl",
+      "requests": 24,
+      "errors": 24,
+      "errorRate": 100,
+      "p95Ms": 2793
+    }
+  ]
+}

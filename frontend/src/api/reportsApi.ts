@@ -1,6 +1,35 @@
 import { AxiosError, type AxiosResponse } from "axios";
 import axiosInstance from "./axiosInstance";
 
+export interface CustomReportPreviewDto {
+    fromDate: string;
+    toDate: string;
+    page: number;
+    pageSize: number;
+    totalRows: number;
+    totalPages: number;
+    headers: string[];
+    rows: string[][];
+    totalRow?: string[];
+}
+
+export interface DashboardAnalyticsDailyBookingDto {
+    date: string;
+    bookings: number;
+}
+
+export interface DashboardAnalyticsDto {
+    fromDate: string;
+    toDate: string;
+    totalBookings: number;
+    totalServed: number;
+    totalSkipped: number;
+    averageWaitTimeSeconds: number;
+    peakHour: number;
+    peakHourTokenCount: number;
+    dailyBookings: DashboardAnalyticsDailyBookingDto[];
+}
+
 async function extractErrorMessage(error: unknown): Promise<string> {
     if (error instanceof AxiosError && error.response?.data) {
         if (error.response.data instanceof Blob) {
@@ -89,4 +118,92 @@ export async function downloadDailyCenterSummaryCsv(
         }
         throw new Error(await extractErrorMessage(error));
     }
+}
+
+export async function getCustomReportPreview(
+    fromDate: string,
+    toDate: string,
+    centerIds: number[] = [],
+    metrics: string[] = [],
+    page = 1,
+    pageSize = 500
+): Promise<CustomReportPreviewDto> {
+    const params = {
+        fromDate,
+        toDate,
+        centerIds: centerIds.length > 0 ? centerIds.join(",") : undefined,
+        metrics: metrics.length > 0 ? metrics.join(",") : undefined,
+        page,
+        pageSize
+    };
+
+    const response = await axiosInstance.get<CustomReportPreviewDto>("/api/reports/custom/preview", { params });
+    return response.data;
+}
+
+export async function getDashboardAnalytics(
+    fromDate: string,
+    toDate: string,
+    centerIds: number[] = []
+): Promise<DashboardAnalyticsDto> {
+    const params = {
+        fromDate,
+        toDate,
+        centerIds: centerIds.length > 0 ? centerIds.join(",") : undefined,
+    };
+
+    const response = await axiosInstance.get<DashboardAnalyticsDto>("/api/reports/custom/analytics", { params });
+    return response.data;
+}
+
+export async function downloadCustomReport(
+    fromDate: string,
+    toDate: string,
+    options?: {
+        centerIds?: number[];
+        metrics?: string[];
+        format?: "csv" | "pdf";
+        page?: number;
+        pageSize?: number;
+    }
+): Promise<void> {
+    const format = options?.format ?? "csv";
+    const params = {
+        fromDate,
+        toDate,
+        centerIds: options?.centerIds && options.centerIds.length > 0 ? options.centerIds.join(",") : undefined,
+        metrics: options?.metrics && options.metrics.length > 0 ? options.metrics.join(",") : undefined,
+        format,
+        page: options?.page,
+        pageSize: options?.pageSize
+    };
+
+    const response = await axiosInstance.get("/api/reports/custom", {
+        params,
+        responseType: "blob"
+    });
+
+    if (response.status === 204) {
+        throw new Error("No data available for the selected filters.");
+    }
+
+    let filename = `QueueLanka_CustomReport_${fromDate}_${toDate}.${format}`;
+    const disposition = response.headers["content-disposition"];
+    if (disposition && disposition.indexOf("filename=") !== -1) {
+        const matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(disposition);
+        if (matches != null && matches[1]) {
+            filename = matches[1].replace(/['"]/g, "");
+        }
+    }
+
+    const mimeType = format === "pdf" ? "application/pdf" : "text/csv";
+    const blob = new Blob([response.data], { type: mimeType });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    link.parentNode?.removeChild(link);
+    window.URL.revokeObjectURL(url);
 }

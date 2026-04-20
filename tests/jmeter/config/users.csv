@@ -1,0 +1,3 @@
+username,password,role
+healthcheck_citizen,Health@Check1,citizen
+healthcheck_officer,Health@Check1,officer

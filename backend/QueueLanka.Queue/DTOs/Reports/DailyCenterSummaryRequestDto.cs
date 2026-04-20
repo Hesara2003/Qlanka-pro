@@ -18,6 +18,28 @@ public class DailyCenterSummaryRequestDto
     public string Format { get; set; } = "csv";
 }
 
+[DateRange(nameof(FromDate), nameof(ToDate), 90)]
+public class CustomReportRequestDto
+{
+    [Required(ErrorMessage = "FromDate is required.")]
+    public DateTime FromDate { get; set; }
+
+    [Required(ErrorMessage = "ToDate is required.")]
+    public DateTime ToDate { get; set; }
+
+    public List<int> CenterIds { get; set; } = new();
+
+    public List<string> Metrics { get; set; } = new();
+
+    public string Format { get; set; } = "csv";
+
+    [Range(1, int.MaxValue, ErrorMessage = "Page must be greater than zero.")]
+    public int? Page { get; set; }
+
+    [Range(1, 5000, ErrorMessage = "PageSize must be between 1 and 5000.")]
+    public int PageSize { get; set; } = 500;
+}
+
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
 public sealed class DateRangeAttribute : ValidationAttribute
 {

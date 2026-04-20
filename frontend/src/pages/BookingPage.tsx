@@ -123,8 +123,8 @@ export default function BookingPage() {
         );
     }
 
-    return (
-        <main className="w-full max-w-[1400px] mx-auto py-4 text-gray-900 selection:bg-[#78d64b]/30 h-[calc(100vh-5rem)] flex flex-col overflow-hidden">
+        return (
+            <main className="w-full max-w-[1400px] mx-auto py-4 text-gray-900 selection:bg-[#78d64b]/30 h-[calc(100vh-5rem)] flex flex-col overflow-hidden" data-testid="booking-page">
             
             <div className="mb-6 flex items-center justify-between px-2 shrink-0">
                 <button
@@ -142,7 +142,7 @@ export default function BookingPage() {
 
             {successData ? (
                 /* YOUR TICKET - SUCCESS STATE (FIXED) */
-                <div className="flex-1 flex items-center justify-center overflow-hidden py-4 lg:py-8">
+                <div className="flex-1 flex items-center justify-center overflow-hidden py-4 lg:py-8" data-testid="booking-success">
                      <motion.div 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -165,24 +165,24 @@ export default function BookingPage() {
                                 <div className="absolute -right-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full border-l border-gray-100" />
                                 
                                 <span className="text-[8px] font-black text-[#78d64b] uppercase tracking-[0.4em] italic mb-3 block">TICKET NUMBER</span>
-                                <div className="text-3xl lg:text-5xl font-black text-gray-900 tracking-tighter leading-tight mb-8 break-all">
+                                <div className="text-3xl lg:text-5xl font-black text-gray-900 tracking-tighter leading-tight mb-8 break-all" data-testid="booking-success-token">
                                     {successData.tokenNumber}
                                 </div>
 
                                 <div className="grid grid-cols-3 gap-4 border-t border-dashed border-gray-200 pt-6 text-left">
                                     <div className="flex flex-col gap-1">
                                         <span className="text-[8px] font-black text-gray-300 uppercase tracking-widest">Location</span>
-                                        <p className="text-[10px] font-black text-gray-900 truncate">{center.name}</p>
+                                        <p className="text-[10px] font-black text-gray-900 truncate" data-testid="booking-success-center">{center.name}</p>
                                     </div>
                                     <div className="flex flex-col gap-1">
                                         <span className="text-[8px] font-black text-gray-300 uppercase tracking-widest">Date</span>
-                                        <p className="text-[10px] font-black text-gray-900">
+                                        <p className="text-[10px] font-black text-gray-900" data-testid="booking-success-date">
                                             {new Date(successData.appointmentDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                                         </p>
                                     </div>
                                     <div className="flex flex-col gap-1">
                                         <span className="text-[8px] font-black text-gray-300 uppercase tracking-widest">Arrival</span>
-                                        <p className="text-[10px] font-black text-gray-900">{successData.appointmentTime}</p>
+                                        <p className="text-[10px] font-black text-gray-900" data-testid="booking-success-arrival">{successData.appointmentTime}</p>
                                     </div>
                                 </div>
                             </div>
@@ -242,6 +242,7 @@ export default function BookingPage() {
                                                 <button
                                                     key={d.toISOString()}
                                                     onClick={() => setDate(formattedDate)}
+                                                    data-testid={`booking-date-${formattedDate}`}
                                                     className={`relative flex flex-col items-center justify-center min-w-[70px] h-20 rounded-2xl transition-all duration-300 shrink-0 border border-gray-100 ${isSelected ? 'text-white' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}
                                                 >
                                                     {isSelected && (
@@ -265,6 +266,7 @@ export default function BookingPage() {
                                                 <button
                                                     key={t}
                                                     onClick={() => setTime(t)}
+                                                    data-testid={`booking-time-${t.replace(':', '-')}`}
                                                     className={`relative h-10 rounded-xl transition-all duration-300 border border-gray-100 ${isSelected ? 'text-[#78d64b]' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'}`}
                                                 >
                                                     {isSelected && (
@@ -283,6 +285,7 @@ export default function BookingPage() {
                                 <motion.div 
                                     initial={{ opacity: 0, scale: 0.98 }}
                                     animate={{ opacity: 1, scale: 1 }}
+                                    data-testid="booking-error"
                                     className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-600 text-[10px] font-black uppercase tracking-widest shadow-sm"
                                 >
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
@@ -292,6 +295,7 @@ export default function BookingPage() {
 
                             <button
                                 onClick={() => handleSubmit()}
+                                data-testid="booking-submit"
                                 disabled={isSubmitting || !date || !time}
                                 className="w-full py-5 px-8 rounded-[2rem] text-[10px] font-black uppercase tracking-[0.3em] text-white bg-gray-900 hover:bg-black transition-all shadow-2xl active:scale-95 disabled:opacity-30 flex items-center justify-center gap-4 group shrink-0"
                             >

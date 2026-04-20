@@ -4,6 +4,7 @@ import { getAllServiceCenters } from "../api/serviceCenterApi";
 import { getAdminUsers } from "../api/userApi";
 import type { AdminUser } from "../types/user";
 import { useAuth } from "../context/AuthContext";
+import ReportAnalyticsPanel from "../components/admin/ReportAnalyticsPanel";
 import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   AreaChart, Area, PieChart, Pie
@@ -131,6 +132,8 @@ export default function AdminDashboardPage() {
       
       {/* --- MAIN LEFT CONTENT (9 Cols) --- */}
       <div className="col-span-12 xl:col-span-9 flex flex-col gap-8">
+
+            <ReportAnalyticsPanel />
         
         {/* ROW 1: Capacity Overview & Stats */}
         <div className="grid grid-cols-12 gap-8">

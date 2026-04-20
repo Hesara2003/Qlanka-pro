@@ -162,6 +162,9 @@ public class CounterService : ICounterService
 
     public async Task<CounterResponseDto> UpdateCounterStatusAsync(int centerId, int counterId, UpdateCounterStatusRequestDto request, int adminUserId)
     {
+        if (request.IsOpen is null)
+            throw new ValidationException("Invalid request parameters.");
+
         await EnsureCenterExistsAsync(centerId);
 
         var exists = await _counterRepository.CounterExistsAsync(counterId, centerId);
@@ -170,11 +173,11 @@ public class CounterService : ICounterService
 
         var queueState = await _counterRepository.GetCounterQueueStateAsync(counterId);
 
-        var updated = await _counterRepository.UpdateCounterStatusAsync(counterId, request.IsOpen, request.Reason);
+        var updated = await _counterRepository.UpdateCounterStatusAsync(counterId, request.IsOpen.Value, request.Reason);
         if (updated == null)
             throw new KeyNotFoundException("Counter not found.");
 
-        if (!request.IsOpen)
+        if (!request.IsOpen.Value)
         {
             if (queueState.WaitingCount > 0)
             {

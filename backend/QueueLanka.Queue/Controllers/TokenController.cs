@@ -43,6 +43,11 @@ public class TokenController : QueueControllerBase
     [HttpPut("{tokenId}/cancel")]
     public async Task<IActionResult> CancelMyToken(int tokenId)
     {
+        if (tokenId <= 0)
+        {
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid request parameters."));
+        }
+
         if (!TryGetAuthenticatedUserId(out var userId, out var unauthorizedResult, "INVALID_USER"))
         {
             return unauthorizedResult;
