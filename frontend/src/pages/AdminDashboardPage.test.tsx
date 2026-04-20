@@ -3,10 +3,10 @@ import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ReactNode } from 'react'
 import type { ServiceCenter } from '../types/serviceCenter'
-import type { AdminUser } from '../types/user'
 
 const getAllServiceCentersMock = vi.hoisted(() => vi.fn<() => Promise<ServiceCenter[]>>())
-const getAdminUsersMock = vi.hoisted(() => vi.fn<() => Promise<AdminUser[]>>())
+const getCustomReportMock = vi.hoisted(() => vi.fn())
+const getCenterSummaryRowsMock = vi.hoisted(() => vi.fn())
 
 async function renderAdminDashboard() {
   vi.resetModules()
@@ -15,19 +15,20 @@ async function renderAdminDashboard() {
     getAllServiceCenters: getAllServiceCentersMock,
   }))
 
-  vi.doMock('../api/userApi', () => ({
-    getAdminUsers: getAdminUsersMock,
+  vi.doMock('../api/reportsApi', () => ({
+    getCustomReport: (...args: unknown[]) => getCustomReportMock(...args),
+    getCenterSummaryRows: (...args: unknown[]) => getCenterSummaryRowsMock(...args),
   }))
 
   vi.doMock('recharts', () => ({
     ResponsiveContainer: ({ children }: { children?: ReactNode }) => <div data-testid="chart-container">{children}</div>,
     BarChart: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-    Bar: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-    Cell: () => null,
+    Bar: () => <div />,
     XAxis: () => null,
     YAxis: () => null,
     CartesianGrid: () => null,
     Tooltip: () => null,
+    Legend: () => null,
   }))
 
   const module = await import('./AdminDashboardPage')
@@ -42,163 +43,153 @@ async function renderAdminDashboard() {
 describe('AdminDashboardPage', () => {
   beforeEach(() => {
     getAllServiceCentersMock.mockReset()
-    getAdminUsersMock.mockReset()
+    getCustomReportMock.mockReset()
+    getCenterSummaryRowsMock.mockReset()
+
+    getAllServiceCentersMock.mockResolvedValue([
+      {
+        centerId: 11,
+        name: 'Main Center',
+        address: '1 Main St',
+        timezone: 'Asia/Colombo',
+        capacity: 100,
+        averageServiceTimeMinutes: 10,
+        openingTime: '08:00',
+        closingTime: '17:00',
+        isAvailable: true,
+        isActive: true,
+        createdAt: '2026-01-01T00:00:00Z',
+      },
+      {
+        centerId: 12,
+        name: 'North Center',
+        address: '2 Main St',
+        timezone: 'Asia/Colombo',
+        capacity: 80,
+        averageServiceTimeMinutes: 12,
+        openingTime: '08:00',
+        closingTime: '17:00',
+        isAvailable: true,
+        isActive: true,
+        createdAt: '2026-01-01T00:00:00Z',
+      },
+    ])
+
+    getCustomReportMock.mockResolvedValue({
+      groupBy: 'date',
+      metrics: ['total_tokens_issued', 'total_served', 'total_skipped', 'avg_wait_time_seconds'],
+      page: 1,
+      pageSize: 500,
+      totalGroups: 2,
+      rows: [
+        {
+          date: '2026-03-10',
+          metrics: {
+            total_tokens_issued: 50,
+            total_served: 42,
+            total_skipped: 5,
+            avg_wait_time_seconds: 300,
+          },
+        },
+        {
+          date: '2026-03-11',
+          metrics: {
+            total_tokens_issued: 40,
+            total_served: 35,
+            total_skipped: 3,
+            avg_wait_time_seconds: 240,
+          },
+        },
+      ],
+    })
+
+    getCenterSummaryRowsMock.mockResolvedValue([])
   })
 
   afterEach(() => {
     cleanup()
   })
 
-  it('renders dashboard metrics derived from fetched API data', async () => {
-    getAllServiceCentersMock.mockResolvedValue([
-      {
-        centerId: 1,
-        name: 'Colombo Center',
-        address: '1 Main St',
-        timezone: 'Asia/Colombo',
-        capacity: 120,
-        averageServiceTimeMinutes: 10,
-        openingTime: '08:00',
-        closingTime: '17:00',
-        isAvailable: true,
-        isActive: true,
-        createdAt: '2026-03-01T00:00:00Z',
-      },
-      {
-        centerId: 2,
-        name: 'Kandy Center',
-        address: '2 Main St',
-        timezone: 'Asia/Colombo',
-        capacity: 90,
-        averageServiceTimeMinutes: 12,
-        openingTime: '08:00',
-        closingTime: '17:00',
-        isAvailable: true,
-        isActive: true,
-        createdAt: '2026-03-01T00:00:00Z',
-      },
-    ])
-
-    getAdminUsersMock.mockResolvedValue([
-      {
-        userId: 1,
-        username: 'citizen-1',
-        email: 'c1@example.com',
-        role: 'citizen',
-        centerId: null,
-        isActive: true,
-        isEmailVerified: true,
-        isDeleted: false,
-        createdAt: '2026-03-01T00:00:00Z',
-        updatedAt: null,
-        lastLoginAt: null,
-      },
-      {
-        userId: 2,
-        username: 'citizen-2',
-        email: 'c2@example.com',
-        role: 'citizen',
-        centerId: null,
-        isActive: true,
-        isEmailVerified: false,
-        isDeleted: false,
-        createdAt: '2026-03-01T00:00:00Z',
-        updatedAt: null,
-        lastLoginAt: null,
-      },
-      {
-        userId: 3,
-        username: 'officer-1',
-        email: 'o1@example.com',
-        role: 'officer',
-        centerId: 1,
-        isActive: true,
-        isEmailVerified: true,
-        isDeleted: false,
-        createdAt: '2026-03-01T00:00:00Z',
-        updatedAt: null,
-        lastLoginAt: null,
-      },
-      {
-        userId: 4,
-        username: 'admin-1',
-        email: 'a1@example.com',
-        role: 'admin',
-        centerId: null,
-        isActive: true,
-        isEmailVerified: true,
-        isDeleted: false,
-        createdAt: '2026-03-01T00:00:00Z',
-        updatedAt: null,
-        lastLoginAt: null,
-      },
-      {
-        userId: 5,
-        username: 'officer-2',
-        email: 'o2@example.com',
-        role: 'officer',
-        centerId: 2,
-        isActive: false,
-        isEmailVerified: false,
-        isDeleted: false,
-        createdAt: '2026-03-01T00:00:00Z',
-        updatedAt: null,
-        lastLoginAt: null,
-      },
-    ])
-
-    const { container } = await renderAdminDashboard()
-
-    await waitFor(() => {
-      expect(getAllServiceCentersMock).toHaveBeenCalledTimes(1)
-      expect(getAdminUsersMock).toHaveBeenCalledTimes(1)
-    })
-
-    const activeMembersLabel = screen.getByText('Currently Active Members')
-    expect(activeMembersLabel.previousElementSibling).toHaveTextContent('4')
-
-    const totalUsersBadge = screen.getByText('Total')
-    expect(totalUsersBadge.previousElementSibling).toHaveTextContent('5')
-
-    expect(screen.getByText('User Distribution')).toBeInTheDocument()
-    expect(screen.getByText('Citizens')).toBeInTheDocument()
-    expect(screen.getByText('Officers')).toBeInTheDocument()
-    expect(screen.getByText('Admins')).toBeInTheDocument()
-
-    // Ensure the rendered dashboard has expected quick shortcuts.
-    expect(container.textContent).toContain('Manage Users')
-    expect(container.textContent).toContain('Create Center')
-  })
-
-  it('falls back to zeroed stats if data fetch fails', async () => {
-    getAllServiceCentersMock.mockRejectedValue(new Error('service centers failed'))
-    getAdminUsersMock.mockRejectedValue(new Error('users failed'))
-
-    await renderAdminDashboard()
-
-    const activeMembersLabel = await screen.findByText('Currently Active Members')
-    expect(activeMembersLabel.previousElementSibling).toHaveTextContent('0')
-
-    const totalUsersBadge = screen.getByText('Total')
-    expect(totalUsersBadge.previousElementSibling).toHaveTextContent('0')
-  })
-
-  it('re-fetches dashboard data when refresh is clicked', async () => {
-    getAllServiceCentersMock.mockResolvedValue([])
-    getAdminUsersMock.mockResolvedValue([])
-
+  it('renders analytics cards from report endpoint data', async () => {
     await renderAdminDashboard()
 
     await waitFor(() => {
-      expect(getAllServiceCentersMock).toHaveBeenCalledTimes(1)
-      expect(getAdminUsersMock).toHaveBeenCalledTimes(1)
+      expect(getCustomReportMock).toHaveBeenCalledTimes(1)
     })
 
-    fireEvent.click(screen.getByRole('button', { name: /refresh/i }))
+    // Totals from mocked rows: bookings 90, served 77, skipped 8
+    expect(screen.getByText('90')).toBeInTheDocument()
+    expect(screen.getByText('77')).toBeInTheDocument()
+    expect(screen.getByText('8')).toBeInTheDocument()
+
+    // Weighted avg wait: ((5 * 50) + (4 * 40)) / 90 = 4.56 => 4.6 min
+    expect(screen.getByText('4.6 min')).toBeInTheDocument()
+
+    expect(screen.getByText('Daily Bookings Trend')).toBeInTheDocument()
+    expect(screen.getByText('Served vs Skipped')).toBeInTheDocument()
+    expect(screen.getByText('Average Wait Time Trend')).toBeInTheDocument()
+    expect(screen.getByText('Peak Hours')).toBeInTheDocument()
+  })
+
+  it('updates report query when center filter changes', async () => {
+    await renderAdminDashboard()
 
     await waitFor(() => {
-      expect(getAllServiceCentersMock).toHaveBeenCalledTimes(2)
-      expect(getAdminUsersMock).toHaveBeenCalledTimes(2)
+      expect(getCustomReportMock).toHaveBeenCalledTimes(1)
     })
+
+    fireEvent.change(screen.getByLabelText('Center'), { target: { value: '11' } })
+
+    await waitFor(() => {
+      expect(getCustomReportMock).toHaveBeenCalledTimes(2)
+    })
+
+    const lastCustomReportCallArg = getCustomReportMock.mock.calls[1][0]
+    expect(lastCustomReportCallArg.centerIds).toEqual([11])
+
+    await waitFor(() => {
+      expect(getCenterSummaryRowsMock).toHaveBeenCalledWith(11, expect.any(String), expect.any(String))
+    })
+  })
+
+  it('updates report query when date filters change', async () => {
+    await renderAdminDashboard()
+
+    await waitFor(() => {
+      expect(getCustomReportMock).toHaveBeenCalledTimes(1)
+    })
+
+    const fromInput = screen.getByLabelText('From')
+    const toInput = screen.getByLabelText('To')
+
+    fireEvent.change(fromInput, { target: { value: '2026-03-01' } })
+    fireEvent.change(toInput, { target: { value: '2026-03-20' } })
+
+    await waitFor(() => {
+      expect(getCustomReportMock).toHaveBeenCalledTimes(3)
+    })
+
+    const finalCallArg = getCustomReportMock.mock.calls[2][0]
+    expect(finalCallArg.fromDate).toBe('2026-03-01')
+    expect(finalCallArg.toDate).toBe('2026-03-20')
+  })
+
+  it('uses default 30-day range on initial load', async () => {
+    await renderAdminDashboard()
+
+    await waitFor(() => {
+      expect(getCustomReportMock).toHaveBeenCalledTimes(1)
+    })
+
+    const today = new Date()
+    const thirtyDaysAgo = new Date(today)
+    thirtyDaysAgo.setDate(today.getDate() - 29)
+
+    const expectedFrom = thirtyDaysAgo.toISOString().slice(0, 10)
+    const expectedTo = today.toISOString().slice(0, 10)
+
+    const initialCallArg = getCustomReportMock.mock.calls[0][0]
+    expect(initialCallArg.fromDate).toBe(expectedFrom)
+    expect(initialCallArg.toDate).toBe(expectedTo)
   })
 })
