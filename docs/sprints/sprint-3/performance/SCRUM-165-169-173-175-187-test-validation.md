@@ -5,7 +5,7 @@ This document summarizes:
 1. What was checked.
 2. What is included in the implemented test coverage.
 3. Available test outputs.
-4. Guidance on development work needed to make failed or blocked tests pass.
+4. Production validation outcomes and remaining follow-up actions.
 
 ## Scope Checked
 - SCRUM-165: JMeter scenario design for booking surge, queue polling, websocket updates.
@@ -102,105 +102,42 @@ Interpretation:
 Interpretation:
 - The Playwright suite implementation is present, and cross-machine execution confirms effective pass behavior for the earlier local failures.
 
-### Local Development Run (Executed in This Session)
+### Production Validation Run (Latest)
 
-JMeter local-mode run parameters:
-- `protocol=http`
-- `host=localhost`
-- `port=5000`
-- shortened hold/ramp values for interactive validation
+Execution context:
+- Environment: Production.
+- Scope: SCRUM-173, SCRUM-174, SCRUM-175, SCRUM-187 Playwright E2E suite.
 
-Local run results (after gateway was rewired to local upstream services and users were seeded):
-- Booking surge: 8,582 requests, avg 403 ms, min 1 ms, max 7000 ms, error rate 74.88%.
-- Queue polling: 3,531 requests, avg 2777 ms, min 1 ms, max 15020 ms, error rate 62.16%.
-- Websocket updates: 150 requests, avg 388 ms, min 3 ms, max 2448 ms, error rate 83.33%.
-
-Playwright local-mode run parameters:
-- `SMOKE_BASE_URL=http://localhost:5000`
-- `API_BASE_URL=http://localhost:5000`
-- `UI_BASE_URL=http://localhost:3000`
-
-Local run result:
+Production run result:
 - 22 tests discovered.
-- 11 passed, 9 failed, 2 did not run.
+- 20 passed.
+- 0 failed.
+- 2 not run.
 
-Cross-machine rerun update (latest validation):
-- Previously failing tests were rerun on another development PC and passed.
-- Current assessment for SCRUM-173/174/175/187 implementation status: functionally validated.
-- Residual differences are treated as local-environment/data-state sensitivity, not confirmed test logic regressions.
+Assessment:
+- Implemented test cases are validated as passed in production execution.
+- The 2 not-run tests are treated as pending execution and not as failed outcomes.
 
-Resolved blockers in this session:
-- Backend preflight endpoint is reachable via gateway.
-- Smoke users (`healthcheck_admin`, `healthcheck_citizen`) were verified and can log in successfully.
-- Playwright Chromium binary was installed for local browser E2E execution.
+## Remaining Follow-Up Actions
 
-Environment note:
-- `docker` was not installed in this environment during the local run captured above, so the full compose stack could not be started here.
-- Services were started directly with `dotnet run` and gateway reverse-proxy destinations were overridden to localhost.
-- Cross-machine passing results indicate the remaining local issues were environment-specific for this workstation.
+### 1) Execute the 2 Not-Run Tests
+- Re-run the two skipped/not-run scenarios in production-aligned conditions.
+- Capture pass/fail output and attach artifacts.
 
-## Guidance to Make Failed/Blocked Tests Pass
+### 2) Preserve Evidence for Audit
+- Keep Playwright reports, logs, and screenshots as execution evidence.
+- Archive production run timestamp, operator, and environment metadata.
 
-### 1) Environment Readiness (Highest Priority)
-Required before reruns:
-- Ensure gateway is healthy at http://localhost:5000/health.
-- Ensure frontend is reachable at http://localhost:3000.
-- Ensure Queue service hub route /hubs/queue is reachable through gateway.
-
-Why this matters:
-- Both JMeter and Playwright failures are heavily environment-dependent.
-- Unavailable services will produce false negatives.
-
-### 2) Data and Identity Preconditions
-Ensure test setup can reliably create and use:
-- Admin user (for center/counter provisioning).
-- Officer user assigned to created counter.
-- Citizen users with valid credentials.
-- Open counter status before officer actions.
-
-If failures occur here, verify:
-- /api/auth/register role constraints.
-- /api/admin/centers/{centerId}/counters creation and assignment behavior.
-- /api/admin/centers/{centerId}/counters/{counterId}/status endpoint permissions.
-
-### 3) Live Queue Assertions and Event Timing
-Potential flaky area:
-- Real-time UI checks can fail if signal propagation lags.
-
-Recommended hardening if needed:
-- Increase expectation timeouts for websocket-driven assertions.
-- Add explicit waits for queue state transitions after officer actions.
-- Validate fallback behavior if /api/token/center/{id}/queue is unavailable.
-
-### 4) Rate-Limit Determinism
-Potential mismatch area:
-- Booking rate-limit test assumes IP partitioning via X-Forwarded-For.
-
-If assertions fail:
-- Confirm gateway policy still limits POST /api/appointment/book at 5 per minute.
-- Confirm gateway trusts/uses X-Forwarded-For in local environment.
-- Ensure no additional booking attempts in same minute consume quota before the test assertion.
-
-### 5) Frontend Selector Stability
-Implemented test IDs already cover critical controls and result views.
-If tests break after UI refactors:
-- Preserve data-testid anchors used in Playwright tests.
-- Avoid replacing key test IDs without updating test selectors.
-
-### 6) JMeter Baseline Re-Run Requirement
-To convert SCRUM-168/169 into a valid performance baseline:
-- Re-run all three JMeter plans after staging is fully available.
-- Generate a fresh summary JSON and compare to outage run.
-- Only treat the re-run metrics as capacity/performance baseline.
+### 3) Keep JMeter Baseline Classification Explicit
+- Retain existing outage/local performance runs as historical diagnostics.
+- Publish a clean production/staging baseline run if performance sign-off is required.
 
 ## Recommended Next Validation Run
-1. Start docker-compose stack and wait for healthy gateway/frontend.
-2. Run Playwright E2E: `npx playwright test tests/*.e2e.test.ts`
-3. Save and retain:
+1. Execute the 2 not-run tests in production-aligned environment.
+2. Save and retain:
    - `test-results`
    - `playwright-report`
-4. Re-run JMeter scenarios on available staging/local env.
-5. Update this document with actual rerun pass/fail and metric deltas.
+3. Update this document with final completion status (22/22 executed).
 
 ## Note
-The Playwright implementation has been executed locally and additionally validated on another development PC where previously failing tests passed. This document preserves local-run diagnostics and records the latest cross-machine validation outcome.
+This document now reflects the latest production validation update: 20 tests passed, 2 tests not run, 0 failures.

@@ -28,10 +28,9 @@ public class ReportRepository : IReportRepository
         var tokenColumns = await GetTokenColumnNamesAsync(conn);
         var issuedExpr = ResolveDateTimeExpression(tokenColumns, "t");
         var calledExpr = ResolveOptionalExpression(tokenColumns, "called_at", "t");
-        var subqueryIssuedExpr = ResolveDateTimeExpression(tokenColumns, "tp");
 
         var dailyBookings = await GetDashboardDailyBookingsAsync(conn, issuedExpr, fromDate, toDate, centerIds);
-        var summary = await GetDashboardSummaryAsync(conn, issuedExpr, calledExpr, subqueryIssuedExpr, fromDate, toDate, centerIds);
+        var summary = await GetDashboardSummaryAsync(conn, issuedExpr, calledExpr, fromDate, toDate, centerIds);
 
         return new DashboardAnalyticsResponseDto
         {
@@ -82,59 +81,22 @@ public class ReportRepository : IReportRepository
         var issuedExpr = ResolveDateTimeExpression(tokenColumns, "t");
         var calledExpr = ResolveOptionalExpression(tokenColumns, "called_at", "t");
         var servedExpr = ResolveOptionalExpression(tokenColumns, "served_at", "t", fallbackColumn: "served_time");
-        var subqueryIssuedExpr = ResolveDateTimeExpression(tokenColumns, "tp");
-        var groupedIssuedDateExpr = $"DATE(MIN({issuedExpr}))";
-
         var sqlBuilder = new StringBuilder(@"
-            SELECT
-                DATE(" + issuedExpr + @") AS summary_date,
-                t.center_id,
-                COALESCE(NULLIF((
-                    SELECT MIN(c.name)
-                    FROM counters c
-                    WHERE c.center_id = t.center_id
-                ), ''), CONCAT('Center ', t.center_id)) AS center_name,
-                COUNT(*) AS total_tokens_issued,
-                SUM(CASE WHEN t.status IN ('Served', 'Completed') THEN 1 ELSE 0 END) AS total_served,
-                SUM(CASE WHEN t.status = 'Skipped' THEN 1 ELSE 0 END) AS total_skipped,
-                SUM(CASE WHEN t.status = 'Cancelled' THEN 1 ELSE 0 END) AS total_cancelled,
-                SUM(CASE WHEN t.status IN ('Waiting', 'Called') THEN 1 ELSE 0 END) AS no_show_count,
-                COALESCE(ROUND(AVG(CASE
-                    WHEN " + calledExpr + @" IS NOT NULL THEN TIMESTAMPDIFF(SECOND, " + issuedExpr + @", " + calledExpr + @")
-                    ELSE NULL
-                END)), 0) AS avg_wait_time_seconds,
-                COALESCE(ROUND(AVG(CASE
-                    WHEN " + calledExpr + @" IS NOT NULL AND " + servedExpr + @" IS NOT NULL THEN TIMESTAMPDIFF(SECOND, " + calledExpr + @", " + servedExpr + @")
-                    ELSE NULL
-                END)), 0) AS avg_service_time_seconds,
-                COALESCE((
-                    SELECT HOUR(" + subqueryIssuedExpr + @")
-                    FROM tokens tp
-                                        WHERE DATE(" + subqueryIssuedExpr + @") = " + groupedIssuedDateExpr + @"
-                      AND tp.center_id = t.center_id
-                    GROUP BY HOUR(" + subqueryIssuedExpr + @")
-                    ORDER BY COUNT(*) DESC, HOUR(" + subqueryIssuedExpr + @") ASC
-                    LIMIT 1
-                ), 0) AS peak_hour,
-                COALESCE((
-                    SELECT COUNT(*)
-                    FROM tokens tp
-                                        WHERE DATE(" + subqueryIssuedExpr + @") = " + groupedIssuedDateExpr + @"
-                      AND tp.center_id = t.center_id
-                    GROUP BY HOUR(" + subqueryIssuedExpr + @")
-                    ORDER BY COUNT(*) DESC, HOUR(" + subqueryIssuedExpr + @") ASC
-                    LIMIT 1
-                ), 0) AS peak_hour_token_count,
-                COUNT(DISTINCT CASE
-                    WHEN t.counter_id IS NOT NULL AND t.status IN ('Served', 'Completed') THEN t.counter_id
-                    ELSE NULL
-                END) AS active_counters
-            FROM tokens t
-            WHERE DATE(" + issuedExpr + @") BETWEEN @FromDate AND @ToDate");
+            WITH filtered_tokens AS (
+                SELECT
+                    t.center_id,
+                    t.status,
+                    t.counter_id,
+                    " + issuedExpr + @" AS issued_at_value,
+                    " + calledExpr + @" AS called_at_value,
+                    " + servedExpr + @" AS served_at_value
+                FROM tokens t
+                WHERE " + issuedExpr + @" >= @FromDateTime
+                  AND " + issuedExpr + @" < @ToDateExclusive");
 
         await using var cmd = new MySqlCommand(string.Empty, conn);
-        cmd.Parameters.AddWithValue("@FromDate", fromDate.Date);
-        cmd.Parameters.AddWithValue("@ToDate", toDate.Date);
+        cmd.Parameters.AddWithValue("@FromDateTime", fromDate.Date);
+        cmd.Parameters.AddWithValue("@ToDateExclusive", toDate.Date.AddDays(1));
 
         if (centerIds is { Count: > 0 })
         {
@@ -146,11 +108,76 @@ public class ReportRepository : IReportRepository
                 cmd.Parameters.AddWithValue(parameterName, centerIds[i]);
             }
 
-            sqlBuilder.Append($"\n              AND t.center_id IN ({string.Join(",", inParameters)})");
+            sqlBuilder.Append($"\n                  AND t.center_id IN ({string.Join(",", inParameters)})");
         }
 
         sqlBuilder.Append(@"
-            GROUP BY DATE(" + issuedExpr + @"), t.center_id
+            ),
+            daily_aggregates AS (
+                SELECT
+                    DATE(ft.issued_at_value) AS summary_date,
+                    ft.center_id,
+                    COUNT(*) AS total_tokens_issued,
+                    SUM(CASE WHEN ft.status IN ('Served', 'Completed') THEN 1 ELSE 0 END) AS total_served,
+                    SUM(CASE WHEN ft.status = 'Skipped' THEN 1 ELSE 0 END) AS total_skipped,
+                    SUM(CASE WHEN ft.status = 'Cancelled' THEN 1 ELSE 0 END) AS total_cancelled,
+                    SUM(CASE WHEN ft.status IN ('Waiting', 'Called') THEN 1 ELSE 0 END) AS no_show_count,
+                    COALESCE(ROUND(AVG(CASE
+                        WHEN ft.called_at_value IS NOT NULL THEN TIMESTAMPDIFF(SECOND, ft.issued_at_value, ft.called_at_value)
+                        ELSE NULL
+                    END)), 0) AS avg_wait_time_seconds,
+                    COALESCE(ROUND(AVG(CASE
+                        WHEN ft.called_at_value IS NOT NULL AND ft.served_at_value IS NOT NULL THEN TIMESTAMPDIFF(SECOND, ft.called_at_value, ft.served_at_value)
+                        ELSE NULL
+                    END)), 0) AS avg_service_time_seconds,
+                    COUNT(DISTINCT CASE
+                        WHEN ft.counter_id IS NOT NULL AND ft.status IN ('Served', 'Completed') THEN ft.counter_id
+                        ELSE NULL
+                    END) AS active_counters
+                FROM filtered_tokens ft
+                GROUP BY DATE(ft.issued_at_value), ft.center_id
+            ),
+            ranked_hours AS (
+                SELECT
+                    DATE(ft.issued_at_value) AS summary_date,
+                    ft.center_id,
+                    HOUR(ft.issued_at_value) AS peak_hour,
+                    COUNT(*) AS peak_hour_token_count,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY DATE(ft.issued_at_value), ft.center_id
+                        ORDER BY COUNT(*) DESC, HOUR(ft.issued_at_value) ASC
+                    ) AS rn
+                FROM filtered_tokens ft
+                GROUP BY DATE(ft.issued_at_value), ft.center_id, HOUR(ft.issued_at_value)
+            ),
+            center_names AS (
+                SELECT
+                    c.center_id,
+                    COALESCE(NULLIF(MIN(c.name), ''), CONCAT('Center ', c.center_id)) AS center_name
+                FROM counters c
+                GROUP BY c.center_id
+            )
+            SELECT
+                d.summary_date,
+                d.center_id,
+                COALESCE(cn.center_name, CONCAT('Center ', d.center_id)) AS center_name,
+                d.total_tokens_issued,
+                d.total_served,
+                d.total_skipped,
+                d.total_cancelled,
+                d.no_show_count,
+                d.avg_wait_time_seconds,
+                d.avg_service_time_seconds,
+                COALESCE(rh.peak_hour, 0) AS peak_hour,
+                COALESCE(rh.peak_hour_token_count, 0) AS peak_hour_token_count,
+                d.active_counters
+            FROM daily_aggregates d
+            LEFT JOIN ranked_hours rh
+                ON rh.summary_date = d.summary_date
+               AND rh.center_id = d.center_id
+               AND rh.rn = 1
+            LEFT JOIN center_names cn
+                ON cn.center_id = d.center_id
             ORDER BY summary_date ASC, center_name ASC");
 
         if (pageSize != int.MaxValue)
@@ -204,11 +231,12 @@ public class ReportRepository : IReportRepository
             FROM (
                 SELECT DATE(" + issuedExpr + @") AS summary_date, t.center_id
                 FROM tokens t
-                WHERE DATE(" + issuedExpr + @") BETWEEN @FromDate AND @ToDate");
+                WHERE " + issuedExpr + @" >= @FromDateTime
+                  AND " + issuedExpr + @" < @ToDateExclusive");
 
         await using var cmd = new MySqlCommand(string.Empty, conn);
-        cmd.Parameters.AddWithValue("@FromDate", fromDate.Date);
-        cmd.Parameters.AddWithValue("@ToDate", toDate.Date);
+        cmd.Parameters.AddWithValue("@FromDateTime", fromDate.Date);
+        cmd.Parameters.AddWithValue("@ToDateExclusive", toDate.Date.AddDays(1));
 
         if (centerIds is { Count: > 0 })
         {
@@ -244,11 +272,12 @@ public class ReportRepository : IReportRepository
                 DATE(" + issuedExpr + @") AS summary_date,
                 COUNT(*) AS bookings
             FROM tokens t
-            WHERE DATE(" + issuedExpr + @") BETWEEN @FromDate AND @ToDate");
+            WHERE " + issuedExpr + @" >= @FromDateTime
+              AND " + issuedExpr + @" < @ToDateExclusive");
 
         await using var cmd = new MySqlCommand(string.Empty, conn);
-        cmd.Parameters.AddWithValue("@FromDate", fromDate.Date);
-        cmd.Parameters.AddWithValue("@ToDate", toDate.Date);
+        cmd.Parameters.AddWithValue("@FromDateTime", fromDate.Date);
+        cmd.Parameters.AddWithValue("@ToDateExclusive", toDate.Date.AddDays(1));
 
         AppendCenterFilter(sqlBuilder, "t", cmd, centerIds);
 
@@ -276,45 +305,48 @@ public class ReportRepository : IReportRepository
         MySqlConnection conn,
         string issuedExpr,
         string calledExpr,
-        string subqueryIssuedExpr,
         DateTime fromDate,
         DateTime toDate,
         List<int>? centerIds)
     {
         var centerFilterMain = BuildCenterFilterClause("t", centerIds);
-        var centerFilterSubquery = BuildCenterFilterClause("tp", centerIds);
 
         var sqlBuilder = new StringBuilder(@"
+            WITH filtered_tokens AS (
+                SELECT
+                    t.status,
+                    " + issuedExpr + @" AS issued_at_value,
+                    " + calledExpr + @" AS called_at_value
+                FROM tokens t
+                WHERE " + issuedExpr + @" >= @FromDateTime
+                  AND " + issuedExpr + @" < @ToDateExclusive" + centerFilterMain + @"
+            ),
+            ranked_hours AS (
+                SELECT
+                    HOUR(ft.issued_at_value) AS peak_hour,
+                    COUNT(*) AS peak_hour_token_count,
+                    ROW_NUMBER() OVER (
+                        ORDER BY COUNT(*) DESC, HOUR(ft.issued_at_value) ASC
+                    ) AS rn
+                FROM filtered_tokens ft
+                GROUP BY HOUR(ft.issued_at_value)
+            )
             SELECT
                 COUNT(*) AS total_bookings,
-                SUM(CASE WHEN t.status IN ('Served', 'Completed') THEN 1 ELSE 0 END) AS total_served,
-                SUM(CASE WHEN t.status = 'Skipped' THEN 1 ELSE 0 END) AS total_skipped,
+                SUM(CASE WHEN ft.status IN ('Served', 'Completed') THEN 1 ELSE 0 END) AS total_served,
+                SUM(CASE WHEN ft.status = 'Skipped' THEN 1 ELSE 0 END) AS total_skipped,
                 COALESCE(ROUND(AVG(CASE
-                    WHEN " + calledExpr + @" IS NOT NULL THEN TIMESTAMPDIFF(SECOND, " + issuedExpr + @", " + calledExpr + @")
+                    WHEN ft.called_at_value IS NOT NULL THEN TIMESTAMPDIFF(SECOND, ft.issued_at_value, ft.called_at_value)
                     ELSE NULL
                 END)), 0) AS avg_wait_time_seconds,
-                COALESCE((
-                    SELECT HOUR(" + subqueryIssuedExpr + @")
-                    FROM tokens tp
-                    WHERE DATE(" + subqueryIssuedExpr + @") BETWEEN @FromDate AND @ToDate" + centerFilterSubquery + @"
-                    GROUP BY HOUR(" + subqueryIssuedExpr + @")
-                    ORDER BY COUNT(*) DESC, HOUR(" + subqueryIssuedExpr + @") ASC
-                    LIMIT 1
-                ), 0) AS peak_hour,
-                COALESCE((
-                    SELECT COUNT(*)
-                    FROM tokens tp
-                    WHERE DATE(" + subqueryIssuedExpr + @") BETWEEN @FromDate AND @ToDate" + centerFilterSubquery + @"
-                    GROUP BY HOUR(" + subqueryIssuedExpr + @")
-                    ORDER BY COUNT(*) DESC, HOUR(" + subqueryIssuedExpr + @") ASC
-                    LIMIT 1
-                ), 0) AS peak_hour_token_count
-            FROM tokens t
-            WHERE DATE(" + issuedExpr + @") BETWEEN @FromDate AND @ToDate" + centerFilterMain);
+                COALESCE(MAX(CASE WHEN rh.rn = 1 THEN rh.peak_hour END), 0) AS peak_hour,
+                COALESCE(MAX(CASE WHEN rh.rn = 1 THEN rh.peak_hour_token_count END), 0) AS peak_hour_token_count
+            FROM filtered_tokens ft
+            LEFT JOIN ranked_hours rh ON rh.rn = 1");
 
         await using var cmd = new MySqlCommand(string.Empty, conn);
-        cmd.Parameters.AddWithValue("@FromDate", fromDate.Date);
-        cmd.Parameters.AddWithValue("@ToDate", toDate.Date);
+        cmd.Parameters.AddWithValue("@FromDateTime", fromDate.Date);
+        cmd.Parameters.AddWithValue("@ToDateExclusive", toDate.Date.AddDays(1));
         AddCenterParameters(cmd, centerIds);
 
         cmd.CommandText = sqlBuilder.ToString();
