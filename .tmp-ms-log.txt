@@ -1,0 +1,337 @@
+﻿2026-04-20T13:44:27.6394303Z Current runner version: '2.333.1'
+2026-04-20T13:44:27.6433324Z ##[group]Runner Image Provisioner
+2026-04-20T13:44:27.6434931Z Hosted Compute Agent
+2026-04-20T13:44:27.6436457Z Version: 20260213.493
+2026-04-20T13:44:27.6437836Z Commit: 5c115507f6dd24b8de37d8bbe0bb4509d0cc0fa3
+2026-04-20T13:44:27.6439316Z Build Date: 2026-02-13T00:28:41Z
+2026-04-20T13:44:27.6440720Z Worker ID: {437e7ff3-3307-48fb-8694-1500640a84b7}
+2026-04-20T13:44:27.6442001Z Azure Region: eastus
+2026-04-20T13:44:27.6443218Z ##[endgroup]
+2026-04-20T13:44:27.6445843Z ##[group]Operating System
+2026-04-20T13:44:27.6447307Z Ubuntu
+2026-04-20T13:44:27.6448305Z 24.04.4
+2026-04-20T13:44:27.6449436Z LTS
+2026-04-20T13:44:27.6450413Z ##[endgroup]
+2026-04-20T13:44:27.6451608Z ##[group]Runner Image
+2026-04-20T13:44:27.6452788Z Image: ubuntu-24.04
+2026-04-20T13:44:27.6454024Z Version: 20260413.86.1
+2026-04-20T13:44:27.6456598Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260413.86/images/ubuntu/Ubuntu2404-Readme.md
+2026-04-20T13:44:27.6459618Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260413.86
+2026-04-20T13:44:27.6461569Z ##[endgroup]
+2026-04-20T13:44:27.6463693Z ##[group]GITHUB_TOKEN Permissions
+2026-04-20T13:44:27.6466862Z Contents: read
+2026-04-20T13:44:27.6468117Z Metadata: read
+2026-04-20T13:44:27.6469380Z ##[endgroup]
+2026-04-20T13:44:27.6472667Z Secret source: Actions
+2026-04-20T13:44:27.6474162Z Prepare workflow directory
+2026-04-20T13:44:27.7056896Z Prepare all required actions
+2026-04-20T13:44:27.7114499Z Getting action download info
+2026-04-20T13:44:28.0329956Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+2026-04-20T13:44:28.1361560Z Download action repository 'azure/login@v2' (SHA:a457da9ea143d694b1b9c7c869ebb04ebe844ef5)
+2026-04-20T13:44:28.3261809Z Download action repository 'azure/docker-login@v2' (SHA:15c4aadf093404726ab2ff205b2cdd33fa6d054c)
+2026-04-20T13:44:29.8366443Z Complete job name: build-and-push (qlanka-micro-servicecentre, QueueLanka.ServiceCenter/Dockerfile, qlanka-micro-ser...
+2026-04-20T13:44:29.8988289Z ##[group]Run actions/checkout@v4
+2026-04-20T13:44:29.8989029Z with:
+2026-04-20T13:44:29.8989338Z   repository: Hesara2003/Qlanka-pro
+2026-04-20T13:44:29.8989862Z   token: ***
+2026-04-20T13:44:29.8990140Z   ssh-strict: true
+2026-04-20T13:44:29.8990419Z   ssh-user: git
+2026-04-20T13:44:29.8990696Z   persist-credentials: true
+2026-04-20T13:44:29.8991008Z   clean: true
+2026-04-20T13:44:29.8991295Z   sparse-checkout-cone-mode: true
+2026-04-20T13:44:29.8991623Z   fetch-depth: 1
+2026-04-20T13:44:29.8991905Z   fetch-tags: false
+2026-04-20T13:44:29.8992198Z   show-progress: true
+2026-04-20T13:44:29.8992495Z   lfs: false
+2026-04-20T13:44:29.8992772Z   submodules: false
+2026-04-20T13:44:29.8993064Z   set-safe-directory: true
+2026-04-20T13:44:29.8993959Z env:
+2026-04-20T13:44:29.8994291Z   ACR_NAME: qlanka
+2026-04-20T13:44:29.8994657Z   ACR_LOGIN_SERVER: qlanka-hrhza8d0ccd6dqa4.azurecr.io
+2026-04-20T13:44:29.8995660Z   QUEUE_SERVICECENTER_URL: https://qlanka-micro-servicecentre.salmonisland-da9fa0a9.eastasia.azurecontainerapps.io
+2026-04-20T13:44:29.8996364Z ##[endgroup]
+2026-04-20T13:44:30.0074391Z Syncing repository: Hesara2003/Qlanka-pro
+2026-04-20T13:44:30.0076255Z ##[group]Getting Git version info
+2026-04-20T13:44:30.0076800Z Working directory is '/home/runner/work/Qlanka-pro/Qlanka-pro'
+2026-04-20T13:44:30.0077528Z [command]/usr/bin/git version
+2026-04-20T13:44:30.0108939Z git version 2.53.0
+2026-04-20T13:44:30.0134243Z ##[endgroup]
+2026-04-20T13:44:30.0147984Z Temporarily overriding HOME='/home/runner/work/_temp/c43ac1a2-8bd4-4923-8036-5cd8538754c6' before making global git config changes
+2026-04-20T13:44:30.0149046Z Adding repository directory to the temporary git global config as a safe directory
+2026-04-20T13:44:30.0160741Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Qlanka-pro/Qlanka-pro
+2026-04-20T13:44:30.0192379Z Deleting the contents of '/home/runner/work/Qlanka-pro/Qlanka-pro'
+2026-04-20T13:44:30.0196024Z ##[group]Initializing the repository
+2026-04-20T13:44:30.0199894Z [command]/usr/bin/git init /home/runner/work/Qlanka-pro/Qlanka-pro
+2026-04-20T13:44:30.0278227Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-04-20T13:44:30.0280283Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-04-20T13:44:30.0281437Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-04-20T13:44:30.0282189Z hint: call:
+2026-04-20T13:44:30.0282588Z hint:
+2026-04-20T13:44:30.0283121Z hint: 	git config --global init.defaultBranch <name>
+2026-04-20T13:44:30.0283734Z hint:
+2026-04-20T13:44:30.0284319Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-04-20T13:44:30.0285555Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-04-20T13:44:30.0286284Z hint:
+2026-04-20T13:44:30.0286683Z hint: 	git branch -m <name>
+2026-04-20T13:44:30.0287082Z hint:
+2026-04-20T13:44:30.0287618Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-04-20T13:44:30.0288464Z Initialized empty Git repository in /home/runner/work/Qlanka-pro/Qlanka-pro/.git/
+2026-04-20T13:44:30.0292833Z [command]/usr/bin/git remote add origin https://github.com/Hesara2003/Qlanka-pro
+2026-04-20T13:44:30.0321668Z ##[endgroup]
+2026-04-20T13:44:30.0322674Z ##[group]Disabling automatic garbage collection
+2026-04-20T13:44:30.0325649Z [command]/usr/bin/git config --local gc.auto 0
+2026-04-20T13:44:30.0352329Z ##[endgroup]
+2026-04-20T13:44:30.0352909Z ##[group]Setting up auth
+2026-04-20T13:44:30.0360420Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-04-20T13:44:30.0389537Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-04-20T13:44:30.0667763Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-04-20T13:44:30.0698134Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-04-20T13:44:30.0922612Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-04-20T13:44:30.0952405Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-04-20T13:44:30.1173583Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-04-20T13:44:30.1206393Z ##[endgroup]
+2026-04-20T13:44:30.1207471Z ##[group]Fetching the repository
+2026-04-20T13:44:30.1214726Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +4b642f8de821a80fb5c9291475253c3ae472a9e0:refs/remotes/origin/final-production
+2026-04-20T13:44:30.4105640Z From https://github.com/Hesara2003/Qlanka-pro
+2026-04-20T13:44:30.4107028Z  * [new ref]         4b642f8de821a80fb5c9291475253c3ae472a9e0 -> origin/final-production
+2026-04-20T13:44:30.4142685Z ##[endgroup]
+2026-04-20T13:44:30.4143635Z ##[group]Determining the checkout info
+2026-04-20T13:44:30.4148395Z ##[endgroup]
+2026-04-20T13:44:30.4155685Z [command]/usr/bin/git sparse-checkout disable
+2026-04-20T13:44:30.4197889Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-04-20T13:44:30.4235614Z ##[group]Checking out the ref
+2026-04-20T13:44:30.4241318Z [command]/usr/bin/git checkout --progress --force -B final-production refs/remotes/origin/final-production
+2026-04-20T13:44:30.4639347Z Switched to a new branch 'final-production'
+2026-04-20T13:44:30.4641941Z branch 'final-production' set up to track 'origin/final-production'.
+2026-04-20T13:44:30.4651253Z ##[endgroup]
+2026-04-20T13:44:30.4691961Z [command]/usr/bin/git log -1 --format=%H
+2026-04-20T13:44:30.4716645Z 4b642f8de821a80fb5c9291475253c3ae472a9e0
+2026-04-20T13:44:30.4905914Z ##[group]Run if [ -n "$AZURE_CREDENTIALS" ]; then
+2026-04-20T13:44:30.4906467Z [36;1mif [ -n "$AZURE_CREDENTIALS" ]; then[0m
+2026-04-20T13:44:30.4906893Z [36;1m  echo "use_sp=true" >> "$GITHUB_OUTPUT"[0m
+2026-04-20T13:44:30.4907316Z [36;1m  echo "use_oidc=false" >> "$GITHUB_OUTPUT"[0m
+2026-04-20T13:44:30.4907767Z [36;1m  echo "use_acr_basic=false" >> "$GITHUB_OUTPUT"[0m
+2026-04-20T13:44:30.4908257Z [36;1melif [ -n "$ACR_USERNAME" ] && [ -n "$ACR_PASSWORD" ]; then[0m
+2026-04-20T13:44:30.4908731Z [36;1m  echo "use_sp=false" >> "$GITHUB_OUTPUT"[0m
+2026-04-20T13:44:30.4909137Z [36;1m  echo "use_oidc=false" >> "$GITHUB_OUTPUT"[0m
+2026-04-20T13:44:30.4909557Z [36;1m  echo "use_acr_basic=true" >> "$GITHUB_OUTPUT"[0m
+2026-04-20T13:44:30.4910144Z [36;1melif [ -n "$SERVICE_CLIENT_ID" ] && [ -n "$SERVICE_TENANT_ID" ] && [ -n "$SERVICE_SUBSCRIPTION_ID" ]; then[0m
+2026-04-20T13:44:30.4910768Z [36;1m  echo "use_sp=false" >> "$GITHUB_OUTPUT"[0m
+2026-04-20T13:44:30.4911227Z [36;1m  echo "use_oidc=true" >> "$GITHUB_OUTPUT"[0m
+2026-04-20T13:44:30.4911646Z [36;1m  echo "use_acr_basic=false" >> "$GITHUB_OUTPUT"[0m
+2026-04-20T13:44:30.4912025Z [36;1melse[0m
+2026-04-20T13:44:30.4912323Z [36;1m  echo "use_sp=false" >> "$GITHUB_OUTPUT"[0m
+2026-04-20T13:44:30.4912727Z [36;1m  echo "use_oidc=false" >> "$GITHUB_OUTPUT"[0m
+2026-04-20T13:44:30.4913136Z [36;1m  echo "use_acr_basic=false" >> "$GITHUB_OUTPUT"[0m
+2026-04-20T13:44:30.4913509Z [36;1mfi[0m
+2026-04-20T13:44:30.4938605Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-04-20T13:44:30.4939073Z env:
+2026-04-20T13:44:30.4939362Z   ACR_NAME: qlanka
+2026-04-20T13:44:30.4939739Z   ACR_LOGIN_SERVER: qlanka-hrhza8d0ccd6dqa4.azurecr.io
+2026-04-20T13:44:30.4940581Z   QUEUE_SERVICECENTER_URL: https://qlanka-micro-servicecentre.salmonisland-da9fa0a9.eastasia.azurecontainerapps.io
+2026-04-20T13:44:30.4941352Z   AZURE_CREDENTIALS: 
+2026-04-20T13:44:30.4941806Z   ACR_USERNAME: ***
+2026-04-20T13:44:30.4942480Z   ACR_PASSWORD: ***
+2026-04-20T13:44:30.4942871Z   SERVICE_CLIENT_ID: ***
+2026-04-20T13:44:30.4943271Z   SERVICE_TENANT_ID: ***
+2026-04-20T13:44:30.4943689Z   SERVICE_SUBSCRIPTION_ID: ***
+2026-04-20T13:44:30.4944037Z ##[endgroup]
+2026-04-20T13:44:30.5172081Z ##[group]Run azure/docker-login@v2
+2026-04-20T13:44:30.5172451Z with:
+2026-04-20T13:44:30.5172764Z   login-server: qlanka-hrhza8d0ccd6dqa4.azurecr.io
+2026-04-20T13:44:30.5173221Z   username: ***
+2026-04-20T13:44:30.5173775Z   password: ***
+2026-04-20T13:44:30.5174044Z env:
+2026-04-20T13:44:30.5174285Z   ACR_NAME: qlanka
+2026-04-20T13:44:30.5174634Z   ACR_LOGIN_SERVER: qlanka-hrhza8d0ccd6dqa4.azurecr.io
+2026-04-20T13:44:30.5175628Z   QUEUE_SERVICECENTER_URL: https://qlanka-micro-servicecentre.salmonisland-da9fa0a9.eastasia.azurecontainerapps.io
+2026-04-20T13:44:30.5176328Z ##[endgroup]
+2026-04-20T13:44:30.6082318Z DOCKER_CONFIG environment variable is set
+2026-04-20T13:44:30.6170431Z ##[group]Run docker build \
+2026-04-20T13:44:30.6170866Z [36;1mdocker build \[0m
+2026-04-20T13:44:30.6171584Z [36;1m  -t qlanka-hrhza8d0ccd6dqa4.azurecr.io/qlanka-micro-servicecentre:4b642f8de821a80fb5c9291475253c3ae472a9e0 \[0m
+2026-04-20T13:44:30.6172488Z [36;1m  -t qlanka-hrhza8d0ccd6dqa4.azurecr.io/qlanka-micro-servicecentre:latest \[0m
+2026-04-20T13:44:30.6173155Z [36;1m  -f backend/QueueLanka.ServiceCenter/Dockerfile backend[0m
+2026-04-20T13:44:30.6174004Z [36;1mdocker push qlanka-hrhza8d0ccd6dqa4.azurecr.io/qlanka-micro-servicecentre:4b642f8de821a80fb5c9291475253c3ae472a9e0[0m
+2026-04-20T13:44:30.6174957Z [36;1mdocker push qlanka-hrhza8d0ccd6dqa4.azurecr.io/qlanka-micro-servicecentre:latest[0m
+2026-04-20T13:44:30.6197426Z shell: /usr/bin/bash -e {0}
+2026-04-20T13:44:30.6197808Z env:
+2026-04-20T13:44:30.6198110Z   ACR_NAME: qlanka
+2026-04-20T13:44:30.6198516Z   ACR_LOGIN_SERVER: qlanka-hrhza8d0ccd6dqa4.azurecr.io
+2026-04-20T13:44:30.6199456Z   QUEUE_SERVICECENTER_URL: https://qlanka-micro-servicecentre.salmonisland-da9fa0a9.eastasia.azurecontainerapps.io
+2026-04-20T13:44:30.6200560Z   DOCKER_CONFIG: /home/runner/work/_temp/docker_login_1776692670605
+2026-04-20T13:44:30.6201072Z ##[endgroup]
+2026-04-20T13:44:30.7869140Z #0 building with "default" instance using docker driver
+2026-04-20T13:44:30.7870247Z 
+2026-04-20T13:44:30.7870478Z #1 [internal] load build definition from Dockerfile
+2026-04-20T13:44:30.8955992Z #1 transferring dockerfile: 809B done
+2026-04-20T13:44:30.8956752Z #1 DONE 0.0s
+2026-04-20T13:44:30.8956949Z 
+2026-04-20T13:44:30.8957220Z #2 [internal] load metadata for mcr.microsoft.com/dotnet/sdk:8.0
+2026-04-20T13:44:30.8957723Z #2 DONE 0.1s
+2026-04-20T13:44:30.8958011Z 
+2026-04-20T13:44:30.8958275Z #3 [internal] load metadata for mcr.microsoft.com/dotnet/aspnet:8.0
+2026-04-20T13:44:31.0346754Z #3 DONE 0.1s
+2026-04-20T13:44:31.0347362Z 
+2026-04-20T13:44:31.0347844Z #4 [internal] load .dockerignore
+2026-04-20T13:44:31.0367598Z #4 transferring context: 163B done
+2026-04-20T13:44:31.0369275Z #4 DONE 0.0s
+2026-04-20T13:44:31.0369867Z 
+2026-04-20T13:44:31.0371418Z #5 [internal] load build context
+2026-04-20T13:44:31.0372200Z #5 transferring context: 783.07kB 0.0s done
+2026-04-20T13:44:31.0373432Z #5 DONE 0.1s
+2026-04-20T13:44:31.0373947Z 
+2026-04-20T13:44:31.0374905Z #6 [build 1/8] FROM mcr.microsoft.com/dotnet/sdk:8.0@sha256:ec47373b40fc22a31c891c5be8df83f8cbadc24e785b10899545e33a1a1c2183
+2026-04-20T13:44:31.0376954Z #6 resolve mcr.microsoft.com/dotnet/sdk:8.0@sha256:ec47373b40fc22a31c891c5be8df83f8cbadc24e785b10899545e33a1a1c2183 done
+2026-04-20T13:44:31.0378643Z #6 sha256:1ef78fb0678467902c8f8a2b0f28e99fd29de5b0a6dbdac6d4e620955ce0ee3c 2.42kB / 2.42kB done
+2026-04-20T13:44:31.0380078Z #6 sha256:312b97be0ccd08bc2b9693e79e1265e79d118edc221d56b67bc0b8f75fd72654 5.13kB / 5.13kB done
+2026-04-20T13:44:31.0381483Z #6 sha256:da539b6761059a0a114c6671f1267b57445e3a54da023db5c28be019e40f0284 14.68MB / 28.24MB 0.1s
+2026-04-20T13:44:31.0382875Z #6 sha256:3e43ee77c8b91423dac031a5819c066a6c69b06d269a8c3f27a6f75792b079fb 16.78MB / 18.74MB 0.1s
+2026-04-20T13:44:31.0384297Z #6 sha256:ec47373b40fc22a31c891c5be8df83f8cbadc24e785b10899545e33a1a1c2183 1.08kB / 1.08kB done
+2026-04-20T13:44:31.1538278Z #6 sha256:da539b6761059a0a114c6671f1267b57445e3a54da023db5c28be019e40f0284 28.24MB / 28.24MB 0.1s done
+2026-04-20T13:44:31.1540183Z #6 sha256:3e43ee77c8b91423dac031a5819c066a6c69b06d269a8c3f27a6f75792b079fb 18.74MB / 18.74MB 0.1s done
+2026-04-20T13:44:31.1541733Z #6 sha256:6c03b8e5996255c52e5a16437c33290c97eec97d7c17a0c229932042b880958e 31.46MB / 32.25MB 0.2s
+2026-04-20T13:44:31.1543303Z #6 sha256:267343b3c2cd8cbe2cf17b4df4f87ad80a5c390adcda4ac529d48b7d3cc83c1a 165B / 165B 0.1s done
+2026-04-20T13:44:31.1545148Z #6 sha256:29f3f476303fa371d524040a4426b8831ed1cb61b3c393f090bcbd3c70802099 11.09MB / 11.09MB 0.2s done
+2026-04-20T13:44:31.1547984Z #6 sha256:aae7a55bb9b192ae9f13b52efacb6644e99083485d1a28441559adfb87941827 8.39MB / 31.09MB 0.2s
+2026-04-20T13:44:31.1549709Z #6 sha256:2446cc78560c472864bf27fcd4a0fd1b4baffddaf197a871fb7eca1ddb8cfbfc 0B / 177.94MB 0.2s
+2026-04-20T13:44:31.1551001Z #6 extracting sha256:da539b6761059a0a114c6671f1267b57445e3a54da023db5c28be019e40f0284
+2026-04-20T13:44:31.2572693Z #6 sha256:6c03b8e5996255c52e5a16437c33290c97eec97d7c17a0c229932042b880958e 32.25MB / 32.25MB 0.2s done
+2026-04-20T13:44:31.2574352Z #6 sha256:aae7a55bb9b192ae9f13b52efacb6644e99083485d1a28441559adfb87941827 31.09MB / 31.09MB 0.3s done
+2026-04-20T13:44:31.2576156Z #6 sha256:2446cc78560c472864bf27fcd4a0fd1b4baffddaf197a871fb7eca1ddb8cfbfc 25.17MB / 177.94MB 0.3s
+2026-04-20T13:44:31.2577583Z #6 sha256:8f89c6b11751c3c0095433a076ea30893f3c436d42a747a426fd1eb6966a719e 2.69kB / 2.69kB 0.2s done
+2026-04-20T13:44:31.2579048Z #6 sha256:e0dba3aad75d16007fa94ce77900f1cc85c98d0ed5452b01ea924b6ed4f3b395 15.73MB / 16.99MB 0.3s
+2026-04-20T13:44:31.3589005Z #6 sha256:2446cc78560c472864bf27fcd4a0fd1b4baffddaf197a871fb7eca1ddb8cfbfc 56.62MB / 177.94MB 0.4s
+2026-04-20T13:44:31.3590469Z #6 sha256:e0dba3aad75d16007fa94ce77900f1cc85c98d0ed5452b01ea924b6ed4f3b395 16.99MB / 16.99MB 0.3s done
+2026-04-20T13:44:31.4738465Z #6 sha256:2446cc78560c472864bf27fcd4a0fd1b4baffddaf197a871fb7eca1ddb8cfbfc 91.23MB / 177.94MB 0.5s
+2026-04-20T13:44:31.5882590Z #6 sha256:2446cc78560c472864bf27fcd4a0fd1b4baffddaf197a871fb7eca1ddb8cfbfc 125.83MB / 177.94MB 0.6s
+2026-04-20T13:44:31.6923090Z #6 sha256:2446cc78560c472864bf27fcd4a0fd1b4baffddaf197a871fb7eca1ddb8cfbfc 159.38MB / 177.94MB 0.7s
+2026-04-20T13:44:31.7937092Z #6 sha256:2446cc78560c472864bf27fcd4a0fd1b4baffddaf197a871fb7eca1ddb8cfbfc 177.94MB / 177.94MB 0.8s
+2026-04-20T13:44:31.9494911Z #6 sha256:2446cc78560c472864bf27fcd4a0fd1b4baffddaf197a871fb7eca1ddb8cfbfc 177.94MB / 177.94MB 0.9s done
+2026-04-20T13:44:32.4313970Z #6 extracting sha256:da539b6761059a0a114c6671f1267b57445e3a54da023db5c28be019e40f0284 1.3s done
+2026-04-20T13:44:32.5688678Z #6 extracting sha256:3e43ee77c8b91423dac031a5819c066a6c69b06d269a8c3f27a6f75792b079fb 0.1s
+2026-04-20T13:44:32.8839494Z #6 extracting sha256:3e43ee77c8b91423dac031a5819c066a6c69b06d269a8c3f27a6f75792b079fb 0.3s done
+2026-04-20T13:44:33.8683785Z #6 extracting sha256:f5826978233cc6824d0291f593caf6a3b574a3558c55ca7a23bf090ef7baa321
+2026-04-20T13:44:33.9954783Z #6 extracting sha256:f5826978233cc6824d0291f593caf6a3b574a3558c55ca7a23bf090ef7baa321 done
+2026-04-20T13:44:33.9956191Z #6 extracting sha256:6c03b8e5996255c52e5a16437c33290c97eec97d7c17a0c229932042b880958e 0.1s
+2026-04-20T13:44:34.3889237Z #6 extracting sha256:6c03b8e5996255c52e5a16437c33290c97eec97d7c17a0c229932042b880958e 0.4s done
+2026-04-20T13:44:34.3890757Z #6 extracting sha256:267343b3c2cd8cbe2cf17b4df4f87ad80a5c390adcda4ac529d48b7d3cc83c1a done
+2026-04-20T13:44:34.3892046Z #6 extracting sha256:29f3f476303fa371d524040a4426b8831ed1cb61b3c393f090bcbd3c70802099 0.1s
+2026-04-20T13:44:34.5422119Z #6 ...
+2026-04-20T13:44:34.5423051Z 
+2026-04-20T13:44:34.5424940Z #7 [base 1/2] FROM mcr.microsoft.com/dotnet/aspnet:8.0@sha256:8c7de8ca26baa56530cdc3d55b5563420ee2a302619ad808c53ec64613143771
+2026-04-20T13:44:34.5428027Z #7 resolve mcr.microsoft.com/dotnet/aspnet:8.0@sha256:8c7de8ca26baa56530cdc3d55b5563420ee2a302619ad808c53ec64613143771 done
+2026-04-20T13:44:34.5431093Z #7 sha256:8c7de8ca26baa56530cdc3d55b5563420ee2a302619ad808c53ec64613143771 1.08kB / 1.08kB done
+2026-04-20T13:44:34.5432645Z #7 sha256:6c552c81980323757bfd96eb68ced52ff9217ca648feaac8a3ee89870978e7f9 1.58kB / 1.58kB done
+2026-04-20T13:44:34.5434250Z #7 sha256:6c03b8e5996255c52e5a16437c33290c97eec97d7c17a0c229932042b880958e 32.25MB / 32.25MB 0.2s done
+2026-04-20T13:44:34.5436327Z #7 sha256:0ea23517182c3bac67da757088d16a9ff36de785bce3416c046e6d3352a882b3 2.54kB / 2.54kB done
+2026-04-20T13:44:34.5438629Z #7 sha256:f5826978233cc6824d0291f593caf6a3b574a3558c55ca7a23bf090ef7baa321 3.34kB / 3.34kB 0.1s done
+2026-04-20T13:44:34.5440806Z #7 sha256:29f3f476303fa371d524040a4426b8831ed1cb61b3c393f090bcbd3c70802099 11.09MB / 11.09MB 0.2s done
+2026-04-20T13:44:34.5443169Z #7 sha256:da539b6761059a0a114c6671f1267b57445e3a54da023db5c28be019e40f0284 28.24MB / 28.24MB 0.1s done
+2026-04-20T13:44:34.5444890Z #7 sha256:3e43ee77c8b91423dac031a5819c066a6c69b06d269a8c3f27a6f75792b079fb 18.74MB / 18.74MB 0.1s done
+2026-04-20T13:44:34.5446660Z #7 sha256:267343b3c2cd8cbe2cf17b4df4f87ad80a5c390adcda4ac529d48b7d3cc83c1a 165B / 165B 0.1s done
+2026-04-20T13:44:34.5448227Z #7 extracting sha256:3e43ee77c8b91423dac031a5819c066a6c69b06d269a8c3f27a6f75792b079fb 0.3s done
+2026-04-20T13:44:34.5449368Z #7 DONE 3.5s
+2026-04-20T13:44:34.5449944Z 
+2026-04-20T13:44:34.5450422Z #8 [base 2/2] WORKDIR /app
+2026-04-20T13:44:34.5450959Z #8 DONE 0.0s
+2026-04-20T13:44:34.5451463Z 
+2026-04-20T13:44:34.5451782Z #9 [final 1/2] WORKDIR /app
+2026-04-20T13:44:34.5452222Z #9 DONE 0.0s
+2026-04-20T13:44:34.5452676Z 
+2026-04-20T13:44:34.5453316Z #6 [build 1/8] FROM mcr.microsoft.com/dotnet/sdk:8.0@sha256:ec47373b40fc22a31c891c5be8df83f8cbadc24e785b10899545e33a1a1c2183
+2026-04-20T13:44:34.5454433Z #6 extracting sha256:29f3f476303fa371d524040a4426b8831ed1cb61b3c393f090bcbd3c70802099 0.1s done
+2026-04-20T13:44:34.5455845Z #6 extracting sha256:aae7a55bb9b192ae9f13b52efacb6644e99083485d1a28441559adfb87941827 0.1s
+2026-04-20T13:44:35.3945749Z #6 extracting sha256:aae7a55bb9b192ae9f13b52efacb6644e99083485d1a28441559adfb87941827 0.9s done
+2026-04-20T13:44:35.3947596Z #6 extracting sha256:2446cc78560c472864bf27fcd4a0fd1b4baffddaf197a871fb7eca1ddb8cfbfc
+2026-04-20T13:44:38.5202475Z #6 extracting sha256:2446cc78560c472864bf27fcd4a0fd1b4baffddaf197a871fb7eca1ddb8cfbfc 3.0s done
+2026-04-20T13:44:39.3649646Z #6 extracting sha256:8f89c6b11751c3c0095433a076ea30893f3c436d42a747a426fd1eb6966a719e
+2026-04-20T13:44:39.4806176Z #6 extracting sha256:8f89c6b11751c3c0095433a076ea30893f3c436d42a747a426fd1eb6966a719e done
+2026-04-20T13:44:39.4807549Z #6 extracting sha256:e0dba3aad75d16007fa94ce77900f1cc85c98d0ed5452b01ea924b6ed4f3b395 0.1s
+2026-04-20T13:44:39.7105443Z #6 extracting sha256:e0dba3aad75d16007fa94ce77900f1cc85c98d0ed5452b01ea924b6ed4f3b395 0.3s done
+2026-04-20T13:44:39.7106964Z #6 DONE 8.8s
+2026-04-20T13:44:39.8870482Z 
+2026-04-20T13:44:39.8871526Z #10 [build 2/8] WORKDIR /src
+2026-04-20T13:44:39.8872323Z #10 DONE 0.0s
+2026-04-20T13:44:39.8872753Z 
+2026-04-20T13:44:39.8873846Z #11 [build 3/8] COPY [QueueLanka.ServiceCenter/QueueLanka.ServiceCenter.csproj, QueueLanka.ServiceCenter/]
+2026-04-20T13:44:39.8875776Z #11 DONE 0.0s
+2026-04-20T13:44:39.8876137Z 
+2026-04-20T13:44:39.8876814Z #12 [build 4/8] COPY [QueueLanka.Shared/QueueLanka.Shared.csproj, QueueLanka.Shared/]
+2026-04-20T13:44:39.8877595Z #12 DONE 0.0s
+2026-04-20T13:44:39.8877810Z 
+2026-04-20T13:44:39.8878331Z #13 [build 5/8] RUN dotnet restore "QueueLanka.ServiceCenter/QueueLanka.ServiceCenter.csproj"
+2026-04-20T13:44:40.4372294Z #13 0.700   Determining projects to restore...
+2026-04-20T13:44:42.1302247Z #13 2.393   Restored /src/QueueLanka.Shared/QueueLanka.Shared.csproj (in 1.26 sec).
+2026-04-20T13:44:42.3125173Z #13 2.493   Restored /src/QueueLanka.ServiceCenter/QueueLanka.ServiceCenter.csproj (in 1.37 sec).
+2026-04-20T13:44:42.3126441Z #13 DONE 2.6s
+2026-04-20T13:44:42.5180604Z 
+2026-04-20T13:44:42.5181129Z #14 [build 6/8] COPY . .
+2026-04-20T13:44:42.5181754Z #14 DONE 0.0s
+2026-04-20T13:44:42.5182011Z 
+2026-04-20T13:44:42.5182317Z #15 [build 7/8] WORKDIR /src/QueueLanka.ServiceCenter
+2026-04-20T13:44:42.5182954Z #15 DONE 0.0s
+2026-04-20T13:44:42.5183186Z 
+2026-04-20T13:44:42.5183771Z #16 [build 8/8] RUN dotnet build "QueueLanka.ServiceCenter.csproj" -c Release -o /app/build
+2026-04-20T13:44:43.2774470Z #16 0.910   Determining projects to restore...
+2026-04-20T13:44:43.7113170Z #16 1.344   All projects are up-to-date for restore.
+2026-04-20T13:44:46.0396894Z #16 3.672   QueueLanka.Shared -> /app/build/QueueLanka.Shared.dll
+2026-04-20T13:44:47.3224054Z #16 4.955   QueueLanka.ServiceCenter -> /app/build/QueueLanka.ServiceCenter.dll
+2026-04-20T13:44:47.5514850Z #16 4.965 
+2026-04-20T13:44:47.5515731Z #16 4.966 Build succeeded.
+2026-04-20T13:44:47.5516305Z #16 4.966     0 Warning(s)
+2026-04-20T13:44:47.5516740Z #16 4.966     0 Error(s)
+2026-04-20T13:44:47.5517143Z #16 4.967 
+2026-04-20T13:44:47.5517840Z #16 4.967 Time Elapsed 00:00:04.62
+2026-04-20T13:44:47.5518356Z #16 DONE 5.0s
+2026-04-20T13:44:47.5518579Z 
+2026-04-20T13:44:47.5519153Z #17 [publish 1/1] RUN dotnet publish "QueueLanka.ServiceCenter.csproj" -c Release -o /app/publish
+2026-04-20T13:44:48.1296295Z #17 0.729   Determining projects to restore...
+2026-04-20T13:44:48.5853186Z #17 1.184   All projects are up-to-date for restore.
+2026-04-20T13:44:48.9592130Z #17 1.558   QueueLanka.Shared -> /src/QueueLanka.Shared/bin/Release/net8.0/QueueLanka.Shared.dll
+2026-04-20T13:44:51.6338311Z #17 4.233   QueueLanka.ServiceCenter -> /src/QueueLanka.ServiceCenter/bin/Release/net8.0/QueueLanka.ServiceCenter.dll
+2026-04-20T13:44:51.7606995Z #17 4.289   QueueLanka.ServiceCenter -> /app/publish/
+2026-04-20T13:44:51.7607821Z #17 DONE 4.4s
+2026-04-20T13:44:51.9639351Z 
+2026-04-20T13:44:51.9641127Z #18 [final 2/2] COPY --from=publish /app/publish .
+2026-04-20T13:44:51.9642321Z #18 DONE 0.0s
+2026-04-20T13:44:51.9642960Z 
+2026-04-20T13:44:51.9643405Z #19 exporting to image
+2026-04-20T13:44:51.9644366Z #19 exporting layers
+2026-04-20T13:44:52.0462042Z #19 exporting layers 0.2s done
+2026-04-20T13:44:52.0691074Z #19 writing image sha256:0b4ef61c1598d9c382b833e032f6a35e64205c2ea62bbf5b0ae573e1dd34a825 done
+2026-04-20T13:44:52.0694485Z #19 naming to qlanka-hrhza8d0ccd6dqa4.azurecr.io/qlanka-micro-servicecentre:4b642f8de821a80fb5c9291475253c3ae472a9e0 done
+2026-04-20T13:44:52.0696485Z #19 naming to qlanka-hrhza8d0ccd6dqa4.azurecr.io/qlanka-micro-servicecentre:latest done
+2026-04-20T13:44:52.0697621Z #19 DONE 0.2s
+2026-04-20T13:44:52.1022362Z The push refers to repository [qlanka-hrhza8d0ccd6dqa4.azurecr.io/qlanka-micro-servicecentre]
+2026-04-20T13:44:52.7448652Z bda2eb73bad4: Preparing
+2026-04-20T13:44:52.7449304Z 5f70bf18a086: Preparing
+2026-04-20T13:44:52.7450275Z 32e1a042b894: Preparing
+2026-04-20T13:44:52.7451245Z f0d015f9d2f9: Preparing
+2026-04-20T13:44:52.7452321Z 21cff479b9c9: Preparing
+2026-04-20T13:44:52.7453313Z aae7a3249a19: Preparing
+2026-04-20T13:44:52.7454050Z 71a9a45be42d: Preparing
+2026-04-20T13:44:52.7454947Z fce0ab04d9b9: Preparing
+2026-04-20T13:44:52.7455970Z 335fc45cf5e8: Preparing
+2026-04-20T13:44:52.7456713Z 71a9a45be42d: Waiting
+2026-04-20T13:44:52.7457483Z fce0ab04d9b9: Waiting
+2026-04-20T13:44:52.7458206Z 335fc45cf5e8: Waiting
+2026-04-20T13:44:52.7459005Z aae7a3249a19: Waiting
+2026-04-20T13:44:53.9761066Z unauthorized: {"errors":[{"code":"UNAUTHORIZED","message":"authentication required, visit https://aka.ms/acr/authorization for more information. CorrelationId: d9912db8-ac69-4e6c-ac00-ec004c8cf7a1"}]}
+2026-04-20T13:44:53.9788318Z ##[error]Process completed with exit code 1.
+2026-04-20T13:44:53.9902126Z Post job cleanup.
+2026-04-20T13:44:54.0841337Z [command]/usr/bin/git version
+2026-04-20T13:44:54.0878081Z git version 2.53.0
+2026-04-20T13:44:54.0921172Z Temporarily overriding HOME='/home/runner/work/_temp/21ccbd48-db2b-46fe-9729-1b9e2fd8a611' before making global git config changes
+2026-04-20T13:44:54.0923590Z Adding repository directory to the temporary git global config as a safe directory
+2026-04-20T13:44:54.0926862Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Qlanka-pro/Qlanka-pro
+2026-04-20T13:44:54.0963038Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-04-20T13:44:54.0996598Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-04-20T13:44:54.1220154Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-04-20T13:44:54.1241478Z http.https://github.com/.extraheader
+2026-04-20T13:44:54.1255048Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-04-20T13:44:54.1286436Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-04-20T13:44:54.1509576Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-04-20T13:44:54.1540669Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-04-20T13:44:54.1883385Z Cleaning up orphan processes
+2026-04-20T13:44:54.2187946Z ##[warning]Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4, azure/docker-login@v2. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

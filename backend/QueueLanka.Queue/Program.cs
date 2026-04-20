@@ -179,6 +179,7 @@ eventBus.Subscribe<TokenCalledEvent, TokenCalledEventHandler>();
 
 app.UseMiddleware<RequestContextLoggingMiddleware>();
 app.UseMiddleware<ExceptionMiddleware>();
+app.UseMiddleware<SecurityHeadersMiddleware>();
 app.MapHealthChecks("/health");
 
 app.UseSwagger();

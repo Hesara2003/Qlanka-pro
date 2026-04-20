@@ -1,5 +1,6 @@
 using QueueLanka.API.DTOs.Common;
 using QueueLanka.API.Exceptions;
+using System.Diagnostics;
 using System.Text.Json;
 
 namespace QueueLanka.API.Middleware;

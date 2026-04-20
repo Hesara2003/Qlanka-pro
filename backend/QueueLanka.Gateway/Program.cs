@@ -224,6 +224,7 @@ app.UseForwardedHeaders();
 // Custom middleware (logging + error handling)
 app.UseMiddleware<RequestContextLoggingMiddleware>();
 app.UseMiddleware<ExceptionMiddleware>();
+app.UseMiddleware<SecurityHeadersMiddleware>();
 
 app.UseCors("AllowFrontend");
 app.UseRateLimiter();

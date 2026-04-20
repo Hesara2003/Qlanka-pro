@@ -5,7 +5,7 @@ export default defineConfig({
   timeout: 15_000,
   retries: 0,
   use: {
-    baseURL: "https://queuelanka-api-fwhthqd4g9e0aee2.centralindia-01.azurewebsites.net",
+    baseURL: process.env.SMOKE_BASE_URL ?? "http://localhost:5000",
     extraHTTPHeaders: {
       "Content-Type": "application/json",
     },
