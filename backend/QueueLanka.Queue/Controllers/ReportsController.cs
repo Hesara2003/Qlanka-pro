@@ -54,11 +54,11 @@ public class ReportsController : ControllerBase
         }
         catch (ValidationException ex)
         {
-            return BadRequest(new ErrorResponse("VALIDATION_ERROR", ex.Message));
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid report request parameters."));
         }
         catch (FormatException ex)
         {
-            return BadRequest(new ErrorResponse("INVALID_CENTER_FILTER", ex.Message));
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid report request parameters."));
         }
     }
 
@@ -112,11 +112,11 @@ public class ReportsController : ControllerBase
         }
         catch (ValidationException ex)
         {
-            return BadRequest(new ErrorResponse("VALIDATION_ERROR", ex.Message));
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid report request parameters."));
         }
         catch (FormatException ex)
         {
-            return BadRequest(new ErrorResponse("INVALID_METRIC_FILTER", ex.Message));
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid report request parameters."));
         }
     }
 
@@ -181,11 +181,11 @@ public class ReportsController : ControllerBase
         }
         catch (ValidationException ex)
         {
-            return BadRequest(new ErrorResponse("VALIDATION_ERROR", ex.Message));
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid report request parameters."));
         }
         catch (FormatException ex)
         {
-            return BadRequest(new ErrorResponse("INVALID_CENTER_FILTER", ex.Message));
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid report request parameters."));
         }
     }
 
@@ -222,11 +222,11 @@ public class ReportsController : ControllerBase
         }
         catch (ValidationException ex)
         {
-            return BadRequest(new ErrorResponse("VALIDATION_ERROR", ex.Message));
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid report request parameters."));
         }
         catch (FormatException ex)
         {
-            return BadRequest(new ErrorResponse("INVALID_CENTER_FILTER", ex.Message));
+            return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid report request parameters."));
         }
     }
 }
