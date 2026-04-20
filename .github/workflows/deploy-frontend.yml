@@ -10,7 +10,7 @@ on:
 
 env:
   AZURE_API_BASE_URL: https://qlanka-gateway.salmonisland-da9fa0a9.eastasia.azurecontainerapps.io
-  AZURE_FRONTEND_URL: https://queuelanka-frontend-hrcvdec5dnach0aj.centralindia-01.azurewebsites.net
+  AZURE_FRONTEND_URL: https://${{ secrets.AZURE_FRONTEND_WEBAPP_NAME }}.azurewebsites.net
 
 jobs:
   deploy-frontend:
