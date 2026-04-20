@@ -82,20 +82,3 @@ The successful UAT sign-off represents the culmination of rigorous business anal
 
 ---
 
-## 🎓 Academic / Viva Preparation section
-
-### 🎙️ 3 Key Sentences for Final Demo/Viva
-1. *"As proven by our 100% pass rate on critical UAT scenarios, QueueLanka Pro successfully bridges the gap between complex Microservices architecture and intuitive business usability."*
-2. *"We have secured formal UAT sign-off, confirming that our error handling, Role-Based Access Control, and real-time WebSocket features meet exact stakeholder expectations."*
-3. *"While we identified two minor UI/latency anomalies during testing, we practiced professional triaging by documenting them as known issues, ensuring they did not block the delivery of our core business value."*
-
-### ❓ Possible Viva Questions & Answers
-
-**Q1: Why is a formal UAT Sign-off document so important in a real-world software company?**
-*Answer:* Sign-off is about accountability and alignment. It ensures the client officially agrees that the development team delivered exactly what was requested. Without a formal sign-off, a client could continually demand new features or claim the software is "incomplete", leading to endless scope creep and delayed payments.
-
-**Q2: In your summary, you mentioned two 'Failed/Pending' minor test cases but still requested sign-off. Why would a stakeholder accept a system with known bugs?**
-*Answer:* In enterprise software, perfection is rarely achievable on day one. As a Business Analyst, my job is to assess *severity*. If a bug is purely cosmetic (like text overlapping on a very small screen) and does not prevent a customer from booking or an officer from serving, it should not block the entire multi-million rupee system from launching. We document it, agree to fix it in a later patch, and secure sign-off to start generating business value immediately.
-
-**Q3: What would ideally happen if a Critical defect was found the day *after* this UAT document was signed?**
-*Answer:* Since UAT sign-off means the software moved to 'Production', this defect is now considered a "Production Incident" rather than a development bug. It triggers the Incident Management process, requiring an immediate hotfix and a post-mortem analysis to figure out how the issue bypassed both our QA automation and the stakeholder UAT sessions.
