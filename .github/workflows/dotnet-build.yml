@@ -32,8 +32,20 @@ jobs:
     - name: Run tests
       run: dotnet test Qlanka-pro.sln --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --logger "trx;LogFileName=test-results.trx" --results-directory ./TestResults
 
-    - name: Generate backend coverage report
+    - name: Detect backend coverage files
       if: always()
+      id: coverage_check
+      shell: bash
+      run: |
+        if find ./TestResults -name 'coverage.cobertura.xml' | head -n 1 | grep -q .; then
+          echo "has_coverage=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "has_coverage=false" >> "$GITHUB_OUTPUT"
+          echo "No coverage.cobertura.xml files found; skipping report generation."
+        fi
+
+    - name: Generate backend coverage report
+      if: ${{ always() && steps.coverage_check.outputs.has_coverage == 'true' }}
       uses: danielpalme/ReportGenerator-GitHub-Action@5.3.8
       with:
         reports: ./TestResults/**/coverage.cobertura.xml
