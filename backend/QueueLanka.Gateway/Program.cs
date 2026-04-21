@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Prometheus;
 using QueueLanka.Shared.Middleware;
+using System.Security.Claims;
 using System.Threading.RateLimiting;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -57,6 +59,16 @@ var bookingRejectionStatusCode =
 
 // -------------------- JWT Configuration --------------------
 var jwtSecret = builder.Configuration["Jwt:Secret"];
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "queuelanka-api";
+var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "queuelanka-client";
+var wso2Enabled = builder.Configuration.GetValue<bool?>("Wso2:Enabled") ?? false;
+var wso2Authority = builder.Configuration["Wso2:Authority"]?.TrimEnd('/');
+var wso2Audience = builder.Configuration["Wso2:Audience"]
+    ?? builder.Configuration["Wso2:ClientId"]
+    ?? jwtAudience;
+var wso2RequireHttpsMetadata = builder.Configuration.GetValue<bool?>("Wso2:RequireHttpsMetadata") ?? true;
+var wso2AllowInvalidCertificate = builder.Configuration.GetValue<bool?>("Wso2:AllowInvalidCertificate") ?? false;
+var wso2ValidIssuer = builder.Configuration["Wso2:ValidIssuer"];
 
 if (string.IsNullOrWhiteSpace(jwtSecret))
 {
@@ -72,10 +84,34 @@ if (Encoding.UTF8.GetByteCount(jwtSecret) < 32)
     throw new InvalidOperationException("Jwt:Secret must be at least 32 bytes long.");
 }
 
+if (wso2Enabled && string.IsNullOrWhiteSpace(wso2Authority))
+{
+    throw new InvalidOperationException("Wso2:Authority must be configured when Wso2:Enabled is true.");
+}
+
 // -------------------- Authentication --------------------
 builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+    .AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = "DynamicJwt";
+        options.DefaultChallengeScheme = "DynamicJwt";
+    })
+    .AddPolicyScheme("DynamicJwt", "Dynamic JWT scheme", options =>
+    {
+        options.ForwardDefaultSelector = context =>
+        {
+            var authHeader = context.Request.Headers.Authorization.FirstOrDefault();
+            var token = ExtractBearerToken(authHeader);
+
+            if (!string.IsNullOrWhiteSpace(token) && LooksLikeWso2Token(token, wso2ValidIssuer))
+            {
+                return "Wso2Jwt";
+            }
+
+            return "LocalJwt";
+        };
+    })
+    .AddJwtBearer("LocalJwt", options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -83,9 +119,53 @@ builder.Services
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "queuelanka-api",
-            ValidAudience = builder.Configuration["Jwt:Audience"] ?? "queuelanka-client",
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+            RoleClaimType = ClaimTypes.Role,
+            ClockSkew = TimeSpan.Zero
+        };
+    })
+    .AddJwtBearer("Wso2Jwt", options =>
+    {
+        if (!wso2Enabled)
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtIssuer,
+                ValidAudience = jwtAudience,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+                RoleClaimType = ClaimTypes.Role,
+                ClockSkew = TimeSpan.Zero
+            };
+            return;
+        }
+
+        options.Authority = wso2Authority;
+        options.RequireHttpsMetadata = wso2RequireHttpsMetadata;
+        options.MapInboundClaims = false;
+
+        if (wso2AllowInvalidCertificate)
+        {
+            options.BackchannelHttpHandler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            };
+        }
+
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = string.IsNullOrWhiteSpace(wso2ValidIssuer) ? null : wso2ValidIssuer,
+            ValidAudience = wso2Audience,
+            RoleClaimType = "role",
             ClockSkew = TimeSpan.Zero
         };
     });
@@ -231,3 +311,71 @@ app.MapMetrics("/metrics").AllowAnonymous();
 app.MapReverseProxy();
 
 app.Run();
+
+static string? ExtractBearerToken(string? authHeader)
+{
+    if (string.IsNullOrWhiteSpace(authHeader))
+    {
+        return null;
+    }
+
+    const string bearerPrefix = "Bearer ";
+    return authHeader.StartsWith(bearerPrefix, StringComparison.OrdinalIgnoreCase)
+        ? authHeader[bearerPrefix.Length..].Trim()
+        : null;
+}
+
+static bool LooksLikeWso2Token(string token, string? configuredIssuer)
+{
+    var payload = TryReadJwtPayload(token);
+    if (payload is null)
+    {
+        return false;
+    }
+
+    if (!string.IsNullOrWhiteSpace(configuredIssuer)
+        && payload.TryGetValue("iss", out var issuer)
+        && string.Equals(issuer, configuredIssuer, StringComparison.OrdinalIgnoreCase))
+    {
+        return true;
+    }
+
+    return payload.ContainsKey("azp") && payload.ContainsKey("client_id");
+}
+
+static Dictionary<string, string>? TryReadJwtPayload(string token)
+{
+    try
+    {
+        var parts = token.Split('.');
+        if (parts.Length < 2)
+        {
+            return null;
+        }
+
+        var padded = parts[1]
+            .Replace('-', '+')
+            .Replace('_', '/');
+
+        padded = padded.PadRight(padded.Length + ((4 - padded.Length % 4) % 4), '=');
+
+        var json = Encoding.UTF8.GetString(Convert.FromBase64String(padded));
+        var dictionary = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
+        if (dictionary is null)
+        {
+            return null;
+        }
+
+        var payload = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var entry in dictionary)
+        {
+            payload[entry.Key] = entry.Value.ToString();
+        }
+
+        return payload;
+    }
+    catch
+    {
+        return null;
+    }
+}

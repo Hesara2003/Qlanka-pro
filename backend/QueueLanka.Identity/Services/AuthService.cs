@@ -16,12 +16,18 @@ public class AuthService : IAuthService
 
     private readonly IUserRepository              _users;
     private readonly IEmailVerificationService    _emailVerification;
+    private readonly IWso2IdentityService         _wso2Identity;
     private readonly IConfiguration               _config;
 
-    public AuthService(IUserRepository users, IEmailVerificationService emailVerification, IConfiguration config)
+    public AuthService(
+        IUserRepository users,
+        IEmailVerificationService emailVerification,
+        IWso2IdentityService wso2Identity,
+        IConfiguration config)
     {
         _users             = users;
         _emailVerification = emailVerification;
+        _wso2Identity      = wso2Identity;
         _config            = config;
     }
 
@@ -63,6 +69,16 @@ public class AuthService : IAuthService
 
         var userId = await _users.CreateAsync(user);
 
+        if (IsWso2Enabled())
+        {
+            await _wso2Identity.ProvisionUserAsync(
+                user.Username,
+                dto.Password,
+                user.Email,
+                user.Role,
+                user.CenterId);
+        }
+
         // Email verification disabled — users are auto-verified on registration
         // await _emailVerification.SendVerificationAsync(userId, user.Email, user.Username);
 
@@ -79,9 +95,21 @@ public class AuthService : IAuthService
     {
         var user = await _users.GetByUsernameAsync(dto.Username);
 
-        // Always use the same generic message — don't reveal which field failed
-        if (user is null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+        if (user is null)
             throw new InvalidCredentialsException();
+
+        Wso2TokenResult? wso2Token = null;
+        if (IsWso2Enabled())
+        {
+            // Delegate credential validation and token issuance to WSO2 when enabled.
+            wso2Token = await _wso2Identity.RequestTokenAsync(dto.Username, dto.Password);
+        }
+        else
+        {
+            // Local fallback preserves compatibility for environments without WSO2.
+            if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+                throw new InvalidCredentialsException();
+        }
 
         // Email verification disabled
         // if (!user.IsEmailVerified)
@@ -90,9 +118,7 @@ public class AuthService : IAuthService
         if (!user.IsActive)
             throw new AccountDisabledException();
 
-        var accessToken  = GenerateJwt(user);
-        var refreshToken = GenerateRefreshToken();
-        var expiryMins   = _config.GetValue<int>("Jwt:AccessTokenExpiryMinutes");
+        var expiryMins = _config.GetValue<int>("Jwt:AccessTokenExpiryMinutes");
 
         int? counterId = null;
         if (user.Role.Equals("officer", StringComparison.OrdinalIgnoreCase))
@@ -110,13 +136,16 @@ public class AuthService : IAuthService
 
         return new LoginResponseDto
         {
-            Token        = accessToken,
-            RefreshToken = refreshToken,
-            ExpiresIn    = expiryMins * 60,
+            Token        = wso2Token?.AccessToken ?? GenerateJwt(user),
+            RefreshToken = wso2Token?.RefreshToken ?? GenerateRefreshToken(),
+            ExpiresIn    = wso2Token?.ExpiresIn ?? expiryMins * 60,
             Role         = user.Role.ToLowerInvariant(),
             CounterId    = counterId
         };
     }
+
+    private bool IsWso2Enabled()
+        => _config.GetValue<bool?>("Wso2:Enabled") ?? false;
 
     // ── Private helpers ────────────────────────────────────────
     private string GenerateJwt(User user)
