@@ -9,29 +9,21 @@ scrape_configs:
       - targets:
           - localhost:9090
 
-  - job_name: gateway
-    scheme: https
-    metrics_path: /metrics
-    scrape_interval: 15s
-    static_configs:
-      - targets:
-          - qlanka-gateway.redrock-2a740b8b.centralindia.azurecontainerapps.io
-
   - job_name: identity
     scheme: https
     metrics_path: /metrics
     scrape_interval: 30s
     static_configs:
       - targets:
-          - qlanka-identity.redrock-2a740b8b.centralindia.azurecontainerapps.io
+          - qlanka-micro-identity.salmonisland-da9fa0a9.eastasia.azurecontainerapps.io
 
-  - job_name: service-center
+  - job_name: service-centre
     scheme: https
     metrics_path: /metrics
     scrape_interval: 30s
     static_configs:
       - targets:
-          - qlanka-servicecenter.redrock-2a740b8b.centralindia.azurecontainerapps.io
+          - qlanka-micro-servicecentre.salmonisland-da9fa0a9.eastasia.azurecontainerapps.io
 
   - job_name: queue
     scheme: https
@@ -39,4 +31,4 @@ scrape_configs:
     scrape_interval: 15s
     static_configs:
       - targets:
-          - qlanka-queue.redrock-2a740b8b.centralindia.azurecontainerapps.io
+          - qlanka-micro-queue.salmonisland-da9fa0a9.eastasia.azurecontainerapps.io
