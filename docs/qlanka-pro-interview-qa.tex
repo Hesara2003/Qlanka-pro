@@ -1,0 +1,421 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{titlesec}
+\usepackage{longtable}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  urlcolor=blue,
+  pdftitle={Qlanka-Pro Interview Q and A},
+  pdfauthor={Qlanka-Pro Candidate Notes}
+}
+
+\lstdefinestyle{code}{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  keywordstyle=\color{blue!70!black},
+  commentstyle=\color{green!40!black},
+  stringstyle=\color{orange!60!black}
+}
+
+\title{Qlanka-Pro Full Interview Q and A\\\large WSO2, Microservices, Security, and Operations}
+\author{Project-Based Preparation Guide}
+\date{April 2026}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\section{How to Use This Document}
+\begin{itemize}[leftmargin=*]
+  \item This is a project-grounded interview script for Qlanka-Pro.
+  \item Answers are written in a practical style suitable for technical interviews.
+  \item Code snippets are adapted from the real repository and can be discussed line-by-line.
+  \item For each question, start with a 20--30 second summary, then go deep only if asked.
+\end{itemize}
+
+\section{Project Snapshot (30-Second Pitch)}
+\textbf{Q: Give me a quick summary of Qlanka-Pro.}\\
+\textbf{A:} Qlanka-Pro is a smart queue platform built as .NET 8 microservices with a React frontend. It uses a gateway pattern, separate domain services (Identity, Queue, ServiceCenter, Notification), and Prometheus/Grafana for observability. We integrated WSO2 Identity concepts into authentication paths using OAuth2 token issuance and SCIM-style provisioning flows, while adding dynamic token validation to support both legacy local JWT and WSO2-issued tokens during migration.
+
+\section{WSO2 and Identity Security (Most Critical)}
+
+\subsection{Walk me through your WSO2 integration}
+\textbf{Q: How did you integrate WSO2 Identity Server into Qlanka-Pro? What were the main challenges?}\\
+\textbf{A:}
+\begin{itemize}[leftmargin=*]
+  \item In Identity service, login delegates credential validation and token issuance to WSO2 using OAuth2 password grant when \texttt{Wso2:Enabled=true}.
+  \item Registration triggers provisioning to WSO2 via SCIM endpoint \texttt{/scim2/Users}.
+  \item Gateway and microservices use dynamic JWT schemes: local tokens for backward compatibility and WSO2 authority-based validation for migrated flows.
+  \item Main challenges:
+  \begin{itemize}[leftmargin=*]
+    \item Zero-downtime migration from local JWT to external IdP.
+    \item Claim mapping differences (role claim naming and issuer/audience alignment).
+    \item Environment-specific TLS and metadata issues in development.
+    \item Maintaining consistency between app DB users and WSO2 provisioned users.
+  \end{itemize}
+\end{itemize}
+
+\textbf{Important snippet: Identity login delegates to WSO2}\newline
+\begin{lstlisting}[style=code,language=C]
+Wso2TokenResult? wso2Token = null;
+if (IsWso2Enabled())
+{
+    // Delegate credential validation and token issuance to WSO2 when enabled.
+    wso2Token = await _wso2Identity.RequestTokenAsync(dto.Username, dto.Password);
+}
+else
+{
+    // Local fallback preserves compatibility for environments without WSO2.
+    if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+        throw new InvalidCredentialsException();
+}
+
+return new LoginResponseDto
+{
+    Token = wso2Token?.AccessToken ?? GenerateJwt(user),
+    RefreshToken = wso2Token?.RefreshToken ?? GenerateRefreshToken(),
+    ExpiresIn = wso2Token?.ExpiresIn ?? expiryMins * 60,
+    Role = user.Role.ToLowerInvariant(),
+    CounterId = counterId
+};
+\end{lstlisting}
+
+\subsection{Why ROPC over Authorization Code?}
+\textbf{Q: Why did you choose ROPC over Authorization Code flow? What are trade-offs?}\\
+\textbf{A:}
+\begin{itemize}[leftmargin=*]
+  \item We used ROPC as a migration bridge because the existing UX was backend-driven username/password login.
+  \item It reduced integration complexity and allowed fast rollout without immediate frontend redirect/callback redesign.
+  \item Trade-offs:
+  \begin{itemize}[leftmargin=*]
+    \item Weaker security model than Authorization Code + PKCE for browser/mobile apps.
+    \item Credentials pass through application tier.
+    \item Less future-proof for federated SSO patterns.
+  \end{itemize}
+  \item Strategic direction: move to Authorization Code + PKCE for long-term best practice.
+\end{itemize}
+
+\textbf{Important snippet: ROPC request payload}\newline
+\begin{lstlisting}[style=code,language=C]
+using var body = new FormUrlEncodedContent(new Dictionary<string, string>
+{
+    ["grant_type"] = "password",
+    ["username"] = username,
+    ["password"] = password,
+    ["scope"] = "openid profile",
+    ["client_id"] = clientId,
+    ["client_secret"] = clientSecret
+});
+\end{lstlisting}
+
+\subsection{JWKS-based validation}
+\textbf{Q: How does JWKS-based validation work and why is it better than symmetric key validation?}\\
+\textbf{A:}
+\begin{itemize}[leftmargin=*]
+  \item With WSO2 mode enabled, services set \texttt{Authority} and validate tokens using IdP metadata/JWKS.
+  \item The IdP signs tokens with private key; services validate with public keys.
+  \item Advantages over symmetric key sharing:
+  \begin{itemize}[leftmargin=*]
+    \item No shared secret copied across microservices.
+    \item Better key rotation behavior.
+    \item Clear trust boundary: issuer signs, services verify.
+  \end{itemize}
+\end{itemize}
+
+\textbf{Important snippet: WSO2 authority-based JWT validation}\newline
+\begin{lstlisting}[style=code,language=C]
+options.Authority = wso2Authority;
+options.RequireHttpsMetadata = wso2RequireHttpsMetadata;
+options.MapInboundClaims = false;
+
+options.TokenValidationParameters = new TokenValidationParameters
+{
+    ValidateIssuer = true,
+    ValidateAudience = true,
+    ValidateLifetime = true,
+    ValidateIssuerSigningKey = true,
+    ValidIssuer = string.IsNullOrWhiteSpace(wso2ValidIssuer) ? null : wso2ValidIssuer,
+    ValidAudience = wso2Audience,
+    RoleClaimType = "role",
+    ClockSkew = TimeSpan.Zero
+};
+\end{lstlisting}
+
+\subsection{Token expiry and refresh}
+\textbf{Q: How did you handle token expiry and refresh in your setup?}\\
+\textbf{A:}
+\begin{itemize}[leftmargin=*]
+  \item Identity service returns access token, refresh token, and expiry metadata.
+  \item Microservices are stateless and validate token on each request.
+  \item Refresh logic is centralized at identity boundary, not inside domain services.
+  \item This keeps services simple and reduces cross-service auth coupling.
+\end{itemize}
+
+\subsection{SCIM 2.0 provisioning}
+\textbf{Q: What is SCIM 2.0 and how did you use it?}\\
+\textbf{A:}
+\begin{itemize}[leftmargin=*]
+  \item SCIM 2.0 is a standard for user/group provisioning across systems.
+  \item On registration, Qlanka-Pro calls WSO2 \texttt{/scim2/Users} with core attributes, role grouping, and officer center extension data.
+  \item This reduces manual user management and keeps identity data synchronized.
+\end{itemize}
+
+\textbf{Important snippet: SCIM payload and request}\newline
+\begin{lstlisting}[style=code,language=C]
+var scimPayload = new Dictionary<string, object?>
+{
+    ["schemas"] = new[] { "urn:ietf:params:scim:schemas:core:2.0:User" },
+    ["userName"] = username,
+    ["password"] = password,
+    ["emails"] = new[] { new { value = email, primary = true } },
+    ["groups"] = new[] { new { display = role, value = role } }
+};
+
+if (centerId.HasValue)
+{
+    scimPayload["urn:scim:wso2:qlanka:1.0"] = new { centerId = centerId.Value.ToString() };
+}
+\end{lstlisting}
+
+\subsection{API Manager vs reverse proxy}
+\textbf{Q: How is WSO2 API Manager different from a simple reverse proxy?}\\
+\textbf{A:}
+\begin{itemize}[leftmargin=*]
+  \item Reverse proxy (like YARP) mainly handles routing and pass-through concerns.
+  \item API Manager adds governance: subscriptions, plans, consumer throttling, lifecycle/versioning, developer portal, and centralized policy control.
+  \item In Qlanka-Pro, API publication metadata is prepared in \texttt{officer-api.yaml} with WSO2 extensions.
+\end{itemize}
+
+\subsection{Rate limiting in API Manager}
+\textbf{Q: How did you configure rate limiting in WSO2 API Manager?}\\
+\textbf{A:}
+\begin{itemize}[leftmargin=*]
+  \item We define per-operation throttling tiers in API definition metadata.
+  \item Example: queue polling endpoints use a specific tier while command endpoints can use different policies.
+  \item We also keep gateway-side limiter as defense-in-depth.
+\end{itemize}
+
+\textbf{Important snippet: WSO2 APIM throttling tiers}\newline
+\begin{lstlisting}[style=code,language=]
+'/api/counters/{counterId}/dashboard':
+  get:
+    x-throttling-tier: QueuePollingPolicy
+
+'/api/counters/{counterId}/call-next':
+  post:
+    x-throttling-tier: Unlimited
+\end{lstlisting}
+
+\subsection{API lifecycle management}
+\textbf{Q: What is API lifecycle management and how did you implement it?}\\
+\textbf{A:}
+\begin{itemize}[leftmargin=*]
+  \item Lifecycle management controls stages such as create, publish, deprecate, and retire.
+  \item We use versioned OpenAPI definitions and WSO2 extensions to support governed publication and evolution.
+  \item This prevents uncontrolled breaking changes and improves consumer communication.
+\end{itemize}
+
+\section{Microservices and Architecture}
+
+\subsection{Architecture layering}
+\textbf{Q: Describe your Client -> API Manager -> Identity Server -> Microservices -> Database architecture. Why this layering?}\\
+\textbf{A:}
+\begin{itemize}[leftmargin=*]
+  \item Client only talks to managed API surface.
+  \item API entrypoint applies auth, throttling, routing policies.
+  \item Identity centralizes authentication and token governance.
+  \item Domain services isolate business capabilities and scale independently.
+  \item Datastores are separated by domain to reduce coupling.
+  \item This structure improves security, ownership boundaries, and deployability.
+\end{itemize}
+
+\textbf{Important snippet: docker-compose service boundaries}\newline
+\begin{lstlisting}[style=code,language=]
+services:
+  gateway:
+    depends_on: [identity, service-center, queue]
+  identity:
+    depends_on: [db-identity]
+  service-center:
+    depends_on: [db-service-center]
+  queue:
+    depends_on: [db-queue]
+\end{lstlisting}
+
+\subsection{REST vs gRPC}
+\textbf{Q: How do your microservices communicate: REST or gRPC? When choose each?}\\
+\textbf{A:}
+\begin{itemize}[leftmargin=*]
+  \item Current project communication is HTTP/REST based.
+  \item REST fits API gateway integration, OpenAPI-driven governance, and broad interoperability.
+  \item gRPC is preferred when low-latency high-throughput service-to-service communication or streaming is critical.
+  \item Practical approach: REST for external/public paths, gRPC for internal high-performance paths if needed.
+\end{itemize}
+
+\subsection{Distributed tracing and observability}
+\textbf{Q: How did you handle observability with Prometheus/Grafana?}\\
+\textbf{A:}
+\begin{itemize}[leftmargin=*]
+  \item Services expose metrics endpoints via Prometheus middleware.
+  \item Gateway and services map metrics endpoint and health endpoint for scraping.
+  \item Docker compose includes Prometheus and Grafana for local and staging diagnostics.
+  \item Logs include request context middleware for correlation and troubleshooting.
+\end{itemize}
+
+\textbf{Important snippet: metrics exposure in gateway}\newline
+\begin{lstlisting}[style=code,language=C]
+app.UseHttpMetrics();
+app.MapGet("/health", () => "Healthy").AllowAnonymous();
+app.MapMetrics("/metrics").AllowAnonymous();
+\end{lstlisting}
+
+\subsection{Failures and retries}
+\textbf{Q: How do you manage failures or retries in microservices?}\\
+\textbf{A:}
+\begin{itemize}[leftmargin=*]
+  \item We fail fast on non-transient auth/provider errors with explicit app-level codes.
+  \item For external dependency calls (WSO2 token/SCIM), errors are translated into deterministic API errors.
+  \item Authentication has fallback path (local JWT) during migration to reduce blast radius.
+  \item Key improvement path: add policy-based retries/circuit breakers for transient network faults.
+\end{itemize}
+
+\textbf{Important snippet: failure handling for WSO2 token endpoint}\newline
+\begin{lstlisting}[style=code,language=C]
+try
+{
+    response = await _http.PostAsync(tokenEndpoint, body, ct);
+}
+catch (HttpRequestException ex)
+{
+    _logger.LogError(ex, "WSO2 token endpoint unreachable at {Endpoint}", tokenEndpoint);
+    throw new AppException(503, "WSO2_UNAVAILABLE",
+        "Identity server is temporarily unavailable. Please try again later.");
+}
+\end{lstlisting}
+
+\section{Gateway and Security Enforcement}
+
+\subsection{Dynamic token strategy}
+\textbf{Q: How did you avoid breaking existing clients while migrating auth?}\\
+\textbf{A:}
+\begin{itemize}[leftmargin=*]
+  \item Gateway and services use \texttt{AddPolicyScheme("DynamicJwt", ...)} to choose between local and WSO2 schemes at runtime.
+  \item Token shape/issuer hints select \texttt{Wso2Jwt} for migrated tokens, else \texttt{LocalJwt}.
+  \item This enabled progressive migration with low downtime risk.
+\end{itemize}
+
+\textbf{Important snippet: dynamic scheme selection}\newline
+\begin{lstlisting}[style=code,language=C]
+.AddPolicyScheme("DynamicJwt", "Dynamic JWT scheme", options =>
+{
+    options.ForwardDefaultSelector = context =>
+    {
+        var authHeader = context.Request.Headers.Authorization.FirstOrDefault();
+        var token = ExtractBearerToken(authHeader);
+
+        if (!string.IsNullOrWhiteSpace(token) && LooksLikeWso2Token(token, wso2ValidIssuer))
+        {
+            return "Wso2Jwt";
+        }
+
+        return "LocalJwt";
+    };
+})
+\end{lstlisting}
+
+\subsection{Rate limiting at gateway}
+\textbf{Q: What protection did you add for high-frequency endpoints?}\\
+\textbf{A:}
+\begin{itemize}[leftmargin=*]
+  \item Added fixed-window limiter for booking endpoint keyed by client IP.
+  \item Configurable values: path, method, permit limit, window, rejection status code.
+  \item Prevents abuse/spikes while keeping non-booking endpoints unaffected.
+\end{itemize}
+
+\textbf{Important snippet: fixed-window rate limiting}\newline
+\begin{lstlisting}[style=code,language=C]
+return RateLimitPartition.GetFixedWindowLimiter(partitionKey, _ =>
+    new FixedWindowRateLimiterOptions
+    {
+        PermitLimit = bookingPermitLimit,
+        Window = TimeSpan.FromMinutes(bookingWindowMinutes),
+        QueueLimit = 0,
+        QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+        AutoReplenishment = true
+    });
+\end{lstlisting}
+
+\section{Configuration and Deployment Questions}
+
+\subsection{Environment strategy}
+\textbf{Q: How do you manage environment-specific security settings?}\\
+\textbf{A:}
+\begin{itemize}[leftmargin=*]
+  \item Keep \texttt{Wso2:Enabled=false} by default in appsettings and activate via environment variables per environment.
+  \item Production requires explicit issuer/audience/client credentials and TLS enforcement.
+  \item Dev profiles allow invalid certificates only when explicitly toggled.
+\end{itemize}
+
+\textbf{Important snippet: gateway security config}\newline
+\begin{lstlisting}[style=code,language=]
+"Wso2": {
+  "Enabled": false,
+  "Authority": "https://20.193.250.12:9443",
+  "ValidIssuer": "https://20.193.250.12:9443/oauth2/token",
+  "Audience": "REPLACE_WITH_WSO2_CLIENT_ID",
+  "RequireHttpsMetadata": true,
+  "AllowInvalidCertificate": false
+}
+\end{lstlisting}
+
+\subsection{Migration and rollout}
+\textbf{Q: How would you roll this out safely?}\\
+\textbf{A:}
+\begin{itemize}[leftmargin=*]
+  \item Stage in non-prod with WSO2 enabled for Identity and one domain service first.
+  \item Validate login, role claims, token audience/issuer, and API access policies.
+  \item Gradually enable all services and monitor 401/403/error rates and latency.
+  \item Keep rollback switch via \texttt{Wso2:Enabled=false} until stabilization.
+\end{itemize}
+
+\section{Quick-Fire Follow-up Questions}
+\begin{enumerate}[leftmargin=*]
+  \item \textbf{How do you secure SCIM admin credentials?} Use secret stores and environment injection; never commit plaintext credentials.
+  \item \textbf{What if WSO2 is down?} Return deterministic service unavailable errors and alert; fallback mode can be used during migration phases.
+  \item \textbf{How do you validate role claims from different issuers?} Normalize claim type mapping and policy checks for role claim variants.
+  \item \textbf{How do you prevent token replay?} Short expiry, strict audience/issuer checks, TLS, and optional token introspection patterns for high-risk paths.
+  \item \textbf{What is one improvement you would implement next?} Move from ROPC to Authorization Code + PKCE for stronger security posture.
+\end{enumerate}
+
+\section{Snippet Index (Repository Mapping)}
+\begin{longtable}{p{0.42\linewidth} p{0.52\linewidth}}
+\textbf{File} & \textbf{Why it matters} \\
+\hline
+\texttt{backend/QueueLanka.Identity/Services/AuthService.cs} & Login delegation to WSO2 and local fallback behavior \\
+\texttt{backend/QueueLanka.Identity/Services/Wso2IdentityService.cs} & ROPC token request and SCIM provisioning implementation \\
+\texttt{backend/QueueLanka.Gateway/Program.cs} & Dynamic JWT auth, JWKS authority validation, metrics, rate limiting \\
+\texttt{backend/QueueLanka.Queue/Program.cs} & Service-level dynamic token scheme and claim policy handling \\
+\texttt{backend/QueueLanka.Gateway/appsettings.json} & WSO2 settings and gateway policy knobs \\
+\texttt{officer-api.yaml} & APIM-focused security and throttling metadata \\
+\texttt{docker-compose.yml} & Service boundaries and observability stack wiring \\
+\end{longtable}
+
+\section{End-of-Interview Closing Statement}
+\textbf{Suggested close:}\\
+In this project, I focused on introducing standards-based identity and progressively hardening the platform without breaking existing clients. The key result is a migration-ready architecture where identity is centralized, token validation is stronger with authority/JWKS support, and governance concerns such as throttling and lifecycle can be managed at the API platform level.
+
+\end{document}

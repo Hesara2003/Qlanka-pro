@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh auth *)",
+      "Bash(az account *)",
+      "Bash(az acr *)",
+      "Bash(git *)",
+      "Bash(npm *)",
+      "Bash(node *)",
+      "Bash(curl *api.github.com*)",
+      "Bash(pip *)",
+      "Bash(mkdir *)"
+    ]
+  }
+}
