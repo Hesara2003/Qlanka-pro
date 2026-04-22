@@ -1,6 +1,6 @@
 // frontend/src/api/axiosInstance.ts
 
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 
 const isWso2Enabled = (import.meta.env.VITE_WSO2_ENABLED ?? "false").toLowerCase() === "true";
 
@@ -40,7 +40,10 @@ export class AuthorizationError extends Error {
   }
 }
 
+// Hardcoded on the backup branch — keeps the remote export intact for any
+// consumers, while also respecting the VITE_SUPABASE_ONLY env var.
 export const FORCE_SUPABASE = true;
+const isSupabaseOnly = FORCE_SUPABASE || (import.meta.env.VITE_SUPABASE_ONLY ?? "false").toLowerCase() === "true";
 
 const axiosInstance = axios.create({
   baseURL: apiBaseUrl,
@@ -50,11 +53,16 @@ const axiosInstance = axios.create({
   timeout: 15000,
 });
 
+// Reject every request immediately when running in Supabase-only mode so
+// each API module's Supabase fallback path kicks in without any network delay.
+if (isSupabaseOnly) {
+  axiosInstance.interceptors.request.use(() => {
+    return Promise.reject(new AxiosError("Backend disabled: Supabase-only mode"));
+  });
+}
+
 // Attach JWT token to every request if present
 axiosInstance.interceptors.request.use((config) => {
-  if (FORCE_SUPABASE) {
-    return Promise.reject(new axios.AxiosError("Forced Supabase fallback", "ERR_FORCE_SUPABASE", config));
-  }
   if (isWso2Enabled && typeof config.url === "string" && config.url.startsWith("/")) {
     const isAlreadyContextualized =
       config.url.startsWith(`${wso2PublicContext}/`) ||
