@@ -63,6 +63,10 @@ function Start-Prometheus {
     param([string]$ExePath)
 
     $resolvedConfig = Resolve-Path "deploy/infrastructure/monitoring/prometheus/prometheus.local.yml"
+    $promDataPath = Join-Path $repoRoot "artifacts/prometheus-data"
+    if (-not (Test-Path $promDataPath)) {
+        New-Item -Path $promDataPath -ItemType Directory | Out-Null
+    }
 
     if ([string]::IsNullOrWhiteSpace($ExePath)) {
         $promCmd = Get-Command "prometheus" -ErrorAction SilentlyContinue
@@ -90,6 +94,7 @@ function Start-Prometheus {
 
     $proc = Start-Process -FilePath $ExePath -ArgumentList @(
         "--config.file=$resolvedConfig",
+        "--storage.tsdb.path=$promDataPath",
         "--web.listen-address=:9090"
     ) -RedirectStandardOutput $stdout -RedirectStandardError $stderr -PassThru
 
