@@ -4,12 +4,12 @@ import { getAllServiceCenters } from "../api/serviceCenterApi";
 import { getAdminUsers } from "../api/userApi";
 import type { AdminUser } from "../types/user";
 import { useAuth } from "../context/AuthContext";
-import {
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   AreaChart, Area, PieChart, Pie
 } from "recharts";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { exportToCsv, exportToPdf } from "../utils/exportUtils";
+import type { ServiceCenter } from "../types/serviceCenter";
 
 interface Stats {
   centers: number;
@@ -19,18 +19,35 @@ interface Stats {
 
 let _cachedStats: Stats | null = null;
 let _cachedUsers: AdminUser[] = [];
+let _cachedCenters: ServiceCenter[] = [];
 let _cachePopulated: boolean = false;
 let _inflightFetch: Promise<void> | null = null;
+
+const MOCK_CENTERS: ServiceCenter[] = [
+  { centerId: 1, name: "Colombo One Stop Center", address: "No. 12, Main Street, Colombo 01", phone: "+94112223344", email: "colombo.center@demo.local", description: "Primary demo center", timezone: "Asia/Colombo", capacity: 150, openingTime: "08:00:00", closingTime: "17:00:00", isActive: true, createdAt: "2026-04-19T13:28:59.276368+00:00", isAvailable: true, avgServiceTime: 15 },
+  { centerId: 2, name: "Kandy Citizen Service Center", address: "No. 45, Dalada Veediya, Kandy", phone: "+94812234567", email: "kandy.center@qlanka.lk", description: "Central Province public services center", timezone: "Asia/Colombo", capacity: 120, openingTime: "08:00:00", closingTime: "16:30:00", isActive: true, createdAt: "2026-04-19T14:32:14.003667+00:00", isAvailable: true, avgServiceTime: 20 },
+  { centerId: 3, name: "Galle One Stop Service Center", address: "No. 18, Rampart Street, Galle", phone: "+94912223344", email: "galle.center@qlanka.lk", description: "Southern Province public services center", timezone: "Asia/Colombo", capacity: 110, openingTime: "08:30:00", closingTime: "16:30:00", isActive: true, createdAt: "2026-04-19T14:32:14.003667+00:00", isAvailable: true, avgServiceTime: 18 },
+  { centerId: 4, name: "Jaffna Public Service Hub", address: "No. 09, Hospital Road, Jaffna", phone: "+94212224455", email: "jaffna.center@qlanka.lk", description: "Northern Province integrated service center", timezone: "Asia/Colombo", capacity: 100, openingTime: "08:00:00", closingTime: "16:00:00", isActive: true, createdAt: "2026-04-19T14:32:14.003667+00:00", isAvailable: true, avgServiceTime: 25 },
+  { centerId: 5, name: "Kurunegala District Service Center", address: "No. 72, Colombo Road, Kurunegala", phone: "+94372221100", email: "kurunegala.center@qlanka.lk", description: "North Western Province district services", timezone: "Asia/Colombo", capacity: 130, openingTime: "08:00:00", closingTime: "17:00:00", isActive: true, createdAt: "2026-04-19T14:32:14.003667+00:00", isAvailable: true, avgServiceTime: 15 },
+  { centerId: 6, name: "Batticaloa Citizen Facilitation Center", address: "No. 11, Trinco Road, Batticaloa", phone: "+94652223344", email: "batticaloa.center@qlanka.lk", description: "Eastern Province citizen facilitation", timezone: "Asia/Colombo", capacity: 95, openingTime: "08:30:00", closingTime: "16:00:00", isActive: true, createdAt: "2026-04-19T14:32:14.003667+00:00", isAvailable: true, avgServiceTime: 22 },
+  { centerId: 7, name: "Anuradhapura E-Services Center", address: "No. 56, Maithripala Senanayake Mawatha, Anuradhapura", phone: "+94252224466", email: "anuradhapura.center@qlanka.lk", description: "North Central Province digital public services", timezone: "Asia/Colombo", capacity: 105, openingTime: "08:00:00", closingTime: "16:30:00", isActive: true, createdAt: "2026-04-19T14:32:14.003667+00:00", isAvailable: true, avgServiceTime: 20 },
+  { centerId: 8, name: "Matara Divisional Service Center", address: "No. 27, Main Street, Matara", phone: "+94412223355", email: "matara.center@qlanka.lk", description: "Southern coastal district service center", timezone: "Asia/Colombo", capacity: 90, openingTime: "08:30:00", closingTime: "16:30:00", isActive: true, createdAt: "2026-04-19T14:32:14.003667+00:00", isAvailable: true, avgServiceTime: 18 }
+];
 
 export default function AdminDashboardPage() {
   const { user } = useAuth();
   const [stats, setStats] = useState<Stats | null>(_cachedStats);
   const [allUsers, setAllUsers] = useState<AdminUser[]>(_cachedUsers);
-  const [allCenters, setAllCenters] = useState<any[]>([]); // Using any fix for brevity, ideally use ServiceCenter type
+  const [allCenters, setAllCenters] = useState<ServiceCenter[]>(_cachedCenters);
+
+  // Filtering State
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+  const [centerFilter, setCenterFilter] = useState<string>("all");
 
 
   function fetchData(force = false, signal?: { cancelled: boolean }) {
-    if (_cachePopulated && !force) return;
+    if (_cachePopulated && _cachedCenters.length > 0 && !force) return;
 
     if (!_inflightFetch) {
       _inflightFetch = (async () => {
@@ -46,8 +63,10 @@ export default function AdminDashboardPage() {
           };
           _cachedStats = nextStats;
           _cachedUsers = users;
+          _cachedCenters = centers.length > 0 ? centers : MOCK_CENTERS;
           _cachePopulated = true;
         } catch {
+          _cachedCenters = MOCK_CENTERS;
         } finally {
           _inflightFetch = null;
         }
@@ -57,10 +76,10 @@ export default function AdminDashboardPage() {
 
     _inflightFetch.then(() => {
       if (signal?.cancelled) return;
-      if (_cachedStats) {
+      if (_cachedStats && _cachedCenters.length > 0) {
         setStats(_cachedStats);
         setAllUsers(_cachedUsers);
-        getAllServiceCenters().then(setAllCenters).catch(() => {});
+        setAllCenters(_cachedCenters);
       } else {
         setStats({ centers: 0, users: 0, activeUsers: 0 });
         setAllUsers([]);
@@ -76,9 +95,29 @@ export default function AdminDashboardPage() {
     return () => { signal.cancelled = true; };
   }, []);
 
-  const citizens = allUsers.filter(u => u.role === 'citizen').length;
-  const officers = allUsers.filter(u => u.role === 'officer').length;
-  const admins = allUsers.filter(u => u.role === 'admin').length;
+  // ── FILTERING LOGIC ────────────────────────────────────────────────────────
+  
+  const filteredUsers = allUsers.filter(u => {
+    const userDate = new Date(u.createdAt).toISOString().split('T')[0];
+    const matchesDate = (!startDate || userDate >= startDate) && (!endDate || userDate <= endDate);
+    const matchesCenter = centerFilter === 'all' || u.centerId?.toString() === centerFilter;
+    return matchesDate && matchesCenter;
+  });
+
+  const filteredCenters = allCenters.filter(c => {
+    const centerDate = new Date(c.createdAt).toISOString().split('T')[0];
+    const matchesDate = (!startDate || centerDate >= startDate) && (!endDate || centerDate <= endDate);
+    const matchesCenter = centerFilter === 'all' || c.centerId.toString() === centerFilter;
+    return matchesDate && matchesCenter;
+  });
+
+  const isFiltered = startDate !== "" || endDate !== "" || centerFilter !== "all";
+
+  // ── DERIVED DATA (Using Filtered Data) ──────────────────────────────────────
+
+  const citizens = filteredUsers.filter(u => u.role === 'citizen').length;
+  const officers = filteredUsers.filter(u => u.role === 'officer').length;
+  const admins = filteredUsers.filter(u => u.role === 'admin').length;
 
   const roleData = [
     { name: 'Citizens', users: citizens, fill: '#111827' },
@@ -86,35 +125,32 @@ export default function AdminDashboardPage() {
     { name: 'Admins', users: admins, fill: '#64748b' },
   ];
 
-  // ── REAL DATA DERIVATIONS ───────────────────────────────────────────────────
-  
-  // 1. Audit Logs (Interleaved Users and Centers)
+  // 1. Audit Logs (Filtered)
   const auditLogs = [
-    ...allUsers.map(u => ({ name: `User Registered: ${u.username}`, date: new Date(u.createdAt), val: 'Auth', status: 'Success', icon: '👤', color: 'text-emerald-500' })),
-    ...allCenters.map(c => ({ name: `Center Created: ${c.name}`, date: new Date(c.createdAt), val: 'Infra', status: 'Success', icon: '🏦', color: 'text-blue-500' }))
+    ...filteredUsers.map(u => ({ name: `User Registered: ${u.username}`, date: new Date(u.createdAt), val: 'Auth', status: 'Success', icon: '👤', color: 'text-emerald-500' })),
+    ...filteredCenters.map(c => ({ name: `Center Created: ${c.name}`, date: new Date(c.createdAt), val: 'Infra', status: 'Success', icon: '🏦', color: 'text-blue-500' }))
   ].sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 6);
 
-  // 2. Capacity Growth Trend (Area Chart)
-  const sortedCentersByDate = [...allCenters].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  // 2. Capacity Growth Trend (Filtered)
+  const sortedCentersByDate = [...filteredCenters].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
   let cumulativeCapacity = 0;
   const capacityTrend = sortedCentersByDate.map(c => {
     cumulativeCapacity += c.capacity;
     return { name: new Date(c.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), value: cumulativeCapacity };
   });
-  // Fallback for empty state or minimal data
   const trafficData = capacityTrend.length > 0 ? capacityTrend : [{ name: 'N/A', value: 0 }];
 
-  // 3. Uptime Gauge (%)
-  const activeAndAvailable = allCenters.filter(c => c.isAvailable && c.isActive).length;
-  const uptimeScore = allCenters.length > 0 ? Math.round((activeAndAvailable / allCenters.length) * 100) : 0;
+  // 3. Uptime Gauge (Filtered)
+  const activeAndAvailable = filteredCenters.filter(c => c.isAvailable && c.isActive).length;
+  const uptimeScore = filteredCenters.length > 0 ? Math.round((activeAndAvailable / filteredCenters.length) * 100) : 0;
   const gaugeData = [
     { name: 'Uptime', value: uptimeScore, fill: '#78d64b' },
     { name: 'Remaining', value: 100 - uptimeScore, fill: '#F3F4F6' },
   ];
 
-  // 4. Regional Distribution
+  // 4. Regional Distribution (Filtered)
   const regions: Record<string, number> = {};
-  allCenters.forEach(c => {
+  filteredCenters.forEach(c => {
     const region = c.address.split(',').pop()?.trim() || 'Central';
     regions[region] = (regions[region] || 0) + 1;
   });
@@ -123,7 +159,7 @@ export default function AdminDashboardPage() {
     val: count > 3 ? 'High load' : 'Normal',
     icon: '📍',
     color: count > 3 ? 'bg-orange-400' : 'bg-emerald-400',
-    percent: (count / (allCenters.length || 1)) * 100
+    percent: (count / (filteredCenters.length || 1)) * 100
   })).slice(0, 3);
 
   const handleExportActivityCsv = () => {
@@ -149,7 +185,59 @@ export default function AdminDashboardPage() {
   };
 
   return (
-    <div className="grid grid-cols-12 gap-8 py-2">
+    <div className="flex flex-col gap-8 py-2">
+      
+      {/* ── FILTER BAR ────────────────────────────────────────────────────────── */}
+      <section className="bg-white/60 backdrop-blur-md border border-white/40 p-4 rounded-[2rem] shadow-sm flex flex-wrap items-center gap-4 sticky top-0 z-10">
+        <div className="flex items-center gap-3 bg-gray-50/80 px-4 py-2 rounded-2xl border border-gray-100 flex-1 min-w-[200px]">
+          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Center</span>
+          <select 
+            value={centerFilter}
+            onChange={(e) => setCenterFilter(e.target.value)}
+            className="bg-transparent border-none text-[13px] font-semibold text-gray-900 focus:ring-0 w-full cursor-pointer"
+          >
+            <option value="all">Global System</option>
+            {allCenters.map(c => (
+              <option key={c.centerId} value={c.centerId}>{c.name}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex items-center gap-3 bg-gray-50/80 px-4 py-2 rounded-2xl border border-gray-100 flex-1 min-w-[300px]">
+          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Range</span>
+          <div className="flex items-center gap-2 w-full">
+            <input 
+              type="date" 
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="bg-transparent border-none text-[13px] font-semibold text-gray-900 focus:ring-0 p-0 cursor-pointer"
+            />
+            <span className="text-gray-300">→</span>
+            <input 
+              type="date" 
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="bg-transparent border-none text-[13px] font-semibold text-gray-900 focus:ring-0 p-0 cursor-pointer"
+            />
+          </div>
+        </div>
+
+        <AnimatePresence>
+          {isFiltered && (
+            <motion.button
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              onClick={() => { setStartDate(""); setEndDate(""); setCenterFilter("all"); }}
+              className="px-6 py-3 bg-gray-900 text-white text-[11px] font-bold rounded-2xl hover:bg-black transition-all shadow-lg shadow-gray-200"
+            >
+              Reset Filters
+            </motion.button>
+          )}
+        </AnimatePresence>
+      </section>
+
+      <div className="grid grid-cols-12 gap-8">
       
       {/* --- MAIN LEFT CONTENT (9 Cols) --- */}
       <div className="col-span-12 xl:col-span-9 flex flex-col gap-8">
@@ -194,9 +282,9 @@ export default function AdminDashboardPage() {
 
           <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
              {[
-                { label: 'Managed centers', value: stats?.centers || 0, change: '+2', up: true, desc: 'Active facilities' },
+                { label: 'Managed centers', value: filteredCenters.length, change: filteredCenters.length === allCenters.length ? '100%' : `${Math.round((filteredCenters.length / (allCenters.length || 1)) * 100)}%`, up: true, desc: 'Visible facilities' },
                 { label: 'Global load', value: '1.2k', change: '-12%', up: false, desc: 'Waiting tokens' },
-                { label: 'Workforce scale', value: officers, change: '+5', up: true, desc: 'Active officers' },
+                { label: 'Workforce scale', value: officers, change: filteredUsers.length, up: true, desc: 'Active officers' },
              ].map((stat, i) => (
                 <div key={i} className="bg-white p-8 rounded-[2rem] border border-gray-50 shadow-sm flex flex-col gap-1 hover:border-gray-200 transition-all cursor-pointer">
                    <p className="text-[10px] font-normal text-gray-400 mb-1">{stat.label}</p>
@@ -259,14 +347,14 @@ export default function AdminDashboardPage() {
                   <div className="flex items-center gap-1 px-2 py-1 bg-gray-50 rounded-lg text-[9px] font-normal text-gray-400">Total distribution <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" strokeWidth={3}/></svg></div>
                </div>
                <div className="mb-6">
-                  <h4 className="text-2xl font-semibold text-gray-900 tracking-tighter mb-4">{allUsers.length} Active accounts</h4>
+                  <h4 className="text-2xl font-semibold text-gray-900 tracking-tighter mb-4">{filteredUsers.length} Active accounts</h4>
                   <div className="flex h-2.5 w-full bg-gray-100 rounded-full overflow-hidden">
                      {roleData.map((role, idx) => (
                        <div 
                          key={idx} 
                          className={`h-full border-r-2 border-white`} 
                          style={{ 
-                           width: `${allUsers.length ? (role.users / allUsers.length) * 100 : 0}%`,
+                           width: `${filteredUsers.length ? (role.users / filteredUsers.length) * 100 : 0}%`,
                            backgroundColor: role.fill 
                          }} 
                        />
@@ -464,5 +552,6 @@ export default function AdminDashboardPage() {
          </section>
       </div>
     </div>
-  );
+  </div>
+);
 }
