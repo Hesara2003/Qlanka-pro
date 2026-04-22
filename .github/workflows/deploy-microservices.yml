@@ -51,21 +51,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Log in to Azure Container Registry
-        shell: bash
-        env:
-          ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
-          ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
-        run: |
-          set -euo pipefail
-
-          if [ -z "${ACR_USERNAME:-}" ] || [ -z "${ACR_PASSWORD:-}" ]; then
-            echo "ACR_USERNAME and ACR_PASSWORD secrets are required."
-            exit 1
-          fi
-
-          echo "$ACR_PASSWORD" | docker login "$ACR_LOGIN_SERVER" --username "$ACR_USERNAME" --password-stdin
-
       - name: Resolve Azure auth mode
         id: authmode
         shell: bash
@@ -112,6 +97,23 @@ jobs:
       - name: Ensure Container Apps CLI extension
         run: |
           az extension add --name containerapp --upgrade --only-show-errors
+
+      - name: Log in to Azure Container Registry
+        shell: bash
+        env:
+          ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+          ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          if [ -n "${ACR_USERNAME:-}" ] && [ -n "${ACR_PASSWORD:-}" ]; then
+            echo "$ACR_PASSWORD" | docker login "$ACR_LOGIN_SERVER" --username "$ACR_USERNAME" --password-stdin
+            exit 0
+          fi
+
+          REGISTRY_NAME="${ACR_LOGIN_SERVER%%.*}"
+          echo "ACR_USERNAME/ACR_PASSWORD not set; falling back to az acr login for $REGISTRY_NAME"
+          az acr login --name "$REGISTRY_NAME"
 
       - name: Build and push ${{ matrix.service.name }}
         run: |
