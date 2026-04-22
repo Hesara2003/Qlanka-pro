@@ -108,7 +108,7 @@ public class AuthControllerTests
     }
 
     [Fact]
-    public async Task Register_InvalidModelState_ReturnsUnprocessableEntity()
+    public async Task Register_InvalidModelState_ReturnsBadRequest()
     {
         // Arrange
         _controller.ModelState.AddModelError("Username", "Username is required");
@@ -118,8 +118,8 @@ public class AuthControllerTests
         var result = await _controller.Register(requestDto);
 
         // Assert
-        var unprocessableResult = result.Should().BeOfType<UnprocessableEntityObjectResult>().Subject;
-        unprocessableResult.StatusCode.Should().Be(422);
+        var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+        badRequestResult.StatusCode.Should().Be(400);
     }
 
     // ────────────────────── Login Tests ──────────────────────
