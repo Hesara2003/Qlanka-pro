@@ -19,8 +19,8 @@ jobs:
       contents: read
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-      ACR_LOGIN_SERVER: qlankaregistry.azurecr.io
-      RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP || vars.AZURE_RESOURCE_GROUP || 'rg-queuelanka-pro' }}
+      ACR_LOGIN_SERVER: ${{ vars.ACR_LOGIN_SERVER || 'qlanka-hrhza8d0ccd6dqa4.azurecr.io' }}
+      RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP || vars.AZURE_RESOURCE_GROUP || 'qlanka-microservices' }}
       ROLLOUT_PERCENT: ${{ github.event.inputs.rollout_percent || '100' }}
       AZURE_CLIENT_ID_FALLBACK: ${{ secrets.AZURE_CLIENT_ID || secrets.QLANKAQUEUE_AZURE_CLIENT_ID || secrets.QLANKAIDENTITY_AZURE_CLIENT_ID || secrets.QLANKASERVICECENTER_AZURE_CLIENT_ID || secrets.QLANKAOFFICER_AZURE_CLIENT_ID }}
       AZURE_TENANT_ID_FALLBACK: ${{ secrets.AZURE_TENANT_ID || secrets.QLANKAQUEUE_AZURE_TENANT_ID || secrets.QLANKAIDENTITY_AZURE_TENANT_ID || secrets.QLANKASERVICECENTER_AZURE_TENANT_ID || secrets.QLANKAOFFICER_AZURE_TENANT_ID }}
@@ -28,36 +28,24 @@ jobs:
     strategy:
       matrix:
         service:
-          - name: qlanka-gateway
-            dockerfile: QueueLanka.Gateway/Dockerfile
-            containerapp: qlanka-gateway
-            min_replicas: 2
-            max_replicas: 10
-            http_concurrency: 80
-          - name: qlanka-identity
+          - name: qlanka-micro-identity
             dockerfile: QueueLanka.Identity/Dockerfile
-            containerapp: qlanka-identity
+            containerapp: qlanka-micro-identity
             min_replicas: 2
             max_replicas: 10
             http_concurrency: 60
-          - name: qlanka-servicecenter
+          - name: qlanka-micro-servicecentre
             dockerfile: QueueLanka.ServiceCenter/Dockerfile
-            containerapp: qlanka-servicecenter
+            containerapp: qlanka-micro-servicecentre
             min_replicas: 2
             max_replicas: 10
             http_concurrency: 60
-          - name: qlanka-queue
+          - name: qlanka-micro-queue
             dockerfile: QueueLanka.Queue/Dockerfile
-            containerapp: qlanka-queue
+            containerapp: qlanka-micro-queue
             min_replicas: 3
             max_replicas: 15
             http_concurrency: 40
-          - name: qlanka-notification
-            dockerfile: QueueLanka.Notification/Dockerfile
-            containerapp: qlanka-notification
-            min_replicas: 1
-            max_replicas: 6
-            http_concurrency: 30
 
     steps:
       - name: Checkout code
