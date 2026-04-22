@@ -19,6 +19,7 @@ jobs:
       contents: read
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      ACR_NAME: ${{ vars.ACR_NAME || 'qlanka' }}
       ACR_LOGIN_SERVER: ${{ vars.ACR_LOGIN_SERVER || 'qlanka-hrhza8d0ccd6dqa4.azurecr.io' }}
       RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP || vars.AZURE_RESOURCE_GROUP || 'qlanka-microservices' }}
       ROLLOUT_PERCENT: ${{ github.event.inputs.rollout_percent || '100' }}
@@ -111,9 +112,8 @@ jobs:
             exit 0
           fi
 
-          REGISTRY_NAME="${ACR_LOGIN_SERVER%%.*}"
-          echo "ACR_USERNAME/ACR_PASSWORD not set; falling back to az acr login for $REGISTRY_NAME"
-          az acr login --name "$REGISTRY_NAME"
+          echo "ACR_USERNAME/ACR_PASSWORD not set; falling back to az acr login for $ACR_NAME"
+          az acr login --name "$ACR_NAME"
 
       - name: Build and push ${{ matrix.service.name }}
         run: |
