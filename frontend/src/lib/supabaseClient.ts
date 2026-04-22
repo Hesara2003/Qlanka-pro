@@ -19,30 +19,30 @@ const unconfiguredClient = new Proxy(
   {},
   {
     get(_, prop) {
-      console.warn(`Supabase is not configured. Accessing "${String(prop)}" will return mock data.`);
+      console.warn(`Gateway is not configured. Accessing "${String(prop)}" will return mock data.`);
       
       if (prop === "from") {
         return (table: string) => ({
           select: () => ({
             eq: () => ({
-              maybeSingle: async () => ({ data: null, error: { message: `Supabase unconfigured (table: ${table})` } }),
+              maybeSingle: async () => ({ data: null, error: { message: `Gateway error (table: ${table})` } }),
               order: () => ({
                 limit: () => ({
-                  maybeSingle: async () => ({ data: null, error: { message: `Supabase unconfigured (table: ${table})` } }),
+                  maybeSingle: async () => ({ data: null, error: { message: `Gateway error (table: ${table})` } }),
                 }),
               }),
             }),
-            order: async () => ({ data: [], error: { message: `Supabase unconfigured (table: ${table})` } }),
+            order: async () => ({ data: [], error: { message: `Gateway error (table: ${table})` } }),
           }),
           insert: () => ({
             select: () => ({
-              single: async () => ({ data: null, error: { message: `Supabase unconfigured (table: ${table})` } }),
+              single: async () => ({ data: null, error: { message: `Gateway error (table: ${table})` } }),
             }),
           }),
           update: () => ({
             eq: () => ({
               select: () => ({
-                maybeSingle: async () => ({ data: null, error: { message: `Supabase unconfigured (table: ${table})` } }),
+                maybeSingle: async () => ({ data: null, error: { message: `Gateway error (table: ${table})` } }),
               }),
             }),
           }),
@@ -50,7 +50,7 @@ const unconfiguredClient = new Proxy(
       }
       
       return () => {
-        throw new Error(`Supabase is not configured. Tried to call "${String(prop)}".`);
+        throw new Error(`Gateway error. Tried to call "${String(prop)}".`);
       };
     },
   }

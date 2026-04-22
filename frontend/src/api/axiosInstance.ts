@@ -57,7 +57,7 @@ const axiosInstance = axios.create({
 // each API module's Supabase fallback path kicks in without any network delay.
 if (isSupabaseOnly) {
   axiosInstance.interceptors.request.use(() => {
-    return Promise.reject(new AxiosError("Backend disabled: Supabase-only mode"));
+    return Promise.reject(new AxiosError("Backend disabled: Gateway-only mode"));
   });
 }
 
