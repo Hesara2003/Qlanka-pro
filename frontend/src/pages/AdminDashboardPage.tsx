@@ -11,13 +11,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { exportToCsv, exportToPdf } from "../utils/exportUtils";
 import type { ServiceCenter } from "../types/serviceCenter";
 
-interface Stats {
-  centers: number;
-  users: number;
-  activeUsers: number;
-}
-
-let _cachedStats: Stats | null = null;
 let _cachedUsers: AdminUser[] = [];
 let _cachedCenters: ServiceCenter[] = [];
 let _cachePopulated: boolean = false;
@@ -55,11 +48,6 @@ export default function AdminDashboardPage() {
             getAllServiceCenters(),
             getAdminUsers(),
           ]);
-          _cachedStats = {
-            centers: centers.length,
-            users: users.length,
-            activeUsers: users.filter((u) => u.isActive).length,
-          };
           _cachedUsers = users;
           _cachedCenters = centers.length > 0 ? centers : MOCK_CENTERS;
           _cachePopulated = true;

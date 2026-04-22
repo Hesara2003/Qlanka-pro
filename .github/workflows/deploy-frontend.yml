@@ -11,6 +11,7 @@ on:
 env:
   AZURE_API_BASE_URL: https://20.193.250.12:9443
   AZURE_FRONTEND_URL: https://queuelanka-frontend-hrcvdec5dnach0aj.centralindia-01.azurewebsites.net
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   deploy-frontend:
