@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { getAdminUsers, deleteAdminUser } from "../api/userApi";
 import type { AdminUser, UserRole } from "../types/user";
+import { exportToCsv, exportToPdf } from "../utils/exportUtils";
 
 // ──────────────────────────────────────────────────────────────
 //  Role badge
@@ -210,6 +211,30 @@ export default function AdminUsersPage() {
     }
   }
 
+  const handleExportCsv = () => {
+    const columns = [
+      { header: "Username", key: "username" },
+      { header: "Email", key: "email" },
+      { header: "Role", key: "role" },
+      { header: "Status", key: (u: AdminUser) => u.isActive ? "Active" : "Inactive" },
+      { header: "Joined", key: (u: AdminUser) => formatDate(u.createdAt) },
+    ];
+    const date = new Date().toISOString().split('T')[0];
+    exportToCsv(filtered, columns, `QueueLanka_Users_Report_${date}`);
+  };
+
+  const handleExportPdf = () => {
+    const columns = [
+      { header: "Username", key: "username" },
+      { header: "Email", key: "email" },
+      { header: "Role", key: "role" },
+      { header: "Status", key: (u: AdminUser) => u.isActive ? "Active" : "Inactive" },
+      { header: "Joined", key: (u: AdminUser) => formatDate(u.createdAt) },
+    ];
+    const date = new Date().toISOString().split('T')[0];
+    exportToPdf(filtered, columns, "Admin Users Report", `QueueLanka_Users_Report_${date}`);
+  };
+
   const filtered = users.filter((u) => {
     if (roleFilter !== "all" && u.role !== roleFilter) return false;
     if (statusFilter === "active" && !u.isActive) return false;
@@ -259,6 +284,28 @@ export default function AdminUsersPage() {
               </svg>
               Refresh
             </button>
+            <div className="flex items-center gap-2 border-l border-gray-100 pl-3">
+              <button
+                onClick={handleExportCsv}
+                disabled={loading || filtered.length === 0}
+                className="p-2.5 bg-white border border-gray-100 rounded-full hover:bg-gray-50 text-gray-400 hover:text-emerald-500 transition-all shadow-sm disabled:opacity-50"
+                title="Export to CSV"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                </svg>
+              </button>
+              <button
+                onClick={handleExportPdf}
+                disabled={loading || filtered.length === 0}
+                className="p-2.5 bg-white border border-gray-100 rounded-full hover:bg-gray-50 text-gray-400 hover:text-red-500 transition-all shadow-sm disabled:opacity-50"
+                title="Export to PDF"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 

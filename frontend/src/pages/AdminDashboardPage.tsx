@@ -9,6 +9,7 @@ import {
   AreaChart, Area, PieChart, Pie
 } from "recharts";
 import { motion } from "framer-motion";
+import { exportToCsv, exportToPdf } from "../utils/exportUtils";
 
 interface Stats {
   centers: number;
@@ -125,6 +126,27 @@ export default function AdminDashboardPage() {
     percent: (count / (allCenters.length || 1)) * 100
   })).slice(0, 3);
 
+  const handleExportActivityCsv = () => {
+    const columns = [
+      { header: "Event", key: "name" },
+      { header: "Category", key: "val" },
+      { header: "Status", key: "status" },
+      { header: "Date", key: (tx: any) => tx.date.toLocaleDateString() },
+    ];
+    const date = new Date().toISOString().split('T')[0];
+    exportToCsv(auditLogs, columns, `QueueLanka_Activity_Report_${date}`);
+  };
+
+  const handleExportActivityPdf = () => {
+    const columns = [
+      { header: "Event", key: "name" },
+      { header: "Category", key: "val" },
+      { header: "Status", key: "status" },
+      { header: "Date", key: (tx: any) => tx.date.toLocaleDateString() },
+    ];
+    const date = new Date().toISOString().split('T')[0];
+    exportToPdf(auditLogs, columns, "System Activity Report", `QueueLanka_Activity_Report_${date}`);
+  };
 
   return (
     <div className="grid grid-cols-12 gap-8 py-2">
@@ -398,7 +420,26 @@ export default function AdminDashboardPage() {
          <section className="flex-1 bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm flex flex-col group min-h-[400px]">
              <div className="flex justify-between items-center mb-8">
                 <h3 className="text-[15px] font-semibold text-gray-900 tracking-tighter leading-none">System activity</h3>
-                <div className="flex items-center gap-1 px-2 py-1 bg-gray-50 rounded-lg text-[9px] font-normal text-gray-400">Audit logs <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" strokeWidth={3}/></svg></div>
+                <div className="flex items-center gap-2">
+                   <button 
+                     onClick={handleExportActivityCsv}
+                     disabled={auditLogs.length === 0}
+                     className="p-1.5 bg-gray-50 rounded-lg text-gray-400 hover:text-emerald-500 transition-all disabled:opacity-30"
+                     title="Export CSV"
+                   >
+                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}><path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                   </button>
+                   <button 
+                     onClick={handleExportActivityPdf}
+                     disabled={auditLogs.length === 0}
+                     className="p-1.5 bg-gray-50 rounded-lg text-gray-400 hover:text-red-500 transition-all disabled:opacity-30"
+                     title="Export PDF"
+                   >
+                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}><path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+                   </button>
+                   <div className="h-4 w-px bg-gray-100 mx-1"></div>
+                   <div className="flex items-center gap-1 px-2 py-1 bg-gray-50 rounded-lg text-[9px] font-normal text-gray-400">Audit logs <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7" strokeWidth={3}/></svg></div>
+                </div>
              </div>
              
              <div className="flex flex-col gap-6 overflow-y-auto no-scrollbar pr-1">
