@@ -108,11 +108,14 @@ jobs:
           set -euo pipefail
 
           if [ -n "${ACR_USERNAME:-}" ] && [ -n "${ACR_PASSWORD:-}" ]; then
-            echo "$ACR_PASSWORD" | docker login "$ACR_LOGIN_SERVER" --username "$ACR_USERNAME" --password-stdin
-            exit 0
+            if echo "$ACR_PASSWORD" | docker login "$ACR_LOGIN_SERVER" --username "$ACR_USERNAME" --password-stdin; then
+              exit 0
+            fi
+
+            echo "docker login with ACR_USERNAME/ACR_PASSWORD failed; falling back to Azure identity login"
           fi
 
-          echo "ACR_USERNAME/ACR_PASSWORD not set; falling back to az acr login for $ACR_NAME"
+          echo "Using az acr login fallback for $ACR_NAME"
           az acr login --name "$ACR_NAME"
 
       - name: Build and push ${{ matrix.service.name }}
