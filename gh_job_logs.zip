@@ -1,0 +1,235 @@
+﻿2026-04-22T05:21:18.4837039Z Current runner version: '2.333.1'
+2026-04-22T05:21:18.4861167Z ##[group]Runner Image Provisioner
+2026-04-22T05:21:18.4861980Z Hosted Compute Agent
+2026-04-22T05:21:18.4862509Z Version: 20260213.493
+2026-04-22T05:21:18.4863039Z Commit: 5c115507f6dd24b8de37d8bbe0bb4509d0cc0fa3
+2026-04-22T05:21:18.4863694Z Build Date: 2026-02-13T00:28:41Z
+2026-04-22T05:21:18.4864401Z Worker ID: {218d6814-e504-47e0-9c99-b684823c3990}
+2026-04-22T05:21:18.4865037Z Azure Region: westcentralus
+2026-04-22T05:21:18.4865597Z ##[endgroup]
+2026-04-22T05:21:18.4867160Z ##[group]Operating System
+2026-04-22T05:21:18.4868061Z Ubuntu
+2026-04-22T05:21:18.4868604Z 24.04.4
+2026-04-22T05:21:18.4869045Z LTS
+2026-04-22T05:21:18.4869509Z ##[endgroup]
+2026-04-22T05:21:18.4869998Z ##[group]Runner Image
+2026-04-22T05:21:18.4870526Z Image: ubuntu-24.04
+2026-04-22T05:21:18.4871060Z Version: 20260413.86.1
+2026-04-22T05:21:18.4872153Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260413.86/images/ubuntu/Ubuntu2404-Readme.md
+2026-04-22T05:21:18.4873506Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260413.86
+2026-04-22T05:21:18.4874403Z ##[endgroup]
+2026-04-22T05:21:18.4875420Z ##[group]GITHUB_TOKEN Permissions
+2026-04-22T05:21:18.4877489Z Contents: read
+2026-04-22T05:21:18.4878045Z Metadata: read
+2026-04-22T05:21:18.4878543Z ##[endgroup]
+2026-04-22T05:21:18.4880561Z Secret source: Actions
+2026-04-22T05:21:18.4881214Z Prepare workflow directory
+2026-04-22T05:21:18.5431532Z Prepare all required actions
+2026-04-22T05:21:18.5471256Z Getting action download info
+2026-04-22T05:21:18.8787512Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+2026-04-22T05:21:18.9608551Z Download action repository 'azure/login@v2' (SHA:a457da9ea143d694b1b9c7c869ebb04ebe844ef5)
+2026-04-22T05:21:19.6021883Z Complete job name: build-and-push (qlanka-micro-identity, QueueLanka.Identity/Dockerfile, qlanka-micro-identity, 2, ...
+2026-04-22T05:21:19.6712238Z ##[group]Run actions/checkout@v4
+2026-04-22T05:21:19.6713040Z with:
+2026-04-22T05:21:19.6713444Z   repository: Hesara2003/Qlanka-pro
+2026-04-22T05:21:19.6714158Z   token: ***
+2026-04-22T05:21:19.6714532Z   ssh-strict: true
+2026-04-22T05:21:19.6714904Z   ssh-user: git
+2026-04-22T05:21:19.6715288Z   persist-credentials: true
+2026-04-22T05:21:19.6715743Z   clean: true
+2026-04-22T05:21:19.6716122Z   sparse-checkout-cone-mode: true
+2026-04-22T05:21:19.6716807Z   fetch-depth: 1
+2026-04-22T05:21:19.6717184Z   fetch-tags: false
+2026-04-22T05:21:19.6717568Z   show-progress: true
+2026-04-22T05:21:19.6717956Z   lfs: false
+2026-04-22T05:21:19.6718298Z   submodules: false
+2026-04-22T05:21:19.6718683Z   set-safe-directory: true
+2026-04-22T05:21:19.6719320Z env:
+2026-04-22T05:21:19.6719694Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-04-22T05:21:19.6720183Z   ACR_NAME: qlanka
+2026-04-22T05:21:19.6720649Z   ACR_LOGIN_SERVER: qlanka-hrhza8d0ccd6dqa4.azurecr.io
+2026-04-22T05:21:19.6721264Z   RESOURCE_GROUP: qlanka-microservices
+2026-04-22T05:21:19.6721743Z   ROLLOUT_PERCENT: 100
+2026-04-22T05:21:19.6722314Z   AZURE_CLIENT_ID_FALLBACK: ***
+2026-04-22T05:21:19.6722881Z   AZURE_TENANT_ID_FALLBACK: ***
+2026-04-22T05:21:19.6723478Z   AZURE_SUBSCRIPTION_ID_FALLBACK: ***
+2026-04-22T05:21:19.6723945Z ##[endgroup]
+2026-04-22T05:21:19.7613667Z Syncing repository: Hesara2003/Qlanka-pro
+2026-04-22T05:21:19.7615340Z ##[group]Getting Git version info
+2026-04-22T05:21:19.7615999Z Working directory is '/home/runner/work/Qlanka-pro/Qlanka-pro'
+2026-04-22T05:21:19.7617383Z [command]/usr/bin/git version
+2026-04-22T05:21:19.7640784Z git version 2.53.0
+2026-04-22T05:21:19.7659801Z ##[endgroup]
+2026-04-22T05:21:19.7672900Z Temporarily overriding HOME='/home/runner/work/_temp/2eada9e0-272f-44dd-abc1-39233db075e9' before making global git config changes
+2026-04-22T05:21:19.7674117Z Adding repository directory to the temporary git global config as a safe directory
+2026-04-22T05:21:19.7678552Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Qlanka-pro/Qlanka-pro
+2026-04-22T05:21:19.7707467Z Deleting the contents of '/home/runner/work/Qlanka-pro/Qlanka-pro'
+2026-04-22T05:21:19.7710980Z ##[group]Initializing the repository
+2026-04-22T05:21:19.7714952Z [command]/usr/bin/git init /home/runner/work/Qlanka-pro/Qlanka-pro
+2026-04-22T05:21:19.7797974Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-04-22T05:21:19.7799299Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-04-22T05:21:19.7800307Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-04-22T05:21:19.7801091Z hint: call:
+2026-04-22T05:21:19.7801558Z hint:
+2026-04-22T05:21:19.7802141Z hint: 	git config --global init.defaultBranch <name>
+2026-04-22T05:21:19.7802778Z hint:
+2026-04-22T05:21:19.7803399Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-04-22T05:21:19.7804356Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-04-22T05:21:19.7805224Z hint:
+2026-04-22T05:21:19.7805747Z hint: 	git branch -m <name>
+2026-04-22T05:21:19.7806411Z hint:
+2026-04-22T05:21:19.7807575Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-04-22T05:21:19.7808635Z Initialized empty Git repository in /home/runner/work/Qlanka-pro/Qlanka-pro/.git/
+2026-04-22T05:21:19.7810117Z [command]/usr/bin/git remote add origin https://github.com/Hesara2003/Qlanka-pro
+2026-04-22T05:21:19.7832100Z ##[endgroup]
+2026-04-22T05:21:19.7832769Z ##[group]Disabling automatic garbage collection
+2026-04-22T05:21:19.7835915Z [command]/usr/bin/git config --local gc.auto 0
+2026-04-22T05:21:19.7858108Z ##[endgroup]
+2026-04-22T05:21:19.7858733Z ##[group]Setting up auth
+2026-04-22T05:21:19.7864719Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-04-22T05:21:19.7889101Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-04-22T05:21:19.8120157Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-04-22T05:21:19.8147000Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-04-22T05:21:19.8311828Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-04-22T05:21:19.8337524Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-04-22T05:21:19.8503042Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-04-22T05:21:19.8530011Z ##[endgroup]
+2026-04-22T05:21:19.8530694Z ##[group]Fetching the repository
+2026-04-22T05:21:19.8538682Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +7f367abbbb9a914d6124b6e244feadefec6e5477:refs/remotes/origin/feature/microservices
+2026-04-22T05:21:23.8276080Z From https://github.com/Hesara2003/Qlanka-pro
+2026-04-22T05:21:23.8282303Z  * [new ref]         7f367abbbb9a914d6124b6e244feadefec6e5477 -> origin/feature/microservices
+2026-04-22T05:21:23.8298772Z ##[endgroup]
+2026-04-22T05:21:23.8299290Z ##[group]Determining the checkout info
+2026-04-22T05:21:23.8301065Z ##[endgroup]
+2026-04-22T05:21:23.8305942Z [command]/usr/bin/git sparse-checkout disable
+2026-04-22T05:21:23.8337967Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-04-22T05:21:23.8361146Z ##[group]Checking out the ref
+2026-04-22T05:21:23.8365720Z [command]/usr/bin/git checkout --progress --force -B feature/microservices refs/remotes/origin/feature/microservices
+2026-04-22T05:21:24.5420407Z Switched to a new branch 'feature/microservices'
+2026-04-22T05:21:24.5422124Z branch 'feature/microservices' set up to track 'origin/feature/microservices'.
+2026-04-22T05:21:24.5461406Z ##[endgroup]
+2026-04-22T05:21:24.5496549Z [command]/usr/bin/git log -1 --format=%H
+2026-04-22T05:21:24.5517022Z 7f367abbbb9a914d6124b6e244feadefec6e5477
+2026-04-22T05:21:24.5694723Z ##[group]Run set -euo pipefail
+2026-04-22T05:21:24.5695229Z [36;1mset -euo pipefail[0m
+2026-04-22T05:21:24.5695530Z [36;1m[0m
+2026-04-22T05:21:24.5695841Z [36;1mif [ -n "${AZURE_CREDENTIALS:-}" ]; then[0m
+2026-04-22T05:21:24.5696868Z [36;1m  if ! echo "$AZURE_CREDENTIALS" | jq -e '.clientId and .clientSecret and .subscriptionId and .tenantId' >/dev/null 2>&1; then[0m
+2026-04-22T05:21:24.5697706Z [36;1m    echo "AZURE_CREDENTIALS is present but invalid. It must include clientId, clientSecret, subscriptionId, tenantId."[0m
+2026-04-22T05:21:24.5698249Z [36;1m    exit 1[0m
+2026-04-22T05:21:24.5698499Z [36;1m  fi[0m
+2026-04-22T05:21:24.5698728Z [36;1m[0m
+2026-04-22T05:21:24.5698989Z [36;1m  echo "mode=sp-json" >> "$GITHUB_OUTPUT"[0m
+2026-04-22T05:21:24.5699308Z [36;1m  exit 0[0m
+2026-04-22T05:21:24.5699562Z [36;1mfi[0m
+2026-04-22T05:21:24.5699793Z [36;1m[0m
+2026-04-22T05:21:24.5700246Z [36;1mif [ -n "${AZURE_CLIENT_ID:-}" ] && [ -n "${AZURE_TENANT_ID:-}" ] && [ -n "${AZURE_SUBSCRIPTION_ID:-}" ]; then[0m
+2026-04-22T05:21:24.5700745Z [36;1m  echo "mode=oidc" >> "$GITHUB_OUTPUT"[0m
+2026-04-22T05:21:24.5701064Z [36;1m  exit 0[0m
+2026-04-22T05:21:24.5701319Z [36;1mfi[0m
+2026-04-22T05:21:24.5701531Z [36;1m[0m
+2026-04-22T05:21:24.5702099Z [36;1mecho "Azure login secrets are incomplete. Provide either AZURE_CREDENTIALS JSON, or AZURE_CLIENT_ID + AZURE_TENANT_ID + AZURE_SUBSCRIPTION_ID."[0m
+2026-04-22T05:21:24.5702718Z [36;1mexit 1[0m
+2026-04-22T05:21:24.5721291Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-04-22T05:21:24.5721699Z env:
+2026-04-22T05:21:24.5721960Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-04-22T05:21:24.5722275Z   ACR_NAME: qlanka
+2026-04-22T05:21:24.5722579Z   ACR_LOGIN_SERVER: qlanka-hrhza8d0ccd6dqa4.azurecr.io
+2026-04-22T05:21:24.5722974Z   RESOURCE_GROUP: qlanka-microservices
+2026-04-22T05:21:24.5723283Z   ROLLOUT_PERCENT: 100
+2026-04-22T05:21:24.5723907Z   AZURE_CLIENT_ID_FALLBACK: ***
+2026-04-22T05:21:24.5724284Z   AZURE_TENANT_ID_FALLBACK: ***
+2026-04-22T05:21:24.5724677Z   AZURE_SUBSCRIPTION_ID_FALLBACK: ***
+2026-04-22T05:21:24.5724982Z   AZURE_CREDENTIALS: 
+2026-04-22T05:21:24.5725310Z   AZURE_CLIENT_ID: ***
+2026-04-22T05:21:24.5725617Z   AZURE_TENANT_ID: ***
+2026-04-22T05:21:24.5725948Z   AZURE_SUBSCRIPTION_ID: ***
+2026-04-22T05:21:24.5726221Z ##[endgroup]
+2026-04-22T05:21:24.5890986Z ##[group]Run azure/login@v2
+2026-04-22T05:21:24.5891306Z with:
+2026-04-22T05:21:24.5891703Z   client-id: ***
+2026-04-22T05:21:24.5891990Z   tenant-id: ***
+2026-04-22T05:21:24.5892311Z   subscription-id: ***
+2026-04-22T05:21:24.5892589Z   enable-AzPSSession: false
+2026-04-22T05:21:24.5892883Z   environment: azurecloud
+2026-04-22T05:21:24.5893174Z   allow-no-subscriptions: false
+2026-04-22T05:21:24.5893508Z   audience: api://AzureADTokenExchange
+2026-04-22T05:21:24.5893849Z   auth-type: SERVICE_PRINCIPAL
+2026-04-22T05:21:24.5894117Z env:
+2026-04-22T05:21:24.5894359Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-04-22T05:21:24.5894663Z   ACR_NAME: qlanka
+2026-04-22T05:21:24.5894961Z   ACR_LOGIN_SERVER: qlanka-hrhza8d0ccd6dqa4.azurecr.io
+2026-04-22T05:21:24.5895321Z   RESOURCE_GROUP: qlanka-microservices
+2026-04-22T05:21:24.5895613Z   ROLLOUT_PERCENT: 100
+2026-04-22T05:21:24.5895957Z   AZURE_CLIENT_ID_FALLBACK: ***
+2026-04-22T05:21:24.5896514Z   AZURE_TENANT_ID_FALLBACK: ***
+2026-04-22T05:21:24.5896945Z   AZURE_SUBSCRIPTION_ID_FALLBACK: ***
+2026-04-22T05:21:24.5897238Z ##[endgroup]
+2026-04-22T05:21:24.6248517Z Running Azure CLI Login.
+2026-04-22T05:21:25.5839707Z [command]/usr/bin/az cloud set -n azurecloud
+2026-04-22T05:21:25.8749342Z Done setting cloud: "azurecloud"
+2026-04-22T05:21:26.0952274Z Federated token details:
+2026-04-22T05:21:26.0952792Z  issuer - https://token.actions.githubusercontent.com
+2026-04-22T05:21:26.0953540Z  subject claim - repo:Hesara2003/Qlanka-pro:ref:refs/heads/feature/microservices
+2026-04-22T05:21:26.0954653Z  audience - api://AzureADTokenExchange
+2026-04-22T05:21:26.0955611Z  job_workflow_ref - Hesara2003/Qlanka-pro/.github/workflows/deploy-microservices.yml@refs/heads/feature/microservices
+2026-04-22T05:21:26.0956828Z Attempting Azure CLI login by using OIDC...
+2026-04-22T05:21:27.6188813Z Subscription is set successfully.
+2026-04-22T05:21:27.6190752Z Azure CLI login succeeds by using OIDC.
+2026-04-22T05:21:27.6253395Z ##[group]Run az extension add --name containerapp --upgrade --only-show-errors
+2026-04-22T05:21:27.6253948Z [36;1maz extension add --name containerapp --upgrade --only-show-errors[0m
+2026-04-22T05:21:27.6268660Z shell: /usr/bin/bash -e {0}
+2026-04-22T05:21:27.6268932Z env:
+2026-04-22T05:21:27.6269163Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-04-22T05:21:27.6269636Z   ACR_NAME: qlanka
+2026-04-22T05:21:27.6269987Z   ACR_LOGIN_SERVER: qlanka-hrhza8d0ccd6dqa4.azurecr.io
+2026-04-22T05:21:27.6270312Z   RESOURCE_GROUP: qlanka-microservices
+2026-04-22T05:21:27.6270581Z   ROLLOUT_PERCENT: 100
+2026-04-22T05:21:27.6271025Z   AZURE_CLIENT_ID_FALLBACK: ***
+2026-04-22T05:21:27.6271341Z   AZURE_TENANT_ID_FALLBACK: ***
+2026-04-22T05:21:27.6271669Z   AZURE_SUBSCRIPTION_ID_FALLBACK: ***
+2026-04-22T05:21:27.6271918Z ##[endgroup]
+2026-04-22T05:21:37.1660331Z ##[group]Run set -euo pipefail
+2026-04-22T05:21:37.1660651Z [36;1mset -euo pipefail[0m
+2026-04-22T05:21:37.1660873Z [36;1m[0m
+2026-04-22T05:21:37.1661140Z [36;1mif [ -n "${ACR_USERNAME:-}" ] && [ -n "${ACR_PASSWORD:-}" ]; then[0m
+2026-04-22T05:21:37.1661668Z [36;1m  echo "$ACR_PASSWORD" | docker login "$ACR_LOGIN_SERVER" --username "$ACR_USERNAME" --password-stdin[0m
+2026-04-22T05:21:37.1662111Z [36;1m  exit 0[0m
+2026-04-22T05:21:37.1662365Z [36;1mfi[0m
+2026-04-22T05:21:37.1662565Z [36;1m[0m
+2026-04-22T05:21:37.1662901Z [36;1mecho "ACR_USERNAME/ACR_PASSWORD not set; falling back to az acr login for $ACR_NAME"[0m
+2026-04-22T05:21:37.1663330Z [36;1maz acr login --name "$ACR_NAME"[0m
+2026-04-22T05:21:37.1676477Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-04-22T05:21:37.1676931Z env:
+2026-04-22T05:21:37.1677153Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-04-22T05:21:37.1677419Z   ACR_NAME: qlanka
+2026-04-22T05:21:37.1677726Z   ACR_LOGIN_SERVER: qlanka-hrhza8d0ccd6dqa4.azurecr.io
+2026-04-22T05:21:37.1678041Z   RESOURCE_GROUP: qlanka-microservices
+2026-04-22T05:21:37.1678296Z   ROLLOUT_PERCENT: 100
+2026-04-22T05:21:37.1678688Z   AZURE_CLIENT_ID_FALLBACK: ***
+2026-04-22T05:21:37.1679003Z   AZURE_TENANT_ID_FALLBACK: ***
+2026-04-22T05:21:37.1679339Z   AZURE_SUBSCRIPTION_ID_FALLBACK: ***
+2026-04-22T05:21:37.1679633Z   ACR_USERNAME: ***
+2026-04-22T05:21:37.1680089Z   ACR_PASSWORD: ***
+2026-04-22T05:21:37.1680284Z ##[endgroup]
+2026-04-22T05:21:38.2391858Z Error response from daemon: Get "https://qlanka-hrhza8d0ccd6dqa4.azurecr.io/v2/": unauthorized: {"errors":[{"code":"UNAUTHORIZED","message":"authentication required, visit https://aka.ms/acr/authorization for more information. CorrelationId: 16f1e64f-d89a-456c-98a9-030bb1c0a683"}]}
+2026-04-22T05:21:38.2412460Z ##[error]Process completed with exit code 1.
+2026-04-22T05:21:38.2500606Z Post job cleanup.
+2026-04-22T05:21:38.2892127Z Clearing azure cli accounts from the local cache.
+2026-04-22T05:21:38.2908028Z [command]/usr/bin/az account clear
+2026-04-22T05:21:39.4981786Z Post job cleanup.
+2026-04-22T05:21:39.5753083Z [command]/usr/bin/git version
+2026-04-22T05:21:39.5786496Z git version 2.53.0
+2026-04-22T05:21:39.5818952Z Temporarily overriding HOME='/home/runner/work/_temp/a6630843-bc43-4cf2-aa86-cfb601e73f84' before making global git config changes
+2026-04-22T05:21:39.5820103Z Adding repository directory to the temporary git global config as a safe directory
+2026-04-22T05:21:39.5824499Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Qlanka-pro/Qlanka-pro
+2026-04-22T05:21:39.5856006Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-04-22T05:21:39.5883882Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-04-22T05:21:39.6068073Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-04-22T05:21:39.6089338Z http.https://github.com/.extraheader
+2026-04-22T05:21:39.6099428Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-04-22T05:21:39.6127350Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-04-22T05:21:39.6305522Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-04-22T05:21:39.6331659Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-04-22T05:21:39.6615928Z Cleaning up orphan processes
+2026-04-22T05:21:39.6938264Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, azure/login@v2. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
