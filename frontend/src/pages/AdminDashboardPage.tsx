@@ -24,19 +24,18 @@ let _cachePopulated: boolean = false;
 let _inflightFetch: Promise<void> | null = null;
 
 const MOCK_CENTERS: ServiceCenter[] = [
-  { centerId: 1, name: "Colombo One Stop Center", address: "No. 12, Main Street, Colombo 01", phone: "+94112223344", email: "colombo.center@demo.local", description: "Primary demo center", timezone: "Asia/Colombo", capacity: 150, openingTime: "08:00:00", closingTime: "17:00:00", isActive: true, createdAt: "2026-04-19T13:28:59.276368+00:00", isAvailable: true, avgServiceTime: 15 },
-  { centerId: 2, name: "Kandy Citizen Service Center", address: "No. 45, Dalada Veediya, Kandy", phone: "+94812234567", email: "kandy.center@qlanka.lk", description: "Central Province public services center", timezone: "Asia/Colombo", capacity: 120, openingTime: "08:00:00", closingTime: "16:30:00", isActive: true, createdAt: "2026-04-19T14:32:14.003667+00:00", isAvailable: true, avgServiceTime: 20 },
-  { centerId: 3, name: "Galle One Stop Service Center", address: "No. 18, Rampart Street, Galle", phone: "+94912223344", email: "galle.center@qlanka.lk", description: "Southern Province public services center", timezone: "Asia/Colombo", capacity: 110, openingTime: "08:30:00", closingTime: "16:30:00", isActive: true, createdAt: "2026-04-19T14:32:14.003667+00:00", isAvailable: true, avgServiceTime: 18 },
-  { centerId: 4, name: "Jaffna Public Service Hub", address: "No. 09, Hospital Road, Jaffna", phone: "+94212224455", email: "jaffna.center@qlanka.lk", description: "Northern Province integrated service center", timezone: "Asia/Colombo", capacity: 100, openingTime: "08:00:00", closingTime: "16:00:00", isActive: true, createdAt: "2026-04-19T14:32:14.003667+00:00", isAvailable: true, avgServiceTime: 25 },
-  { centerId: 5, name: "Kurunegala District Service Center", address: "No. 72, Colombo Road, Kurunegala", phone: "+94372221100", email: "kurunegala.center@qlanka.lk", description: "North Western Province district services", timezone: "Asia/Colombo", capacity: 130, openingTime: "08:00:00", closingTime: "17:00:00", isActive: true, createdAt: "2026-04-19T14:32:14.003667+00:00", isAvailable: true, avgServiceTime: 15 },
-  { centerId: 6, name: "Batticaloa Citizen Facilitation Center", address: "No. 11, Trinco Road, Batticaloa", phone: "+94652223344", email: "batticaloa.center@qlanka.lk", description: "Eastern Province citizen facilitation", timezone: "Asia/Colombo", capacity: 95, openingTime: "08:30:00", closingTime: "16:00:00", isActive: true, createdAt: "2026-04-19T14:32:14.003667+00:00", isAvailable: true, avgServiceTime: 22 },
-  { centerId: 7, name: "Anuradhapura E-Services Center", address: "No. 56, Maithripala Senanayake Mawatha, Anuradhapura", phone: "+94252224466", email: "anuradhapura.center@qlanka.lk", description: "North Central Province digital public services", timezone: "Asia/Colombo", capacity: 105, openingTime: "08:00:00", closingTime: "16:30:00", isActive: true, createdAt: "2026-04-19T14:32:14.003667+00:00", isAvailable: true, avgServiceTime: 20 },
-  { centerId: 8, name: "Matara Divisional Service Center", address: "No. 27, Main Street, Matara", phone: "+94412223355", email: "matara.center@qlanka.lk", description: "Southern coastal district service center", timezone: "Asia/Colombo", capacity: 90, openingTime: "08:30:00", closingTime: "16:30:00", isActive: true, createdAt: "2026-04-19T14:32:14.003667+00:00", isAvailable: true, avgServiceTime: 18 }
+  { centerId: 1, name: "Colombo One Stop Center", address: "No. 12, Main Street, Colombo 01", phone: "+94112223344", email: "colombo.center@demo.local", description: "Primary demo center", timezone: "Asia/Colombo", capacity: 150, openingTime: "08:00:00", closingTime: "17:00:00", isActive: true, createdAt: "2026-04-19T13:28:59.276368+00:00", isAvailable: true, averageServiceTimeMinutes: 15 },
+  { centerId: 2, name: "Kandy Citizen Service Center", address: "No. 45, Dalada Veediya, Kandy", phone: "+94812234567", email: "kandy.center@qlanka.lk", description: "Central Province public services center", timezone: "Asia/Colombo", capacity: 120, openingTime: "08:00:00", closingTime: "16:30:00", isActive: true, createdAt: "2026-04-19T14:32:14.003667+00:00", isAvailable: true, averageServiceTimeMinutes: 20 },
+  { centerId: 3, name: "Galle One Stop Service Center", address: "No. 18, Rampart Street, Galle", phone: "+94912223344", email: "galle.center@qlanka.lk", description: "Southern Province public services center", timezone: "Asia/Colombo", capacity: 110, openingTime: "08:30:00", closingTime: "16:30:00", isActive: true, createdAt: "2026-04-19T14:32:14.003667+00:00", isAvailable: true, averageServiceTimeMinutes: 18 },
+  { centerId: 4, name: "Jaffna Public Service Hub", address: "No. 09, Hospital Road, Jaffna", phone: "+94212224455", email: "jaffna.center@qlanka.lk", description: "Northern Province integrated service center", timezone: "Asia/Colombo", capacity: 100, openingTime: "08:00:00", closingTime: "16:00:00", isActive: true, createdAt: "2026-04-19T14:32:14.003667+00:00", isAvailable: true, averageServiceTimeMinutes: 25 },
+  { centerId: 5, name: "Kurunegala District Service Center", address: "No. 72, Colombo Road, Kurunegala", phone: "+94372221100", email: "kurunegala.center@qlanka.lk", description: "North Western Province district services", timezone: "Asia/Colombo", capacity: 130, openingTime: "08:00:00", closingTime: "17:00:00", isActive: true, createdAt: "2026-04-19T14:32:14.003667+00:00", isAvailable: true, averageServiceTimeMinutes: 15 },
+  { centerId: 6, name: "Batticaloa Citizen Facilitation Center", address: "No. 11, Trinco Road, Batticaloa", phone: "+94652223344", email: "batticaloa.center@qlanka.lk", description: "Eastern Province citizen facilitation", timezone: "Asia/Colombo", capacity: 95, openingTime: "08:30:00", closingTime: "16:00:00", isActive: true, createdAt: "2026-04-19T14:32:14.003667+00:00", isAvailable: true, averageServiceTimeMinutes: 22 },
+  { centerId: 7, name: "Anuradhapura E-Services Center", address: "No. 56, Maithripala Senanayake Mawatha, Anuradhapura", phone: "+94252224466", email: "anuradhapura.center@qlanka.lk", description: "North Central Province digital public services", timezone: "Asia/Colombo", capacity: 105, openingTime: "08:00:00", closingTime: "16:30:00", isActive: true, createdAt: "2026-04-19T14:32:14.003667+00:00", isAvailable: true, averageServiceTimeMinutes: 20 },
+  { centerId: 8, name: "Matara Divisional Service Center", address: "No. 27, Main Street, Matara", phone: "+94412223355", email: "matara.center@qlanka.lk", description: "Southern coastal district service center", timezone: "Asia/Colombo", capacity: 90, openingTime: "08:30:00", closingTime: "16:30:00", isActive: true, createdAt: "2026-04-19T14:32:14.003667+00:00", isAvailable: true, averageServiceTimeMinutes: 18 }
 ];
 
 export default function AdminDashboardPage() {
   const { user } = useAuth();
-  const [stats, setStats] = useState<Stats | null>(_cachedStats);
   const [allUsers, setAllUsers] = useState<AdminUser[]>(_cachedUsers);
   const [allCenters, setAllCenters] = useState<ServiceCenter[]>(_cachedCenters);
 
@@ -56,12 +55,11 @@ export default function AdminDashboardPage() {
             getAllServiceCenters(),
             getAdminUsers(),
           ]);
-          const nextStats: Stats = {
+          _cachedStats = {
             centers: centers.length,
             users: users.length,
             activeUsers: users.filter((u) => u.isActive).length,
           };
-          _cachedStats = nextStats;
           _cachedUsers = users;
           _cachedCenters = centers.length > 0 ? centers : MOCK_CENTERS;
           _cachePopulated = true;
@@ -76,12 +74,10 @@ export default function AdminDashboardPage() {
 
     _inflightFetch.then(() => {
       if (signal?.cancelled) return;
-      if (_cachedStats && _cachedCenters.length > 0) {
-        setStats(_cachedStats);
+      if (_cachedCenters.length > 0) {
         setAllUsers(_cachedUsers);
         setAllCenters(_cachedCenters);
       } else {
-        setStats({ centers: 0, users: 0, activeUsers: 0 });
         setAllUsers([]);
         setAllCenters([]);
       }
