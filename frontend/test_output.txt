@@ -1,0 +1,1063 @@
+
+[1m[46m RUN [49m[22m [36mv4.1.2 [39m[90mD:/CSP Project/Qlanka-pro/frontend[39m
+
+[90mstderr[2m | src/components/admin/ReportAnalyticsPanel.test.tsx[2m > [22m[2mReportAnalyticsPanel (Local Execution)[2m > [22m[2mrenders the UI and loads initial data successfully
+[22m[39mEach child in a list should have a unique "key" prop.
+
+Check the render method of `select`. It was passed a child from ReportAnalyticsPanel. See https://react.dev/link/warning-keys for more information.
+
+ [31m❯[39m src/components/admin/ReportAnalyticsPanel.test.tsx [2m([22m[2m4 tests[22m[2m | [22m[31m4 failed[39m[2m)[22m[33m 3389[2mms[22m[39m
+[31m     [31m×[31m renders the UI and loads initial data successfully[39m[33m 1112[2mms[22m[39m
+[31m     [31m×[31m handles empty dataset scenarios gracefully[39m[33m 1028[2mms[22m[39m
+[31m     [31m×[31m triggers CSV export correctly with filter combinations[39m[32m 206[2mms[22m[39m
+[31m     [31m×[31m shows error state when data fetch fails[39m[33m 1040[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 4 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/components/admin/ReportAnalyticsPanel.test.tsx[2m > [22mReportAnalyticsPanel (Local Execution)[2m > [22mrenders the UI and loads initial data successfully
+[31m[1mError[22m[39m: Invalid Chai property: toBeInTheDocument
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-wrap items-center justify-between gap-4 mb-6"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<h2[39m
+              [33mclass[39m=[32m"text-2xl font-semibold text-gray-900 tracking-tight"[39m
+            [36m>[39m
+              [0mBooking Analytics[0m
+            [36m</h2>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-[11px] text-gray-400"[39m
+            [36m>[39m
+              [0mDaily trends and service efficiency by filter selection.[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-2 rounded-xl border border-gray-200 text-[11px] font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-60"[39m
+            [36m>[39m
+              [0mExport CSV[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-2 rounded-xl bg-gray-900 text-white text-[11px] font-semibold hover:bg-black disabled:opacity-60"[39m
+            [36m>[39m
+              [0mExport PDF[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-4 gap-3 mb-6"[39m
+        [36m>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"flex flex-col gap-1"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide"[39m
+            [36m>[39m
+              [0mFrom[0m
+            [36m</span>[39m
+            [36m<input[39m
+              [33mclass[39m=[32m"px-3 py-2 rounded-xl border border-gray-200 text-sm"[39m
+              [33mtype[39m=[32m"date"[39m
+              [33mvalue[39m=[32m"2026-04-06"[39m
+            [36m/>[39m
+          [36m</label>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"flex flex-col gap-1"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide"[39m
+            [36m>[39m
+              [0mTo[0m
+            [36m</span>[39m
+            [36m<input[39m
+              [33mclass[39m=[32m"px-3 py-2 rounded-xl border border-gray-200 text-sm"[39m
+              [33mtype[39m=[32m"date"[39m
+              [33mvalue[39m=[32m"2026-04-20"[39m
+            [36m/>[39m
+          [36m</label>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"flex flex-col gap-1 md:col-span-2"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide"[39m
+            [36m>[39m
+              [0mCenter[0m
+            [36m</span>[39m
+            [36m<select[39m
+              [33mclass[39m=[32m"px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white"[39m
+            [36m>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"all"[39m
+              [36m>[39m
+                [0mAll centers[0m
+              [36m</option>[39m
+              [36m<option>[39m
+                [0mColombo Branch[0m
+              [36m</option>[39m
+              [36m<option>[39m
+                [0mKandy Branch[0m
+              [36m</option>[39m
+            [36m</select>[39m
+          [36m</label>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 mb-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4 shadow-[0_1px_0_rgba(17,24,39,0.02)]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2"[39m
+            [36m>[39m
+              [0mTotal bookings[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-3xl font-semibold text-gray-900 tracking-tight leading-none"[39m
+            [36m>[39m
+              [0m150[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-[11px] text-gray-500 mt-2"[39m
+            [36m>[39m
+              [0m2026-04-06 to 2026-04-20[0m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4 shadow-[0_1px_0_rgba(17,24,39,0.02)]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2"[39m
+            [36m>[39m
+              [0mServed[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-3xl font-semibold text-gray-900 tracking-tight leading-none"[39m
+            [36m>[39m
+              [0m100[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-[11px] text-gray-500 mt-2"[39m
+            [36m>[39m
+              [0m67% of filtered tokens[0m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4 shadow-[0_1px_0_rgba(17,24,39,0.02)]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2"[39m
+            [36m>[39m
+              [0mSkipped[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-3xl font-semibold text-gray-900 tracking-tight leading-none"[39m
+            [36m>[39m
+              [0m10[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-[11px] text-gray-500 mt-2"[39m
+            [36m>[39m
+              [0m7% of filtered tokens[0m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4 shadow-[0_1px_0_rgba(17,24,39,0.02)]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2"[39m
+            [36m>[39m
+              [0mAvg wait time[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-3xl font-semibold text-gray-900 tracking-tight leading-none"[39m
+            [36m>[39m
+              [0m10.0 min[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-[11px] text-gray-500 mt-2"[39m
+            [36m>[39m
+              [0mFiltered service timing[0m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4 shadow-[0_1px_0_rgba(17,24,39,0.02)]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2"[39m
+            [36m>[39m
+              [0mPeak hour[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-3xl font-semibold text-gray-900 tracking-tight leading-none"[39m
+            [36m>[39m
+              [0m10:00[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-[11px] text-gray-500 mt-2"[39m
+            [36m>[39m
+              [0m50 bookings at peak[0m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"grid grid-cols-1 xl:grid-cols-3 gap-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"xl:col-span-2 bg-gray-50 rounded-2xl p-4 border border-gray-100 min-h-65"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center justify-between gap-4 mb-3"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"text-[11px] font-semibold text-gray-500 uppercase tracking-wide"[39m
+              [36m>[39m
+                [0mDaily bookings[0m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"text-[10px] text-gray-400 uppercase tracking-[0.2em]"[39m
+              [36m>[39m
+                [0mFiltered[0m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"recharts-wrapper"[39m
+                [33mstyle[39m=[32m"position: relative; cursor: default;"[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"bg-gray-50 rounded-2xl p-4 border border-gray-100 min-h-65"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center justify-between gap-4 mb-3"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"text-[11px] font-semibold text-gray-500 uppercase tracking-wide"[39m
+              [36m>[39m
+                [0mServed vs skipped[0m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"text-[10px] text-gray-400 uppercase tracking-[0.2em]"[39m
+              [36m>[39m
+                [0mFiltered[0m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"recharts-wrapper"[39m
+                [33mstyle[39m=[32m"position: relative; cursor: default;"[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</section>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m
+[36m [2m❯[22m src/components/admin/ReportAnalyticsPanel.test.tsx:[2m55:37[22m[39m
+    [90m 53|[39m     [90m// Check successful render after data load[39m
+    [90m 54|[39m     [35mawait[39m [34mwaitFor[39m(() [33m=>[39m {
+    [90m 55|[39m       expect(screen.getByText("150")).toBeInTheDocument(); // total bo…
+    [90m   |[39m                                     [31m^[39m
+    [90m 56|[39m       expect(screen.getByText("10.0 min")).toBeInTheDocument(); // ave…
+    [90m 57|[39m     })[33m;[39m
+[90m [2m❯[22m runWithExpensiveErrorDiagnosticsDisabled node_modules/@testing-library/dom/dist/config.js:[2m47:12[22m[39m
+[90m [2m❯[22m checkCallback node_modules/@testing-library/dom/dist/wait-for.js:[2m124:77[22m[39m
+[90m [2m❯[22m Timeout.checkRealTimersCallback node_modules/@testing-library/dom/dist/wait-for.js:[2m118:16[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/admin/ReportAnalyticsPanel.test.tsx[2m > [22mReportAnalyticsPanel (Local Execution)[2m > [22mhandles empty dataset scenarios gracefully
+[31m[1mError[22m[39m: Invalid Chai property: toBeInTheDocument
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-wrap items-center justify-between gap-4 mb-6"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<h2[39m
+              [33mclass[39m=[32m"text-2xl font-semibold text-gray-900 tracking-tight"[39m
+            [36m>[39m
+              [0mBooking Analytics[0m
+            [36m</h2>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-[11px] text-gray-400"[39m
+            [36m>[39m
+              [0mDaily trends and service efficiency by filter selection.[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-2 rounded-xl border border-gray-200 text-[11px] font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-60"[39m
+            [36m>[39m
+              [0mExport CSV[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-2 rounded-xl bg-gray-900 text-white text-[11px] font-semibold hover:bg-black disabled:opacity-60"[39m
+            [36m>[39m
+              [0mExport PDF[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-4 gap-3 mb-6"[39m
+        [36m>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"flex flex-col gap-1"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide"[39m
+            [36m>[39m
+              [0mFrom[0m
+            [36m</span>[39m
+            [36m<input[39m
+              [33mclass[39m=[32m"px-3 py-2 rounded-xl border border-gray-200 text-sm"[39m
+              [33mtype[39m=[32m"date"[39m
+              [33mvalue[39m=[32m"2026-04-06"[39m
+            [36m/>[39m
+          [36m</label>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"flex flex-col gap-1"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide"[39m
+            [36m>[39m
+              [0mTo[0m
+            [36m</span>[39m
+            [36m<input[39m
+              [33mclass[39m=[32m"px-3 py-2 rounded-xl border border-gray-200 text-sm"[39m
+              [33mtype[39m=[32m"date"[39m
+              [33mvalue[39m=[32m"2026-04-20"[39m
+            [36m/>[39m
+          [36m</label>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"flex flex-col gap-1 md:col-span-2"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide"[39m
+            [36m>[39m
+              [0mCenter[0m
+            [36m</span>[39m
+            [36m<select[39m
+              [33mclass[39m=[32m"px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white"[39m
+            [36m>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"all"[39m
+              [36m>[39m
+                [0mAll centers[0m
+              [36m</option>[39m
+              [36m<option>[39m
+                [0mColombo Branch[0m
+              [36m</option>[39m
+              [36m<option>[39m
+                [0mKandy Branch[0m
+              [36m</option>[39m
+            [36m</select>[39m
+          [36m</label>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 mb-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4 shadow-[0_1px_0_rgba(17,24,39,0.02)]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2"[39m
+            [36m>[39m
+              [0mTotal bookings[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-3xl font-semibold text-gray-900 tracking-tight leading-none"[39m
+            [36m>[39m
+              [0m150[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-[11px] text-gray-500 mt-2"[39m
+            [36m>[39m
+              [0m2026-04-06 to 2026-04-20[0m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4 shadow-[0_1px_0_rgba(17,24,39,0.02)]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2"[39m
+            [36m>[39m
+              [0mServed[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-3xl font-semibold text-gray-900 tracking-tight leading-none"[39m
+            [36m>[39m
+              [0m100[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-[11px] text-gray-500 mt-2"[39m
+            [36m>[39m
+              [0m67% of filtered tokens[0m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4 shadow-[0_1px_0_rgba(17,24,39,0.02)]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2"[39m
+            [36m>[39m
+              [0mSkipped[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-3xl font-semibold text-gray-900 tracking-tight leading-none"[39m
+            [36m>[39m
+              [0m10[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-[11px] text-gray-500 mt-2"[39m
+            [36m>[39m
+              [0m7% of filtered tokens[0m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4 shadow-[0_1px_0_rgba(17,24,39,0.02)]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2"[39m
+            [36m>[39m
+              [0mAvg wait time[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-3xl font-semibold ...
+[36m [2m❯[22m src/components/admin/ReportAnalyticsPanel.test.tsx:[2m81:35[22m[39m
+    [90m 79|[39m       [90m// 0 Total, 0 Served, 0 Skipped, 0 bookings at peak etc.[39m
+    [90m 80|[39m       [34mexpect[39m(screen[33m.[39m[34mgetAllByText[39m([32m"0"[39m)[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m 81|[39m       [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([32m"-"[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m [90m// peakHour[39m
+    [90m   |[39m                                   [31m^[39m
+    [90m 82|[39m     })[33m;[39m
+    [90m 83|[39m   })[33m;[39m
+[90m [2m❯[22m runWithExpensiveErrorDiagnosticsDisabled node_modules/@testing-library/dom/dist/config.js:[2m47:12[22m[39m
+[90m [2m❯[22m checkCallback node_modules/@testing-library/dom/dist/wait-for.js:[2m124:77[22m[39m
+[90m [2m❯[22m Timeout.checkRealTimersCallback node_modules/@testing-library/dom/dist/wait-for.js:[2m118:16[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/admin/ReportAnalyticsPanel.test.tsx[2m > [22mReportAnalyticsPanel (Local Execution)[2m > [22mtriggers CSV export correctly with filter combinations
+[31m[1mTestingLibraryElementError[22m[39m: Found multiple elements with the role "combobox"
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+[36m<select[39m
+  [33mclass[39m=[32m"px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white"[39m
+[36m>[39m
+  [36m<option[39m
+    [33mvalue[39m=[32m"all"[39m
+  [36m>[39m
+    [0mAll centers[0m
+  [36m</option>[39m
+  [36m<option>[39m
+    [0mColombo Branch[0m
+  [36m</option>[39m
+  [36m<option>[39m
+    [0mKandy Branch[0m
+  [36m</option>[39m
+[36m</select>[39m
+
+Ignored nodes: comments, script, style
+[36m<select[39m
+  [33mclass[39m=[32m"px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white"[39m
+[36m>[39m
+  [36m<option[39m
+    [33mvalue[39m=[32m"all"[39m
+  [36m>[39m
+    [0mAll centers[0m
+  [36m</option>[39m
+  [36m<option>[39m
+    [0mColombo Branch[0m
+  [36m</option>[39m
+  [36m<option>[39m
+    [0mKandy Branch[0m
+  [36m</option>[39m
+[36m</select>[39m
+
+Ignored nodes: comments, script, style
+[36m<select[39m
+  [33mclass[39m=[32m"px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white"[39m
+[36m>[39m
+  [36m<option[39m
+    [33mvalue[39m=[32m"all"[39m
+  [36m>[39m
+    [0mAll centers[0m
+  [36m</option>[39m
+  [36m<option>[39m
+    [0mColombo Branch[0m
+  [36m</option>[39m
+  [36m<option>[39m
+    [0mKandy Branch[0m
+  [36m</option>[39m
+[36m</select>[39m
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33mclass[39m=[32m"bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-wrap items-center justify-between gap-4 mb-6"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<h2[39m
+            [33mclass[39m=[32m"text-2xl font-semibold text-gray-900 tracking-tight"[39m
+          [36m>[39m
+            [0mBooking Analytics[0m
+          [36m</h2>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"text-[11px] text-gray-400"[39m
+          [36m>[39m
+            [0mDaily trends and service efficiency by filter selection.[0m
+          [36m</p>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-2"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-3 py-2 rounded-xl border border-gray-200 text-[11px] font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-60"[39m
+          [36m>[39m
+            [0mExport CSV[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-3 py-2 rounded-xl bg-gray-900 text-white text-[11px] font-semibold hover:bg-black disabled:opacity-60"[39m
+          [36m>[39m
+            [0mExport PDF[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-4 gap-3 mb-6"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"flex flex-col gap-1"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide"[39m
+          [36m>[39m
+            [0mFrom[0m
+          [36m</span>[39m
+          [36m<input[39m
+            [33mclass[39m=[32m"px-3 py-2 rounded-xl border border-gray-200 text-sm"[39m
+            [33mtype[39m=[32m"date"[39m
+            [33mvalue[39m=[32m"2026-04-06"[39m
+          [36m/>[39m
+        [36m</label>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"flex flex-col gap-1"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide"[39m
+          [36m>[39m
+            [0mTo[0m
+          [36m</span>[39m
+          [36m<input[39m
+            [33mclass[39m=[32m"px-3 py-2 rounded-xl border border-gray-200 text-sm"[39m
+            [33mtype[39m=[32m"date"[39m
+            [33mvalue[39m=[32m"2026-04-20"[39m
+          [36m/>[39m
+        [36m</label>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"flex flex-col gap-1 md:col-span-2"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide"[39m
+          [36m>[39m
+            [0mCenter[0m
+          [36m</span>[39m
+          [36m<select[39m
+            [33mclass[39m=[32m"px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"all"[39m
+            [36m>[39m
+              [0mAll centers[0m
+            [36m</option>[39m
+            [36m<option>[39m
+              [0mColombo Branch[0m
+            [36m</option>[39m
+            [36m<option>[39m
+              [0mKandy Branch[0m
+            [36m</option>[39m
+          [36m</select>[39m
+        [36m</label>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 mb-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4 shadow-[0_1px_0_rgba(17,24,39,0.02)]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2"[39m
+          [36m>[39m
+            [0mTotal bookings[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-3xl font-semibold text-gray-900 tracking-tight leading-none"[39m
+          [36m>[39m
+            [0m150[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-[11px] text-gray-500 mt-2"[39m
+          [36m>[39m
+            [0m2026-04-06 to 2026-04-20[0m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4 shadow-[0_1px_0_rgba(17,24,39,0.02)]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2"[39m
+          [36m>[39m
+            [0mServed[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-3xl font-semibold text-gray-900 tracking-tight leading-none"[39m
+          [36m>[39m
+            [0m100[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-[11px] text-gray-500 mt-2"[39m
+          [36m>[39m
+            [0m67% of filtered tokens[0m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4 shadow-[0_1px_0_rgba(17,24,39,0.02)]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2"[39m
+          [36m>[39m
+            [0mSkipped[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-3xl font-semibold text-gray-900 tracking-tight leading-none"[39m
+          [36m>[39m
+            [0m10[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-[11px] text-gray-500 mt-2"[39m
+          [36m>[39m
+            [0m7% of filtered tokens[0m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4 shadow-[0_1px_0_rgba(17,24,39,0.02)]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2"[39m
+          [36m>[39m
+            [0mAvg wait time[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-3xl font-semibold text-gray-900 tracking-tight leading-none"[39m
+          [36m>[39m
+            [0m10.0 min[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-[11px] text-gray-500 mt-2"[39m
+          [36m>[39m
+            [0mFiltered service timing[0m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[3...
+[90m [2m❯[22m Object.getElementError node_modules/@testing-library/dom/dist/config.js:[2m37:19[22m[39m
+[90m [2m❯[22m getElementError node_modules/@testing-library/dom/dist/query-helpers.js:[2m20:35[22m[39m
+[90m [2m❯[22m getMultipleElementsFoundError node_modules/@testing-library/dom/dist/query-helpers.js:[2m23:10[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m55:13[22m[39m
+[90m [2m❯[22m node_modules/@testing-library/dom/dist/query-helpers.js:[2m95:19[22m[39m
+[36m [2m❯[22m src/components/admin/ReportAnalyticsPanel.test.tsx:[2m96:27[22m[39m
+    [90m 94|[39m
+    [90m 95|[39m     [90m// Select filter[39m
+    [90m 96|[39m     [35mconst[39m select [33m=[39m screen[33m.[39m[34mgetByRole[39m([32m"combobox"[39m)[33m;[39m
+    [90m   |[39m                           [31m^[39m
+    [90m 97|[39m     fireEvent[33m.[39m[34mchange[39m(select[33m,[39m { target[33m:[39m { value[33m:[39m [32m"center-1"[39m } })[33m;[39m
+    [90m 98|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/components/admin/ReportAnalyticsPanel.test.tsx[2m > [22mReportAnalyticsPanel (Local Execution)[2m > [22mshows error state when data fetch fails
+[31m[1mTestingLibraryElementError[22m[39m: Unable to find an element with the text: /failed to load/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33mclass[39m=[32m"bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-wrap items-center justify-between gap-4 mb-6"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<h2[39m
+            [33mclass[39m=[32m"text-2xl font-semibold text-gray-900 tracking-tight"[39m
+          [36m>[39m
+            [0mBooking Analytics[0m
+          [36m</h2>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"text-[11px] text-gray-400"[39m
+          [36m>[39m
+            [0mDaily trends and service efficiency by filter selection.[0m
+          [36m</p>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-2"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-3 py-2 rounded-xl border border-gray-200 text-[11px] font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-60"[39m
+          [36m>[39m
+            [0mExport CSV[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"px-3 py-2 rounded-xl bg-gray-900 text-white text-[11px] font-semibold hover:bg-black disabled:opacity-60"[39m
+          [36m>[39m
+            [0mExport PDF[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-4 gap-3 mb-6"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"flex flex-col gap-1"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide"[39m
+          [36m>[39m
+            [0mFrom[0m
+          [36m</span>[39m
+          [36m<input[39m
+            [33mclass[39m=[32m"px-3 py-2 rounded-xl border border-gray-200 text-sm"[39m
+            [33mtype[39m=[32m"date"[39m
+            [33mvalue[39m=[32m"2026-04-06"[39m
+          [36m/>[39m
+        [36m</label>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"flex flex-col gap-1"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide"[39m
+          [36m>[39m
+            [0mTo[0m
+          [36m</span>[39m
+          [36m<input[39m
+            [33mclass[39m=[32m"px-3 py-2 rounded-xl border border-gray-200 text-sm"[39m
+            [33mtype[39m=[32m"date"[39m
+            [33mvalue[39m=[32m"2026-04-20"[39m
+          [36m/>[39m
+        [36m</label>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"flex flex-col gap-1 md:col-span-2"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide"[39m
+          [36m>[39m
+            [0mCenter[0m
+          [36m</span>[39m
+          [36m<select[39m
+            [33mclass[39m=[32m"px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white"[39m
+          [36m>[39m
+            [36m<option[39m
+              [33mvalue[39m=[32m"all"[39m
+            [36m>[39m
+              [0mAll centers[0m
+            [36m</option>[39m
+            [36m<option>[39m
+              [0mColombo Branch[0m
+            [36m</option>[39m
+            [36m<option>[39m
+              [0mKandy Branch[0m
+            [36m</option>[39m
+          [36m</select>[39m
+        [36m</label>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 mb-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4 shadow-[0_1px_0_rgba(17,24,39,0.02)]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2"[39m
+          [36m>[39m
+            [0mTotal bookings[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-3xl font-semibold text-gray-900 tracking-tight leading-none"[39m
+          [36m>[39m
+            [0m150[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-[11px] text-gray-500 mt-2"[39m
+          [36m>[39m
+            [0m2026-04-06 to 2026-04-20[0m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4 shadow-[0_1px_0_rgba(17,24,39,0.02)]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2"[39m
+          [36m>[39m
+            [0mServed[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-3xl font-semibold text-gray-900 tracking-tight leading-none"[39m
+          [36m>[39m
+            [0m100[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-[11px] text-gray-500 mt-2"[39m
+          [36m>[39m
+            [0m67% of filtered tokens[0m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4 shadow-[0_1px_0_rgba(17,24,39,0.02)]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2"[39m
+          [36m>[39m
+            [0mSkipped[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-3xl font-semibold text-gray-900 tracking-tight leading-none"[39m
+          [36m>[39m
+            [0m10[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-[11px] text-gray-500 mt-2"[39m
+          [36m>[39m
+            [0m7% of filtered tokens[0m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4 shadow-[0_1px_0_rgba(17,24,39,0.02)]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2"[39m
+          [36m>[39m
+            [0mAvg wait time[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-3xl font-semibold text-gray-900 tracking-tight leading-none"[39m
+          [36m>[39m
+            [0m10.0 min[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"text-[11px] text-gray-500 mt-2"[39m
+          [36m>[39m
+            [0mFiltered service timing[0m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[3...
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<section[39m
+        [33mclass[39m=[32m"bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-wrap items-center justify-between gap-4 mb-6"[39m
+        [36m>[39m
+          [36m<div>[39m
+            [36m<h2[39m
+              [33mclass[39m=[32m"text-2xl font-semibold text-gray-900 tracking-tight"[39m
+            [36m>[39m
+              [0mBooking Analytics[0m
+            [36m</h2>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-[11px] text-gray-400"[39m
+            [36m>[39m
+              [0mDaily trends and service efficiency by filter selection.[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-2 rounded-xl border border-gray-200 text-[11px] font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-60"[39m
+            [36m>[39m
+              [0mExport CSV[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"px-3 py-2 rounded-xl bg-gray-900 text-white text-[11px] font-semibold hover:bg-black disabled:opacity-60"[39m
+            [36m>[39m
+              [0mExport PDF[0m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-4 gap-3 mb-6"[39m
+        [36m>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"flex flex-col gap-1"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide"[39m
+            [36m>[39m
+              [0mFrom[0m
+            [36m</span>[39m
+            [36m<input[39m
+              [33mclass[39m=[32m"px-3 py-2 rounded-xl border border-gray-200 text-sm"[39m
+              [33mtype[39m=[32m"date"[39m
+              [33mvalue[39m=[32m"2026-04-06"[39m
+            [36m/>[39m
+          [36m</label>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"flex flex-col gap-1"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide"[39m
+            [36m>[39m
+              [0mTo[0m
+            [36m</span>[39m
+            [36m<input[39m
+              [33mclass[39m=[32m"px-3 py-2 rounded-xl border border-gray-200 text-sm"[39m
+              [33mtype[39m=[32m"date"[39m
+              [33mvalue[39m=[32m"2026-04-20"[39m
+            [36m/>[39m
+          [36m</label>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"flex flex-col gap-1 md:col-span-2"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide"[39m
+            [36m>[39m
+              [0mCenter[0m
+            [36m</span>[39m
+            [36m<select[39m
+              [33mclass[39m=[32m"px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white"[39m
+            [36m>[39m
+              [36m<option[39m
+                [33mvalue[39m=[32m"all"[39m
+              [36m>[39m
+                [0mAll centers[0m
+              [36m</option>[39m
+              [36m<option>[39m
+                [0mColombo Branch[0m
+              [36m</option>[39m
+              [36m<option>[39m
+                [0mKandy Branch[0m
+              [36m</option>[39m
+            [36m</select>[39m
+          [36m</label>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 mb-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4 shadow-[0_1px_0_rgba(17,24,39,0.02)]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2"[39m
+            [36m>[39m
+              [0mTotal bookings[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-3xl font-semibold text-gray-900 tracking-tight leading-none"[39m
+            [36m>[39m
+              [0m150[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-[11px] text-gray-500 mt-2"[39m
+            [36m>[39m
+              [0m2026-04-06 to 2026-04-20[0m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4 shadow-[0_1px_0_rgba(17,24,39,0.02)]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2"[39m
+            [36m>[39m
+              [0mServed[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-3xl font-semibold text-gray-900 tracking-tight leading-none"[39m
+            [36m>[39m
+              [0m100[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-[11px] text-gray-500 mt-2"[39m
+            [36m>[39m
+              [0m67% of filtered tokens[0m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4 shadow-[0_1px_0_rgba(17,24,39,0.02)]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2"[39m
+            [36m>[39m
+              [0mSkipped[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-3xl font-semibold text-gray-900 tracking-tight leading-none"[39m
+            [36m>[39m
+              [0m10[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-[11px] text-gray-500 mt-2"[39m
+            [36m>[39m
+              [0m7% of filtered tokens[0m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"rounded-2xl border border-gray-100 bg-gray-50 px-5 py-4 shadow-[0_1px_0_rgba(17,24,39,0.02)]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-[10px] font-semibold text-gray-500 uppercase tracking-wide mb-2"[39m
+            [36m>[39m
+              [0mAvg wait time[0m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"text-3xl font-semibold ...
+[90m [2m❯[22m Proxy.waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:[2m163:27[22m[39m
+[36m [2m❯[22m src/components/admin/ReportAnalyticsPanel.test.tsx:[2m119:11[22m[39m
+    [90m117|[39m     [34mrender[39m([33m<[39m[33mReportAnalyticsPanel[39m [33m/[39m[33m>[39m)[33m;[39m
+    [90m118|[39m
+    [90m119|[39m     [35mawait[39m [34mwaitFor[39m(() [33m=>[39m {
+    [90m   |[39m           [31m^[39m
+    [90m120|[39m       [34mexpect[39m(screen[33m.[39m[34mgetByText[39m([36m/failed to load/i[39m))[33m.[39m[34mtoBeInTheDocument[39m()[33m;[39m
+    [90m121|[39m     })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m4 failed[39m[22m[90m (4)[39m
+[2m   Start at [22m 16:14:51
+[2m   Duration [22m 5.62s[2m (transform 157ms, setup 0ms, import 930ms, tests 3.39s, environment 1.01s)[22m
+
