@@ -22,7 +22,7 @@ jobs:
       MYSQL_PORT: 3306
       MYSQL_USER: admin_identity
       MYSQL_PWD: ${{ secrets.DB_ADMIN_PASSWORD }}
-      MYSQL_SSL: "--ssl-mode=REQUIRED"
+      MYSQL_SSL: "--ssl-mode=REQUIRED --connect-timeout=30"
 
     steps:
       - name: Checkout
@@ -52,7 +52,7 @@ jobs:
             -e "CREATE DATABASE IF NOT EXISTS \`identity\`;"
           for f in $(find backend/QueueLanka.Identity/Database/Migrations -name "*.sql" | sort); do
             echo "Applying $f"
-            mysql -h "$MYSQL_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USER" $MYSQL_SSL identity < "$f"
+            mysql -h "$MYSQL_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USER" $MYSQL_SSL \`identity\` < "$f"
           done
           echo "Identity migrations complete."
 
@@ -63,7 +63,7 @@ jobs:
             -e "CREATE DATABASE IF NOT EXISTS \`queue\`;"
           for f in $(find backend/QueueLanka.Queue/Database/Migrations -name "*.sql" | sort); do
             echo "Applying $f"
-            mysql -h "$MYSQL_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USER" $MYSQL_SSL queue < "$f"
+            mysql -h "$MYSQL_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USER" $MYSQL_SSL \`queue\` < "$f"
           done
           echo "Queue migrations complete."
 
@@ -74,11 +74,11 @@ jobs:
             -e "CREATE DATABASE IF NOT EXISTS \`service-centre\`;"
           for f in $(find backend/QueueLanka.ServiceCenter/Database/Migrations -name "*.sql" | sort); do
             echo "Applying $f"
-            mysql -h "$MYSQL_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USER" $MYSQL_SSL 'service-centre' < "$f"
+            mysql -h "$MYSQL_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USER" $MYSQL_SSL \`service-centre\` < "$f"
           done
           echo "ServiceCentre migrations complete."
 
       - name: Verify schemas
         run: |
           mysql -h "$MYSQL_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USER" $MYSQL_SSL \
-            -e "SHOW DATABASES LIKE 'identity'; SHOW DATABASES LIKE 'queue'; SHOW DATABASES LIKE 'service-centre';"
+            -e "SELECT schema_name FROM information_schema.schemata WHERE schema_name IN ('identity','queue','service-centre') ORDER BY schema_name;"
