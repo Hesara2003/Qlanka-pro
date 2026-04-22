@@ -10,6 +10,40 @@ namespace QueueLanka.Queue.Services;
 
 public class ReportService : IReportService
 {
+    private static readonly HashSet<string> SupportedStatuses = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Waiting",
+        "Called",
+        "Served",
+        "Completed",
+        "Skipped",
+        "Cancelled"
+    };
+
+    private static readonly Dictionary<string, string> SupportedMetrics = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["totalAppointments"] = "totalAppointments",
+        ["totalQueuedUsers"] = "totalQueuedUsers",
+        ["completedTokens"] = "completedTokens",
+        ["cancelledAppointments"] = "cancelledAppointments",
+        ["totalTokensIssued"] = "totalTokensIssued",
+        ["serviceCount"] = "serviceCount",
+        ["averageWaitingTimeSeconds"] = "averageWaitingTimeSeconds",
+        ["averageServiceTimeSeconds"] = "averageServiceTimeSeconds"
+    };
+
+    private static readonly List<string> DefaultMetrics =
+    [
+        "totalAppointments",
+        "totalQueuedUsers",
+        "completedTokens",
+        "cancelledAppointments",
+        "totalTokensIssued",
+        "serviceCount",
+        "averageWaitingTimeSeconds",
+        "averageServiceTimeSeconds"
+    ];
+
     private readonly IReportRepository _reportRepository;
 
     public ReportService(IReportRepository reportRepository)
@@ -122,6 +156,62 @@ public class ReportService : IReportService
         return (fileBytes, fileName);
     }
 
+    public CustomReportRequestDto CreateCustomReportRequest(
+        DateTime? fromDate,
+        DateTime? toDate,
+        string? centerIds,
+        string? statuses,
+        string? metrics)
+    {
+        var resolvedToDate = (toDate ?? DateTime.UtcNow.Date).Date;
+        var resolvedFromDate = (fromDate ?? resolvedToDate.AddDays(-30)).Date;
+
+        return new CustomReportRequestDto
+        {
+            FromDate = resolvedFromDate,
+            ToDate = resolvedToDate,
+            CenterIds = ParsePositiveCenterIds(centerIds),
+            Statuses = ParseStatuses(statuses),
+            Metrics = ParseMetrics(metrics)
+        };
+    }
+
+    public async Task<CustomReportResponseDto> GetCustomReportAsync(CustomReportRequestDto request)
+    {
+        ValidateCustomRequest(request);
+
+        var aggregate = await _reportRepository.GetCustomReportAggregatesAsync(
+            request.FromDate.Date,
+            request.ToDate.Date,
+            request.CenterIds,
+            request.Statuses);
+
+        var metricValues = BuildMetricMap(aggregate);
+        var selectedMetrics = request.Metrics
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Select(metric => SupportedMetrics[metric])
+            .ToList();
+
+        var selectedValues = selectedMetrics.ToDictionary(
+            metric => metric,
+            metric => metricValues[metric],
+            StringComparer.OrdinalIgnoreCase);
+
+        return new CustomReportResponseDto
+        {
+            AppliedFilters = new CustomReportFiltersDto
+            {
+                FromDate = request.FromDate.Date,
+                ToDate = request.ToDate.Date,
+                CenterIds = request.CenterIds,
+                Statuses = request.Statuses
+            },
+            SelectedMetrics = selectedMetrics,
+            AggregatedResults = selectedValues,
+            GeneratedAtUtc = DateTime.UtcNow
+        };
+    }
+
     private static string EscapeCsv(string value)
     {
         if (string.IsNullOrEmpty(value))
@@ -157,6 +247,41 @@ public class ReportService : IReportService
         }
     }
 
+    private static void ValidateCustomRequest(CustomReportRequestDto request)
+    {
+        if (request.FromDate == default || request.ToDate == default)
+        {
+            throw new ValidationException("fromDate and toDate are required.");
+        }
+
+        if (request.ToDate.Date < request.FromDate.Date)
+        {
+            throw new ValidationException("ToDate must be greater than or equal to FromDate.");
+        }
+
+        if ((request.ToDate.Date - request.FromDate.Date).TotalDays > 90)
+        {
+            throw new ValidationException("Date range cannot exceed 90 days.");
+        }
+
+        if (request.Metrics.Count == 0)
+        {
+            throw new ValidationException("At least one metric must be selected.");
+        }
+
+        var unsupportedMetric = request.Metrics.FirstOrDefault(metric => !SupportedMetrics.ContainsKey(metric));
+        if (!string.IsNullOrWhiteSpace(unsupportedMetric))
+        {
+            throw new ValidationException($"Unsupported metric '{unsupportedMetric}'.");
+        }
+
+        var unsupportedStatus = request.Statuses.FirstOrDefault(status => !SupportedStatuses.Contains(status));
+        if (!string.IsNullOrWhiteSpace(unsupportedStatus))
+        {
+            throw new ValidationException($"Unsupported status '{unsupportedStatus}'.");
+        }
+    }
+
     private static List<int> ParseCenterIds(string? centerIds)
     {
         if (string.IsNullOrWhiteSpace(centerIds))
@@ -177,5 +302,77 @@ public class ReportService : IReportService
             })
             .Distinct()
             .ToList();
+    }
+
+    private static List<int> ParsePositiveCenterIds(string? centerIds)
+    {
+        var parsed = ParseCenterIds(centerIds);
+        if (parsed.Any(id => id <= 0))
+        {
+            throw new FormatException("centerIds must contain only positive integers.");
+        }
+
+        return parsed;
+    }
+
+    private static List<string> ParseStatuses(string? statuses)
+    {
+        if (string.IsNullOrWhiteSpace(statuses))
+        {
+            return new List<string>();
+        }
+
+        var parsedStatuses = statuses
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(raw =>
+            {
+                if (!SupportedStatuses.Contains(raw))
+                {
+                    throw new ValidationException($"Unsupported status '{raw}'.");
+                }
+
+                return SupportedStatuses.First(status => string.Equals(status, raw, StringComparison.OrdinalIgnoreCase));
+            })
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        return parsedStatuses;
+    }
+
+    private static List<string> ParseMetrics(string? metrics)
+    {
+        if (string.IsNullOrWhiteSpace(metrics))
+        {
+            return DefaultMetrics.ToList();
+        }
+
+        return metrics
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(metric =>
+            {
+                if (!SupportedMetrics.TryGetValue(metric, out var canonicalMetric))
+                {
+                    throw new ValidationException($"Unsupported metric '{metric}'.");
+                }
+
+                return canonicalMetric;
+            })
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private static Dictionary<string, decimal> BuildMetricMap(CustomReportAggregateDataDto aggregate)
+    {
+        return new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["totalAppointments"] = aggregate.TotalAppointments,
+            ["totalQueuedUsers"] = aggregate.TotalQueuedUsers,
+            ["completedTokens"] = aggregate.CompletedTokens,
+            ["cancelledAppointments"] = aggregate.CancelledAppointments,
+            ["totalTokensIssued"] = aggregate.TotalTokensIssued,
+            ["serviceCount"] = aggregate.ServiceCount,
+            ["averageWaitingTimeSeconds"] = aggregate.AverageWaitingTimeSeconds,
+            ["averageServiceTimeSeconds"] = aggregate.AverageServiceTimeSeconds
+        };
     }
 }

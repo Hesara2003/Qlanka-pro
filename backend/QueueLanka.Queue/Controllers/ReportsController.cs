@@ -101,4 +101,47 @@ public class ReportsController : ControllerBase
             return BadRequest(new ErrorResponse("INVALID_CENTER_FILTER", ex.Message));
         }
     }
+
+    [HttpGet("custom")]
+    [ResponseCache(NoStore = true)]
+    [ProducesResponseType(typeof(ApiResponse<CustomReportResponseDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetCustomReport(
+        [FromQuery] DateTime? fromDate,
+        [FromQuery] DateTime? toDate,
+        [FromQuery] string? centerIds,
+        [FromQuery] string? statuses,
+        [FromQuery] string? metrics)
+    {
+        try
+        {
+            var request = _reportService.CreateCustomReportRequest(fromDate, toDate, centerIds, statuses, metrics);
+
+            if (!TryValidateModel(request))
+            {
+                return BadRequest(new ErrorResponse("VALIDATION_ERROR", "Invalid report request parameters."));
+            }
+
+            var report = await _reportService.GetCustomReportAsync(request);
+            return Ok(new ApiResponse<CustomReportResponseDto>(
+                report,
+                new ResponseMetadata { CorrelationId = HttpContext.TraceIdentifier },
+                "Custom report generated successfully."));
+        }
+        catch (ValidationException ex)
+        {
+            var code = ex.Message.Contains("Unsupported metric", StringComparison.OrdinalIgnoreCase)
+                ? "UNSUPPORTED_METRIC"
+                : ex.Message.Contains("Unsupported status", StringComparison.OrdinalIgnoreCase)
+                    ? "INVALID_STATUS_FILTER"
+                    : "VALIDATION_ERROR";
+
+            return BadRequest(new ErrorResponse(code, ex.Message));
+        }
+        catch (FormatException ex)
+        {
+            return BadRequest(new ErrorResponse("INVALID_FILTER", ex.Message));
+        }
+    }
 }

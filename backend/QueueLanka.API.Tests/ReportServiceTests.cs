@@ -228,6 +228,94 @@ public class ReportServiceTests
         csvText.Should().Contain("Total,,,15,11,2,1,1,,,,6,3");
     }
 
+    [Fact]
+    public void CreateCustomReportRequest_WithoutDateAndMetrics_UsesDefaults()
+    {
+        var request = _service.CreateCustomReportRequest(
+            fromDate: null,
+            toDate: null,
+            centerIds: "1,2",
+            statuses: "Waiting,Served",
+            metrics: null);
+
+        request.CenterIds.Should().BeEquivalentTo(new[] { 1, 2 });
+        request.Statuses.Should().BeEquivalentTo(new[] { "Waiting", "Served" });
+        request.Metrics.Should().Contain(new[]
+        {
+            "totalAppointments",
+            "totalQueuedUsers",
+            "completedTokens",
+            "cancelledAppointments",
+            "totalTokensIssued",
+            "serviceCount",
+            "averageWaitingTimeSeconds",
+            "averageServiceTimeSeconds"
+        });
+        request.ToDate.Date.Should().BeCloseTo(DateTime.UtcNow.Date, TimeSpan.FromDays(1));
+        request.FromDate.Date.Should().Be(request.ToDate.Date.AddDays(-30));
+    }
+
+    [Fact]
+    public void CreateCustomReportRequest_UnsupportedStatus_ThrowsValidationException()
+    {
+        Action act = () => _service.CreateCustomReportRequest(
+            fromDate: new DateTime(2026, 3, 1),
+            toDate: new DateTime(2026, 3, 2),
+            centerIds: "1",
+            statuses: "InvalidStatus",
+            metrics: "totalTokensIssued");
+
+        act.Should().Throw<ValidationException>()
+            .WithMessage("*Unsupported status*");
+    }
+
+    [Fact]
+    public async Task GetCustomReportAsync_SelectedMetricsOnly_ReturnsRequestedAggregates()
+    {
+        var request = _service.CreateCustomReportRequest(
+            fromDate: new DateTime(2026, 3, 1),
+            toDate: new DateTime(2026, 3, 2),
+            centerIds: "1",
+            statuses: "Served,Completed",
+            metrics: "totalTokensIssued,averageWaitingTimeSeconds");
+
+        _mockReportRepository
+            .Setup(r => r.GetCustomReportAggregatesAsync(
+                request.FromDate.Date,
+                request.ToDate.Date,
+                request.CenterIds,
+                request.Statuses))
+            .ReturnsAsync(new CustomReportAggregateDataDto
+            {
+                TotalTokensIssued = 44,
+                AverageWaitingTimeSeconds = 310.5m,
+                TotalAppointments = 20,
+                TotalQueuedUsers = 2,
+                CompletedTokens = 18,
+                CancelledAppointments = 1,
+                ServiceCount = 18,
+                AverageServiceTimeSeconds = 240.2m
+            });
+
+        var result = await _service.GetCustomReportAsync(request);
+
+        result.SelectedMetrics.Should().BeEquivalentTo(new[]
+        {
+            "totalTokensIssued",
+            "averageWaitingTimeSeconds"
+        });
+
+        result.AggregatedResults.Should().HaveCount(2);
+        result.AggregatedResults["totalTokensIssued"].Should().Be(44);
+        result.AggregatedResults["averageWaitingTimeSeconds"].Should().Be(310.5m);
+
+        _mockReportRepository.Verify(r => r.GetCustomReportAggregatesAsync(
+            request.FromDate.Date,
+            request.ToDate.Date,
+            request.CenterIds,
+            request.Statuses), Times.Once);
+    }
+
     private static DailyCenterSummaryRequestDto BuildRequest()
     {
         return new DailyCenterSummaryRequestDto

@@ -10,4 +10,10 @@ public interface IReportRepository
         DateTime fromDate,
         DateTime toDate,
         List<int>? centerIds);
+
+    Task<CustomReportAggregateDataDto> GetCustomReportAggregatesAsync(
+        DateTime fromDate,
+        DateTime toDate,
+        List<int>? centerIds,
+        List<string>? statuses);
 }
