@@ -239,6 +239,27 @@ export default function RegisterForm() {
               </div>
 
               <div className="space-y-1 group">
+                <label htmlFor="confirmPassword" className="text-[11px] font-medium text-[#94a3b8] ml-1 uppercase tracking-[0.2em]">Confirm Password</label>
+                <div className="relative">
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    placeholder="Confirm your password"
+                    value={form.confirmPassword}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    className={`w-full px-6 py-3.5 pr-14 bg-gray-50/50 border ${touched.confirmPassword && errors.confirmPassword ? "border-red-200" : "border-transparent"} rounded-[18px] text-[14px] font-normal outline-none transition-all duration-300 focus:bg-white focus:border-[#78d64b] focus:ring-4 focus:ring-[#78d64b]/5 text-[#1a1c23] placeholder:text-[#cbd5e1]`}
+                    disabled={loading}
+                  />
+                </div>
+                {touched.confirmPassword && errors.confirmPassword && (
+                  <span className="block text-[10px] text-red-500 mt-1 ml-1 font-normal animate-in fade-in" role="alert">{errors.confirmPassword}</span>
+                )}
+              </div>
+
+              <div className="space-y-1 group">
                 <label htmlFor="role" className="text-[11px] font-medium text-[#94a3b8] ml-1 uppercase tracking-[0.2em]">Account Type</label>
                 <div className="relative">
                   <select
@@ -254,11 +275,31 @@ export default function RegisterForm() {
                     <option value="officer">Service Centre Officer</option>
                     <option value="admin">System Administrator</option>
                   </select>
-                  <div className="absolute inset-y-0 right-0 pr-6 flex items-center pointer-events-none text-[#cbd5e1]">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    <div className="absolute inset-y-0 right-0 pr-6 flex items-center pointer-events-none text-[#cbd5e1]">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
                   </div>
                 </div>
-              </div>
+                
+                {form.role === "officer" && (
+                  <div className="space-y-1 group">
+                    <label htmlFor="centerId" className="text-[11px] font-medium text-[#94a3b8] ml-1 uppercase tracking-[0.2em]">Service Centre ID</label>
+                    <input
+                      id="centerId"
+                      name="centerId"
+                      type="text"
+                      placeholder="Enter Center ID"
+                      value={form.centerId}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      className={`w-full px-6 py-3.5 bg-gray-50/50 border ${touched.centerId && errors.centerId ? "border-red-200" : "border-transparent"} rounded-[18px] text-[14px] font-normal outline-none transition-all duration-300 focus:bg-white focus:border-[#78d64b] focus:ring-4 focus:ring-[#78d64b]/5 text-[#1a1c23] placeholder:text-[#cbd5e1]`}
+                      disabled={loading}
+                    />
+                    {touched.centerId && errors.centerId && (
+                      <span className="block text-[10px] text-red-500 mt-1 ml-1 font-normal animate-in fade-in" role="alert">{errors.centerId}</span>
+                    )}
+                  </div>
+                )}
 
               <button 
                 type="submit" 
