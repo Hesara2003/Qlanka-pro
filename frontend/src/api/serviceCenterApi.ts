@@ -287,8 +287,32 @@ export async function getServiceCenterLocation(
     );
     return data.data;
   } catch (error) {
-    if (error instanceof AxiosError) throw error;
-    throw new Error(extractErrorMessage(error));
+    if (!shouldUseSupabaseFallback(error)) {
+      throw new Error(extractErrorMessage(error));
+    }
+
+    const { data: row, error: dbError } = await supabase
+      .from("service_center_locations")
+      .select("*")
+      .eq("center_id", centerId)
+      .maybeSingle();
+
+    if (dbError) throw new Error(dbError.message);
+    if (!row) throw new Error("Location not found.");
+
+    return {
+      centerId,
+      streetAddress: row.street_address ?? "",
+      city: row.city ?? "",
+      district: row.district ?? "",
+      province: row.province ?? "",
+      postalCode: row.postal_code ?? undefined,
+      country: row.country ?? "Sri Lanka",
+      latitude: row.latitude ?? undefined,
+      longitude: row.longitude ?? undefined,
+      googleMapsUrl: row.google_maps_url ?? undefined,
+      landmark: row.landmark ?? undefined,
+    };
   }
 }
 
@@ -306,7 +330,46 @@ export async function upsertServiceCenterLocation(
     );
     return data.data;
   } catch (error) {
-    if (error instanceof AxiosError) throw error;
-    throw new Error(extractErrorMessage(error));
+    if (!shouldUseSupabaseFallback(error)) {
+      throw new Error(extractErrorMessage(error));
+    }
+
+    const { data: row, error: dbError } = await supabase
+      .from("service_center_locations")
+      .upsert(
+        {
+          center_id: centerId,
+          street_address: payload.streetAddress,
+          city: payload.city,
+          district: payload.district,
+          province: payload.province,
+          postal_code: payload.postalCode ?? null,
+          country: payload.country,
+          latitude: payload.latitude ?? null,
+          longitude: payload.longitude ?? null,
+          google_maps_url: payload.googleMapsUrl ?? null,
+          landmark: payload.landmark ?? null,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "center_id" }
+      )
+      .select("*")
+      .single();
+
+    if (dbError) throw new Error(dbError.message);
+
+    return {
+      centerId,
+      streetAddress: row.street_address,
+      city: row.city,
+      district: row.district,
+      province: row.province,
+      postalCode: row.postal_code ?? undefined,
+      country: row.country,
+      latitude: row.latitude ?? undefined,
+      longitude: row.longitude ?? undefined,
+      googleMapsUrl: row.google_maps_url ?? undefined,
+      landmark: row.landmark ?? undefined,
+    };
   }
 }
