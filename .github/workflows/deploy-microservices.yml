@@ -12,135 +12,138 @@ on:
         type: string
 
 jobs:
-  build-and-push:
+  # ── Job 1: Build Docker images and push to ACR ──────────────────────────────
+  # Requires only ACR_USERNAME + ACR_PASSWORD. No Azure login needed.
+  build-push:
+    name: Build & Push / ${{ matrix.service.name }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      ACR_LOGIN_SERVER: ${{ vars.ACR_LOGIN_SERVER || 'qlanka-hrhza8d0ccd6dqa4.azurecr.io' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - name: qlanka-micro-identity
+            dockerfile: QueueLanka.Identity/Dockerfile
+          - name: qlanka-micro-servicecentre
+            dockerfile: QueueLanka.ServiceCenter/Dockerfile
+          - name: qlanka-micro-queue
+            dockerfile: QueueLanka.Queue/Dockerfile
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Azure Container Registry
+        env:
+          ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+          ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -z "${ACR_USERNAME:-}" ] || [ -z "${ACR_PASSWORD:-}" ]; then
+            echo "ACR_USERNAME and ACR_PASSWORD secrets are required."
+            exit 1
+          fi
+          echo "$ACR_PASSWORD" | docker login "$ACR_LOGIN_SERVER" \
+            --username "$ACR_USERNAME" --password-stdin
+
+      - name: Build and push ${{ matrix.service.name }}
+        run: |
+          IMAGE_TAG="${ACR_LOGIN_SERVER}/${{ matrix.service.name }}:${{ github.sha }}"
+          IMAGE_LATEST="${ACR_LOGIN_SERVER}/${{ matrix.service.name }}:latest"
+
+          docker build \
+            -t "$IMAGE_TAG" \
+            -t "$IMAGE_LATEST" \
+            -f backend/${{ matrix.service.dockerfile }} backend
+
+          docker push "$IMAGE_TAG"
+          docker push "$IMAGE_LATEST"
+          echo "Pushed $IMAGE_TAG"
+
+  # ── Job 2: Update Container Apps revisions ──────────────────────────────────
+  # Requires AZURE_CREDENTIALS (SP JSON). Skips gracefully if not set.
+  deploy:
+    name: Deploy / ${{ matrix.service.containerapp }}
+    runs-on: ubuntu-latest
+    needs: build-push
     permissions:
       id-token: write
       contents: read
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-      ACR_NAME: ${{ vars.ACR_NAME || 'qlanka' }}
       ACR_LOGIN_SERVER: ${{ vars.ACR_LOGIN_SERVER || 'qlanka-hrhza8d0ccd6dqa4.azurecr.io' }}
-      RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP || vars.AZURE_RESOURCE_GROUP || 'qlanka-microservices' }}
+      RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP || 'qlanka-microservices' }}
       ROLLOUT_PERCENT: ${{ github.event.inputs.rollout_percent || '100' }}
-      AZURE_CLIENT_ID_FALLBACK: ${{ secrets.AZURE_CLIENT_ID || secrets.QLANKAQUEUE_AZURE_CLIENT_ID || secrets.QLANKAIDENTITY_AZURE_CLIENT_ID || secrets.QLANKASERVICECENTER_AZURE_CLIENT_ID || secrets.QLANKAOFFICER_AZURE_CLIENT_ID }}
-      AZURE_TENANT_ID_FALLBACK: ${{ secrets.AZURE_TENANT_ID || secrets.QLANKAQUEUE_AZURE_TENANT_ID || secrets.QLANKAIDENTITY_AZURE_TENANT_ID || secrets.QLANKASERVICECENTER_AZURE_TENANT_ID || secrets.QLANKAOFFICER_AZURE_TENANT_ID }}
-      AZURE_SUBSCRIPTION_ID_FALLBACK: ${{ secrets.AZURE_SUBSCRIPTION_ID || secrets.QLANKAQUEUE_AZURE_SUBSCRIPTION_ID || secrets.QLANKAIDENTITY_AZURE_SUBSCRIPTION_ID || secrets.QLANKASERVICECENTER_AZURE_SUBSCRIPTION_ID || secrets.QLANKAOFFICER_AZURE_SUBSCRIPTION_ID }}
     strategy:
+      fail-fast: false
       matrix:
         service:
           - name: qlanka-micro-identity
-            dockerfile: QueueLanka.Identity/Dockerfile
             containerapp: qlanka-micro-identity
             min_replicas: 2
             max_replicas: 10
             http_concurrency: 60
           - name: qlanka-micro-servicecentre
-            dockerfile: QueueLanka.ServiceCenter/Dockerfile
             containerapp: qlanka-micro-servicecentre
             min_replicas: 2
             max_replicas: 10
             http_concurrency: 60
           - name: qlanka-micro-queue
-            dockerfile: QueueLanka.Queue/Dockerfile
             containerapp: qlanka-micro-queue
             min_replicas: 3
             max_replicas: 15
             http_concurrency: 40
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Resolve Azure auth mode
-        id: authmode
-        shell: bash
+      - name: Check Azure credentials
+        id: auth_check
         env:
           AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-          AZURE_CLIENT_ID: ${{ env.AZURE_CLIENT_ID_FALLBACK }}
-          AZURE_TENANT_ID: ${{ env.AZURE_TENANT_ID_FALLBACK }}
-          AZURE_SUBSCRIPTION_ID: ${{ env.AZURE_SUBSCRIPTION_ID_FALLBACK }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         run: |
-          set -euo pipefail
-
           if [ -n "${AZURE_CREDENTIALS:-}" ]; then
-            if ! echo "$AZURE_CREDENTIALS" | jq -e '.clientId and .clientSecret and .subscriptionId and .tenantId' >/dev/null 2>&1; then
-              echo "AZURE_CREDENTIALS is present but invalid. It must include clientId, clientSecret, subscriptionId, tenantId."
-              exit 1
-            fi
-
             echo "mode=sp-json" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          if [ -n "${AZURE_CLIENT_ID:-}" ] && [ -n "${AZURE_TENANT_ID:-}" ] && [ -n "${AZURE_SUBSCRIPTION_ID:-}" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          elif [ -n "${AZURE_CLIENT_ID:-}" ] && [ -n "${AZURE_TENANT_ID:-}" ] && [ -n "${AZURE_SUBSCRIPTION_ID:-}" ]; then
             echo "mode=oidc" >> "$GITHUB_OUTPUT"
-            exit 0
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::AZURE_CREDENTIALS not set — images pushed to ACR but Container Apps NOT updated. Run the deploy-containerapps workflow manually from Cloud Shell."
           fi
-
-          echo "Azure login secrets are incomplete. Provide either AZURE_CREDENTIALS JSON, or AZURE_CLIENT_ID + AZURE_TENANT_ID + AZURE_SUBSCRIPTION_ID."
-          exit 1
 
       - name: Azure login (service principal JSON)
-        if: ${{ steps.authmode.outputs.mode == 'sp-json' }}
+        if: steps.auth_check.outputs.mode == 'sp-json'
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Azure login (OIDC)
-        if: ${{ steps.authmode.outputs.mode == 'oidc' }}
+        if: steps.auth_check.outputs.mode == 'oidc'
         uses: azure/login@v2
         with:
-          client-id: ${{ env.AZURE_CLIENT_ID_FALLBACK }}
-          tenant-id: ${{ env.AZURE_TENANT_ID_FALLBACK }}
-          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID_FALLBACK }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Ensure Container Apps CLI extension
-        run: |
-          az extension add --name containerapp --upgrade --only-show-errors
-
-      - name: Log in to Azure Container Registry
-        shell: bash
-        env:
-          ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
-          ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
-        run: |
-          set -euo pipefail
-
-          if [ -n "${ACR_USERNAME:-}" ] && [ -n "${ACR_PASSWORD:-}" ]; then
-            if echo "$ACR_PASSWORD" | docker login "$ACR_LOGIN_SERVER" --username "$ACR_USERNAME" --password-stdin; then
-              exit 0
-            fi
-
-            echo "docker login with ACR_USERNAME/ACR_PASSWORD failed; falling back to Azure identity login"
-          fi
-
-          echo "Using az acr login fallback for $ACR_NAME"
-          az acr login --name "$ACR_NAME"
-
-      - name: Build and push ${{ matrix.service.name }}
-        run: |
-          IMAGE_TAG="${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service.name }}:${{ github.sha }}"
-          IMAGE_LATEST="${{ env.ACR_LOGIN_SERVER }}/${{ matrix.service.name }}:latest"
-
-          docker build \
-            -t "$IMAGE_TAG" \
-            -t "$IMAGE_LATEST" \
-            -f backend/${{ matrix.service.dockerfile }} backend
-          docker push "$IMAGE_TAG"
-          docker push "$IMAGE_LATEST"
+        if: steps.auth_check.outputs.available == 'true'
+        run: az extension add --name containerapp --upgrade --only-show-errors
 
       - name: Deploy with autoscaling and traffic rules
+        if: steps.auth_check.outputs.available == 'true'
         shell: bash
         run: |
           set -euo pipefail
 
-          if [ -z "${RESOURCE_GROUP:-}" ]; then
-            echo "RESOURCE_GROUP is missing. Set AZURE_RESOURCE_GROUP secret/variable or keep fallback value in workflow."
-            exit 1
-          fi
-
-          if ! [[ "$ROLLOUT_PERCENT" =~ ^[0-9]+$ ]] || [ "$ROLLOUT_PERCENT" -lt 1 ] || [ "$ROLLOUT_PERCENT" -gt 100 ]; then
+          if ! [[ "$ROLLOUT_PERCENT" =~ ^[0-9]+$ ]] || \
+             [ "$ROLLOUT_PERCENT" -lt 1 ] || [ "$ROLLOUT_PERCENT" -gt 100 ]; then
             echo "rollout_percent must be an integer from 1 to 100."
             exit 1
           fi
@@ -164,32 +167,27 @@ jobs:
             --scale-rule-http-concurrency "${{ matrix.service.http_concurrency }}"
 
           NEW_REVISION=$(az containerapp revision list \
-            --name "$APP_NAME" \
-            --resource-group "$RESOURCE_GROUP" \
+            --name "$APP_NAME" --resource-group "$RESOURCE_GROUP" \
             --query "sort_by([].{name:name,created:properties.createdTime}, &created)[-1].name" \
             -o tsv)
 
           OLD_REVISION=$(az containerapp revision list \
-            --name "$APP_NAME" \
-            --resource-group "$RESOURCE_GROUP" \
+            --name "$APP_NAME" --resource-group "$RESOURCE_GROUP" \
             --query "sort_by([].{name:name,created:properties.createdTime}, &created)[-2].name" \
             -o tsv)
 
           REMAINING_PERCENT=$((100 - ROLLOUT_PERCENT))
 
-          if [ "$REMAINING_PERCENT" -gt 0 ] && [ -n "$OLD_REVISION" ]; then
+          if [ "$REMAINING_PERCENT" -gt 0 ] && [ -n "${OLD_REVISION:-}" ]; then
             az containerapp ingress traffic set \
-              --name "$APP_NAME" \
-              --resource-group "$RESOURCE_GROUP" \
+              --name "$APP_NAME" --resource-group "$RESOURCE_GROUP" \
               --revision-weight "$NEW_REVISION=$ROLLOUT_PERCENT" "$OLD_REVISION=$REMAINING_PERCENT"
           else
             az containerapp ingress traffic set \
-              --name "$APP_NAME" \
-              --resource-group "$RESOURCE_GROUP" \
+              --name "$APP_NAME" --resource-group "$RESOURCE_GROUP" \
               --revision-weight "$NEW_REVISION=100"
           fi
 
-          echo "Traffic status for $APP_NAME"
+          echo "Deployed $APP_NAME → $IMAGE_TAG"
           az containerapp ingress traffic show \
-            --name "$APP_NAME" \
-            --resource-group "$RESOURCE_GROUP"
+            --name "$APP_NAME" --resource-group "$RESOURCE_GROUP"
