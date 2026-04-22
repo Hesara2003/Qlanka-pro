@@ -7,7 +7,6 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import LandingPage from "./pages/LandingPage";
 
-gsap.registerPlugin(ScrollTrigger);
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
@@ -30,6 +29,8 @@ import UserLayout from "./components/common/UserLayout";
 
 function App() {
   useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+
     // Initialize Lenis Smooth Scroll
     const lenis = new Lenis({
       duration: 1.5,

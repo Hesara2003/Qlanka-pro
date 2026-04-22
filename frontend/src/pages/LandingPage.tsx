@@ -13,13 +13,12 @@ import BannerMarquee from "../components/landing/BannerMarquee";
 import BannerStats from "../components/landing/BannerStats";
 import Footer from "../components/landing/Footer";
 
-gsap.registerPlugin(ScrollTrigger);
-
 export default function LandingPage() {
     const containerRef = useRef<HTMLDivElement>(null);
 
     // Background morphing & Void Matte Transformation
     useGSAP(() => {
+        gsap.registerPlugin(ScrollTrigger);
         // No background morphing or spotlight for Void Matte look
     }, { scope: containerRef });
 

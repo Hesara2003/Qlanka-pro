@@ -12,6 +12,7 @@ import {
 } from "@microsoft/signalr";
 import { useAuth } from "../context/AuthContext";
 import { usePageVisibility } from "./usePageVisibility";
+import { FORCE_SUPABASE } from "../api/axiosInstance";
 
 export type QueueHubConnectionStatus = "connecting" | "disconnected" | "reconnecting" | "connected";
 
@@ -176,7 +177,7 @@ export function useQueueHub(options: UseQueueHubOptions): UseQueueHubResult {
     const effectiveCounterId = (counterId && !Number.isNaN(counterId)) ? counterId : undefined;
     const hasValidCenterId = Boolean(effectiveCenterId && !Number.isNaN(effectiveCenterId));
     const hasValidCounterId = Boolean(effectiveCounterId && !Number.isNaN(effectiveCounterId));
-    const canConnect = enabled && (hasValidCenterId || (isOfficer && hasValidCounterId));
+    const canConnect = enabled && !FORCE_SUPABASE && (hasValidCenterId || (isOfficer && hasValidCounterId));
 
     const getAccessToken = useCallback(() => {
         return localStorage.getItem("token") ?? null;

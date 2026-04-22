@@ -18,10 +18,40 @@ const configuredClient =
 const unconfiguredClient = new Proxy(
   {},
   {
-    get() {
-      throw new Error(
-        "Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY."
-      );
+    get(_, prop) {
+      console.warn(`Supabase is not configured. Accessing "${String(prop)}" will return mock data.`);
+      
+      if (prop === "from") {
+        return (table: string) => ({
+          select: () => ({
+            eq: () => ({
+              maybeSingle: async () => ({ data: null, error: { message: `Supabase unconfigured (table: ${table})` } }),
+              order: () => ({
+                limit: () => ({
+                  maybeSingle: async () => ({ data: null, error: { message: `Supabase unconfigured (table: ${table})` } }),
+                }),
+              }),
+            }),
+            order: async () => ({ data: [], error: { message: `Supabase unconfigured (table: ${table})` } }),
+          }),
+          insert: () => ({
+            select: () => ({
+              single: async () => ({ data: null, error: { message: `Supabase unconfigured (table: ${table})` } }),
+            }),
+          }),
+          update: () => ({
+            eq: () => ({
+              select: () => ({
+                maybeSingle: async () => ({ data: null, error: { message: `Supabase unconfigured (table: ${table})` } }),
+              }),
+            }),
+          }),
+        });
+      }
+      
+      return () => {
+        throw new Error(`Supabase is not configured. Tried to call "${String(prop)}".`);
+      };
     },
   }
 );

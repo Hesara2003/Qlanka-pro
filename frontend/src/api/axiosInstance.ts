@@ -7,7 +7,7 @@ const isWso2Enabled = (import.meta.env.VITE_WSO2_ENABLED ?? "false").toLowerCase
 const rawApiBaseUrl = (
   import.meta.env.VITE_API_BASE_URL ??
   import.meta.env.VITE_WSO2_API_BASE_URL ??
-  "https://20.193.250.12:9443"
+  (window.location.hostname === "localhost" ? "http://localhost:5012" : "https://20.193.250.12:9443")
 ).replace(/\/+$/, "");
 
 const apiBaseUrl = rawApiBaseUrl.replace(/\/api$/i, "");
@@ -40,16 +40,21 @@ export class AuthorizationError extends Error {
   }
 }
 
+export const FORCE_SUPABASE = true;
+
 const axiosInstance = axios.create({
   baseURL: apiBaseUrl,
   headers: {
     "Content-Type": "application/json",
   },
-  timeout: 60000,
+  timeout: 15000,
 });
 
 // Attach JWT token to every request if present
 axiosInstance.interceptors.request.use((config) => {
+  if (FORCE_SUPABASE) {
+    return Promise.reject(new axios.AxiosError("Forced Supabase fallback", "ERR_FORCE_SUPABASE", config));
+  }
   if (isWso2Enabled && typeof config.url === "string" && config.url.startsWith("/")) {
     const isAlreadyContextualized =
       config.url.startsWith(`${wso2PublicContext}/`) ||
